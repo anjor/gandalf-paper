@@ -98,21 +98,21 @@ Writing a Journal of Plasma Physics paper on GANDALF, a modern reimplementation 
 
 **Single agent for focused task:**
 ```
-@latex-equations: Format the gyrokinetic ordering equations
+Use the latex-equations agent: Format the gyrokinetic ordering equations
 ```
 
 **Multiple agents for complete section:**
 ```
-@physics-narrator: Write intro paragraph on cascade physics
-@latex-equations: Add cascade equations
-@literature-curator: Add Schekochihin 2009 and recent Parker Solar Probe papers
+Use the physics-narrator agent: Write intro paragraph on cascade physics
+Use the latex-equations agent: Add cascade equations
+Use the literature-curator agent: Add Schekochihin 2009 and recent Parker Solar Probe papers
 ```
 
 **Agent chain for verification:**
 ```
-@benchmark-analyst: Generate Orszag-Tang vortex results
-@physics-narrator: Explain physical significance
-@latex-equations: Add convergence rate formula
+Use the benchmark-analyst agent: Generate Orszag-Tang vortex results
+Use the physics-narrator agent: Explain physical significance
+Use the latex-equations agent: Add convergence rate formula
 ```
 
 ### Agent Responsibilities Matrix
