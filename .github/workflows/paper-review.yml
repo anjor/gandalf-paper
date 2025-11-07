@@ -8,6 +8,11 @@ on:
       - 'paper/**/*.bib'
       - 'paper/figures/**'
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   claude-paper-review:
     runs-on: ubuntu-latest
