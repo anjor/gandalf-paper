@@ -9,57 +9,75 @@ on:
       - 'paper/figures/**'
 
 jobs:
-  request-claude-review:
+  claude-paper-review:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Post Review Request Comment
-        uses: actions/github-script@v6
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          script: |
-            const prBody = context.payload.pull_request.body || '';
-            const section = prBody.match(/Section:\s*(.+)/)?.[1] || 'Unknown';
+          fetch-depth: 1
 
-            const reviewPrompts = {
-              'introduction': `@claude Please review this Introduction section for:
-                - Clear physics motivation for KRMHD solver
-                - Appropriate context on existing codes (Viriato, GS2, AstroGK)
-                - Compelling case for JAX-based implementation
-                - Smooth flow from problem to solution`,
+      - name: Run Claude Code Paper Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
 
-              'formulation': `@claude Please review this Mathematical Formulation for:
-                - Correct KRMHD equations derivation
-                - Clear statement of assumptions (k∥ ≪ k⊥, strong guide field)
-                - Proper non-dimensionalization
-                - Conservation properties identified`,
+            Please review this pull request for a Journal of Plasma Physics paper on GANDALF, a KRMHD turbulence solver.
 
-              'numerics': `@claude Please review this Numerical Methods section for:
-                - Clear explanation of spectral methods advantages
-                - Proper description of dealiasing (2/3 rule)
-                - Time integration scheme details
-                - Boundary condition treatment`,
+            **Context:** Check CLAUDE.md for project guidelines including:
+            - JPP writing style (active voice, expert audience, quantitative focus)
+            - Scientific writing guidelines for plasma physics papers
+            - Sub-agent roles (physics-narrator, latex-equations, etc.)
 
-              'verification': `@claude Please review these Verification benchmarks for:
-                - Appropriate test case selection
-                - Clear presentation of expected vs actual results
-                - Convergence rate demonstration
-                - Quantitative error metrics`,
+            **Review Focus based on changed files:**
 
-              'default': `@claude Please review this section for:
-                - Physics correctness and completeness
-                - Mathematical rigor
-                - Notation consistency with notation.tex
-                - Appropriate citations for all claims
-                - Clear scientific writing following JPP standards`
-            };
+            If this is the **Mathematical Formulation** section, check:
+            - Correct KRMHD equations derivation from gyrokinetics
+            - Clear statement of assumptions (k⊥ρᵢ ≪ 1, k∥ ≪ k⊥, strong guide field)
+            - Proper Hermite moment expansion formulation
+            - Non-dimensionalization and normalization
+            - Dispersion relations and conservation properties
+            - All variables defined consistent with notation.tex
+            - All referenced equations numbered
 
-            const prompt = reviewPrompts[section.toLowerCase()] || reviewPrompts['default'];
+            If this is the **Introduction** section, check:
+            - Clear physics motivation for kinetic turbulence and KRMHD
+            - Appropriate context on existing codes (Viriato, GS2, AstroGK)
+            - Compelling case for JAX-based implementation on commodity hardware
+            - Smooth flow from problem statement to solution
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: prompt + `\n\nPlease check against CLAUDE.md and instructions.md for project context.`
-            });
+            If this is the **Numerical Methods** section, check:
+            - Clear explanation of spectral methods advantages
+            - Proper description of dealiasing (2/3 rule)
+            - Time integration scheme details (RK4)
+            - Boundary condition treatment
+            - Parallel/perpendicular discretization choices
+
+            If this is the **Verification** section, check:
+            - Appropriate benchmark selection (Alfvén waves, Orszag-Tang, turbulent spectra)
+            - Clear presentation of expected vs actual results
+            - Convergence rate demonstration
+            - Quantitative error metrics
+
+            **General checks for all sections:**
+            - Physics correctness and completeness
+            - Mathematical rigor appropriate for JPP audience
+            - Notation consistency with paper/notation.tex
+            - All claims supported by citations
+            - Active voice, present tense for methods
+            - No undefined terms or notation
+
+            Use `gh pr comment` to post your review findings. Be constructive and specific about any issues found.
+
+          # Allow Claude to use gh commands for posting reviews
+          claude_args: '--allowed-tools "Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"'
