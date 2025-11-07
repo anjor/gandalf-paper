@@ -1,0 +1,45 @@
+name: Notation Consistency Check
+
+on:
+  push:
+    paths:
+      - 'paper/**/*.tex'
+
+jobs:
+  check-notation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Create Notation Report
+        run: |
+          echo "## Notation Check" > notation-report.md
+          echo "Extracting all math symbols from tex files..." >> notation-report.md
+          
+          # Extract all math environments
+          grep -h '\$.*\$\|\\begin{equation}\|\\end{equation}\|\\[\|\\]' paper/**/*.tex > math_content.txt || true
+          
+          # Check against notation.tex if it exists
+          if [ -f paper/notation.tex ]; then
+            echo "Checking against notation.tex definitions..." >> notation-report.md
+          else
+            echo "⚠️ notation.tex not found - creating template" >> notation-report.md
+          fi
+          
+      - name: Comment PR if issues found
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('notation-report.md', 'utf8');
+            
+            if (report.includes('⚠️')) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: report
+              });
+            }

@@ -1,0 +1,65 @@
+name: Paper Section Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - 'paper/**/*.tex'
+      - 'paper/**/*.bib'
+      - 'paper/figures/**'
+
+jobs:
+  request-claude-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Post Review Request Comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prBody = context.payload.pull_request.body || '';
+            const section = prBody.match(/Section:\s*(.+)/)?.[1] || 'Unknown';
+
+            const reviewPrompts = {
+              'introduction': `@claude Please review this Introduction section for:
+                - Clear physics motivation for KRMHD solver
+                - Appropriate context on existing codes (Viriato, GS2, AstroGK)
+                - Compelling case for JAX-based implementation
+                - Smooth flow from problem to solution`,
+
+              'formulation': `@claude Please review this Mathematical Formulation for:
+                - Correct KRMHD equations derivation
+                - Clear statement of assumptions (k∥ ≪ k⊥, strong guide field)
+                - Proper non-dimensionalization
+                - Conservation properties identified`,
+
+              'numerics': `@claude Please review this Numerical Methods section for:
+                - Clear explanation of spectral methods advantages
+                - Proper description of dealiasing (2/3 rule)
+                - Time integration scheme details
+                - Boundary condition treatment`,
+
+              'verification': `@claude Please review these Verification benchmarks for:
+                - Appropriate test case selection
+                - Clear presentation of expected vs actual results
+                - Convergence rate demonstration
+                - Quantitative error metrics`,
+
+              'default': `@claude Please review this section for:
+                - Physics correctness and completeness
+                - Mathematical rigor
+                - Notation consistency with notation.tex
+                - Appropriate citations for all claims
+                - Clear scientific writing following JPP standards`
+            };
+
+            const prompt = reviewPrompts[section.toLowerCase()] || reviewPrompts['default'];
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: prompt + `\n\nPlease check against CLAUDE.md and instructions.md for project context.`
+            });
