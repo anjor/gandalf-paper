@@ -44,22 +44,22 @@ In normalized coordinates ($x,y$ in units of $\rhoi$, $z$ in units of $\Lpar \gg
 \begin{subequations}
 \label{eq:moment_hierarchy}
 \begin{align}
-\frac{\partial \gm{0}^{\pm}}{\partial t} + \pb{\Phifield}{\gm{0}^{\pm}} \mp \frac{\partial \gm{0}^{\pm}}{\partial z}
-&= \sqrt{2} \left[\pb{\Psifield}{\gm{1}^{\pm}} \mp \frac{\partial \gm{1}^{\pm}}{\partial z}\right],
+\pardt \gm{0}^{\pm} + \pb{\Phifield}{\gm{0}^{\pm}} \mp \pardz \gm{0}^{\pm}
+&= \sqrt{2} \left[\pb{\Psifield}{\gm{1}^{\pm}} \mp \pardz \gm{1}^{\pm}\right],
 \label{eq:moment_m0}
 \\
-\frac{\partial \gm{1}^{\pm}}{\partial t} + \pb{\Phifield}{\gm{1}^{\pm}} \mp \frac{\partial \gm{1}^{\pm}}{\partial z}
-&= \frac{1}{\sqrt{2}} \left[\pb{\Psifield}{\gm{0}^{\pm}} \mp \frac{\partial \gm{0}^{\pm}}{\partial z}\right]
-+ \sqrt{\frac{3}{2}} \left[\pb{\Psifield}{\gm{2}^{\pm}} \mp \frac{\partial \gm{2}^{\pm}}{\partial z}\right] - \coll \gm{1}^{\pm},
+\pardt \gm{1}^{\pm} + \pb{\Phifield}{\gm{1}^{\pm}} \mp \pardz \gm{1}^{\pm}
+&= \frac{1}{\sqrt{2}} \left[\pb{\Psifield}{\gm{0}^{\pm}} \mp \pardz \gm{0}^{\pm}\right]
++ \sqrt{\frac{3}{2}} \left[\pb{\Psifield}{\gm{2}^{\pm}} \mp \pardz \gm{2}^{\pm}\right] - \coll \gm{1}^{\pm},
 \label{eq:moment_m1}
 \\
-\frac{\partial \gm{m}^{\pm}}{\partial t} + \pb{\Phifield}{\gm{m}^{\pm}} \mp \frac{\partial \gm{m}^{\pm}}{\partial z}
-&= \sqrt{\frac{m}{2}} \left[\pb{\Psifield}{\gm{m-1}^{\pm}} \mp \frac{\partial \gm{m-1}^{\pm}}{\partial z}\right] \notag \\
-&\quad + \sqrt{\frac{m+1}{2}} \left[\pb{\Psifield}{\gm{m+1}^{\pm}} \mp \frac{\partial \gm{m+1}^{\pm}}{\partial z}\right] - m\coll \gm{m}^{\pm}, \quad m \geq 2.
+\pardt \gm{m}^{\pm} + \pb{\Phifield}{\gm{m}^{\pm}} \mp \pardz \gm{m}^{\pm}
+&= \sqrt{\frac{m}{2}} \left[\pb{\Psifield}{\gm{m-1}^{\pm}} \mp \pardz \gm{m-1}^{\pm}\right] \notag \\
+&\quad + \sqrt{\frac{m+1}{2}} \left[\pb{\Psifield}{\gm{m+1}^{\pm}} \mp \pardz \gm{m+1}^{\pm}\right] - m\coll \gm{m}^{\pm}, \quad m \geq 2.
 \label{eq:moment_m_general}
 \end{align}
 \end{subequations}
-The advection terms $\pb{\Phifield}{\gm{m}^{\pm}}$ drive perpendicular nonlinear cascades, while the coupling between adjacent moments through coefficients $\sqrt{m/2}$ and $\sqrt{(m+1)/2}$ represents linear phase mixing that transfers energy to finer velocity-space scales as turbulent fluctuations develop structure along the guide field.
+The advection terms $\pb{\Phifield}{\gm{m}^{\pm}}$ drive perpendicular nonlinear cascades, while the coupling between adjacent moments through coefficients $\sqrt{m/2}$ and $\sqrt{(m+1)/2}$ represents linear phase mixing. This phase mixing occurs because particles with different parallel velocities $\vpar$ stream at different rates along field lines, causing initially coherent perturbations to develop fine-scale velocity-space structure that transfers energy to higher moments.
 
 \subsubsection{Dissipation and Closure}
 
