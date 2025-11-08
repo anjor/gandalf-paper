@@ -1,0 +1,89 @@
+\section{Mathematical Formulation}
+
+\subsection{The KRMHD Regime}
+
+Kinetic Reduced MHD (KRMHD) describes low-frequency electromagnetic fluctuations in strongly magnetized plasmas where a strong guide field $\mathbf{B}_0 = \Bzero \hat{z}$ of strength $\Bzero$ orders the dynamics. The model captures physics at scales much larger than the ion Larmor radius ($\kperp \rhoi \ll 1$) with parallel wavelengths exceeding perpendicular scales ($\kpar \ll \kperp$), characteristic of anisotropic MHD turbulence \citep{Strauss1976,GoldreichSridhar1995}. KRMHD emerges from gyrokinetics in the long-wavelength limit through systematic expansion in small $\kperp \rhoi$ \citep{Schekochihin2009}, retaining the essential physics of \Alfvenic\ turbulence while incorporating kinetic effects through Landau damping \citep{Landau1946} and phase mixing.
+
+The key simplification of KRMHD lies in the decoupling of \Alfvenic\ and compressive fluctuations at leading order in $\kperp\rhoi$ \citep{LithwickGoldreich2001,Schekochihin2009}. The \Alfvenic\ component, described by the electrostatic and magnetic potentials, determines the turbulent dynamics through nonlinear interactions that drive energy cascade. The compressive component becomes a passive kinetic scalar advected by the \Alfvenic\ turbulence, undergoing linear phase mixing along magnetic field lines. Here, ``passive'' means that compressive fluctuations do not back-react on the \Alfvenic\ dynamics at leading order---they are driven linearly by the \Alfven\ waves but do not influence them in return. This separation permits efficient numerical treatment while preserving the critical physics of both anisotropic cascade and kinetic dissipation.
+
+\subsection{Governing Equations}
+
+We employ Gaussian centimeter-gram-second (CGS) units for the dimensional equations in this subsection. KRMHD evolves two coupled systems: the Elsasser fields $\xi^\pm$ \citep{Elsasser1950} (where $\xi^+ = \elsp$ and $\xi^- = \elsm$) representing counter-propagating \Alfven\ wave packets, and the kinetic distribution $g^\pm$ describing compressive fluctuations. The Elsasser fields satisfy
+\begin{equation}
+\pardt \nabla^2_\perp \xi^\pm \mp \vA \pardz \nabla^2_\perp \xi^\pm = -\frac{1}{2}\left[\pb{\elsp}{\nabla^2_\perp \elsm} + \pb{\elsm}{\nabla^2_\perp \elsp} \mp \nabla^2_\perp \pb{\elsp}{\elsm}\right],
+\label{eq:elsasser}
+\end{equation}
+where $\xi^\pm = \Phifield \pm \Psifield$ combine the stream function $\Phifield = c\phi/\Bzero$ (from the electrostatic potential $\phi$) and flux function $\Psifield = -A_\parallel/\sqrt{4\pi m_i n_{0i}}$ (from the parallel component of the magnetic vector potential $A_\parallel$). Here $c$ is the speed of light, $m_i$ the ion mass, and $n_{0i}$ the background ion density. The \Alfven\ velocity $\vA = \Bzero/\sqrt{4\pi m_i n_{0i}}$ sets the linear wave propagation speed. The perpendicular Laplacian $\nabla^2_\perp = \partial^2/\partial x^2 + \partial^2/\partial y^2$ and Poisson bracket $\pb{P}{Q} = \partial P/\partial x \, \partial Q/\partial y - \partial P/\partial y \, \partial Q/\partial x$ generate the nonlinear interactions responsible for perpendicular cascade.
+
+The compressive fluctuations evolve according to the kinetic equation
+\begin{equation}
+\ddt g^\pm + \vpar \gradpar g^\pm = \frac{\vpar F_0(\vpar)}{\Lambda^\pm} \bhat \cdot \nabla \int_{-\infty}^{\infty} d\vpar \, g^\pm,
+\label{eq:kinetic}
+\end{equation}
+where $g^\pm$ represent the perturbations to the ion distribution function in Elsasser-like variables (combining density, temperature, and parallel flow perturbations analogous to the Elsasser fields), $F_0(\vpar) = \exp(-v^2_\parallel/\vth^2)/\sqrt{\pi}\vth$ denotes the one-dimensional Maxwellian background, and the integral is over all parallel velocities $\vpar \in (-\infty, \infty)$. The convective derivative $d/dt = \partial/\partial t + \pb{\Phifield}{\cdot}$ incorporates perpendicular advection by the $\mathbf{E} \times \mathbf{B}$ flow. The parallel gradient operator $\gradpar = \partial/\partial z + (1/\vA)\pb{\Psifield}{\cdot}$ acts along perturbed magnetic field lines, with the Poisson bracket term accounting for field line bending due to $\Psi$ perturbations. The coupling parameters
+\begin{equation}
+\Lambda^\pm = -\frac{\taue}{\Zion} + \frac{1}{\betai} \pm \sqrt{\left(1+\frac{\taue}{\Zion}\right)^2 + \frac{1}{\betai^2}}
+\label{eq:lambda_parameters}
+\end{equation}
+depend on the ion plasma beta $\betai = 8\pi n_{0i} T_i/\Bzero^2$, the temperature ratio $\taue = T_e/T_i$, and the ion charge state $\Zion$ \citep{Schekochihin2009}.
+
+Equation~\eqref{eq:elsasser} describes counter-propagating \Alfven\ wave packets that interact nonlinearly through the Poisson bracket terms, driving turbulent energy transfer to small perpendicular scales. Equation~\eqref{eq:kinetic} governs the passive advection of compressive fluctuations, which undergo phase mixing through the $\vpar \gradpar$ streaming term while being swept along by the turbulent \Alfvenic\ flow. The right-hand side of Eq.~\eqref{eq:kinetic} represents the linear drive of compressive fluctuations by the Elsasser fields through perpendicular gradients. The computational implementation employs a Hermite moment expansion of $g^\pm$, detailed in \S\ref{sec:hermite}.
+
+\subsection{Hermite Moment Expansion}
+\label{sec:hermite}
+
+GANDALF discretizes the perturbed distribution $g^\pm$ in velocity space using a Hermite polynomial expansion \citep{Grad1949,Hammett1990,Howes2006}, providing spectral accuracy in $\vpar$ with controllable convergence through moment truncation.
+
+\subsubsection{Expansion in Hermite Basis}
+
+We expand the perturbed distribution as
+\begin{equation}
+g^\pm(x,y,z,\vpar,t) = F_0(\vpar) \sum_{m=0}^{\infty} \gm{m}^{\pm}(x,y,z,t) \Hm{m}\left(\frac{\vpar}{\vth}\right),
+\label{eq:hermite_expansion}
+\end{equation}
+where $\Hm{m}$ are the Hermite polynomials (physicist's convention, $\Hm{0} = 1$, $\Hm{1} = 2x$, $\Hm{2} = 4x^2 - 2$) forming a complete orthogonal basis weighted by the Maxwellian $F_0$, and $\gm{m}^{\pm}$ are the Hermite moment coefficients encoding the velocity-space structure of the Elsasser perturbations.
+
+\subsubsection{Normalized Moment Hierarchy}
+
+In normalized coordinates ($x,y$ in units of $\rhoi$, $z$ in units of $\Lpar \gg \rhoi$, time in units of $\Lpar/\vA$), with velocities normalized to $\vth$ and potentials to $\rhoi\vA$, the moment hierarchy becomes:
+\begin{subequations}
+\label{eq:moment_hierarchy}
+\begin{align}
+\pardt \gm{0}^{\pm} + \pb{\Phifield}{\gm{0}^{\pm}} \mp \pardz \gm{0}^{\pm}
+&= \sqrt{2} \left[\pb{\Psifield}{\gm{1}^{\pm}} \mp \pardz \gm{1}^{\pm}\right],
+\label{eq:moment_m0}
+\\
+\pardt \gm{1}^{\pm} + \pb{\Phifield}{\gm{1}^{\pm}} \mp \pardz \gm{1}^{\pm}
+&= \frac{1}{\sqrt{2}} \left[\pb{\Psifield}{\gm{0}^{\pm}} \mp \pardz \gm{0}^{\pm}\right]
++ \sqrt{\frac{3}{2}} \left[\pb{\Psifield}{\gm{2}^{\pm}} \mp \pardz \gm{2}^{\pm}\right] - \coll \gm{1}^{\pm},
+\label{eq:moment_m1}
+\\
+\pardt \gm{m}^{\pm} + \pb{\Phifield}{\gm{m}^{\pm}} \mp \pardz \gm{m}^{\pm}
+&= \sqrt{\frac{m}{2}} \left[\pb{\Psifield}{\gm{m-1}^{\pm}} \mp \pardz \gm{m-1}^{\pm}\right] \notag \\
+&\quad + \sqrt{\frac{m+1}{2}} \left[\pb{\Psifield}{\gm{m+1}^{\pm}} \mp \pardz \gm{m+1}^{\pm}\right] - m\coll \gm{m}^{\pm}, \quad m \geq 2.
+\label{eq:moment_m_general}
+\end{align}
+\end{subequations}
+The advection terms $\pb{\Phifield}{\gm{m}^{\pm}}$ drive perpendicular nonlinear cascades, while the coupling between adjacent moments through coefficients $\sqrt{m/2}$ and $\sqrt{(m+1)/2}$ represents linear phase mixing. This phase mixing occurs because particles with different parallel velocities $\vpar$ stream at different rates along field lines, causing initially coherent perturbations to develop fine-scale velocity-space structure that transfers energy to higher moments.
+
+\subsubsection{Dissipation and Closure}
+
+Collisional damping enters through the Lenard-Bernstein operator \citep{LenardBernstein1958}
+\begin{equation}
+\Coll{\gm{m}} = -m\coll \gm{m},
+\label{eq:collision_operator}
+\end{equation}
+providing irreversible dissipation at small velocity scales with damping rate $m\coll$ that increases linearly with moment order. Practical simulations truncate the hierarchy at finite maximum moment order $\Mmax$ with closure condition $\gm{\Mmax+1}^{\pm} = 0$ (absorbing boundary) or $\gm{\Mmax+1}^{\pm} = \gm{\Mmax-1}^{\pm}$ (reflecting closure), balancing computational cost against accuracy requirements set by the physical problem.
+
+The ion beta $\betai$ enters these normalized equations through the coupling between $\Phifield$ and $\Psifield$ in the nonlinear terms, with the amplitude of magnetic perturbations ($\Psi$) relative to electric perturbations ($\Phi$) scaling as $\sqrt{\betai}$ in the low-$\beta$ regime.
+
+\subsection{System Properties}
+
+Linear analysis of Eqs.~\eqref{eq:elsasser}--\eqref{eq:kinetic} yields the \Alfven\ wave dispersion relation
+\begin{equation}
+\omega = \pm \kpar \vA
+\label{eq:alfven_dispersion}
+\end{equation}
+for the Elsasser fields. Compressive perturbations undergo phase mixing on timescales $\sim (\kpar \vth)^{-1}$, transferring energy to high velocity moments where collisional dissipation dominates. We refer to \citet{Schekochihin2009} for the complete linear theory including slow mode dispersion and damping rates.
+
+In the collisionless limit ($\coll = 0$), the system conserves total energy, with the \Alfvenic\ Elsasser energies and compressive energies defined separately. The conservation properties ensure numerical stability and provide diagnostics for turbulence simulations. We refer to \citet{Schekochihin2009} for explicit energy functionals and additional invariants including cross-helicity and generalized enstrophies.
