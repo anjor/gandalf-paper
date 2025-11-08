@@ -8,7 +8,7 @@ The key simplification of KRMHD lies in the decoupling of \Alfvenic\ and compres
 
 \subsection{Governing Equations}
 
-We employ Gaussian centimeter-gram-second (CGS) units throughout this section. KRMHD evolves two coupled systems: the Elsasser fields $\elsp$ and $\elsm$ representing counter-propagating \Alfven\ wave packets, and the kinetic distribution $g^\pm$ describing compressive fluctuations. The Elsasser fields satisfy
+We employ Gaussian centimeter-gram-second (CGS) units for the dimensional equations in this subsection. KRMHD evolves two coupled systems: the Elsasser fields $\xi^\pm$ (where $\xi^+ = \elsp$ and $\xi^- = \elsm$) representing counter-propagating \Alfven\ wave packets, and the kinetic distribution $g^\pm$ describing compressive fluctuations. The Elsasser fields satisfy
 \begin{equation}
 \pardt \nabla^2_\perp \xi^\pm \mp \vA \pardz \nabla^2_\perp \xi^\pm = -\frac{1}{2}\left[\pb{\elsp}{\nabla^2_\perp \elsm} + \pb{\elsm}{\nabla^2_\perp \elsp} \mp \nabla^2_\perp \pb{\elsp}{\elsm}\right],
 \label{eq:elsasser}
@@ -20,7 +20,7 @@ The compressive fluctuations evolve according to the kinetic equation
 \ddt g^\pm + \vpar \gradpar g^\pm = \frac{\vpar F_0(\vpar)}{\Lambda^\pm} \bhat \cdot \nabla \int d\vpar \, g^\pm,
 \label{eq:kinetic}
 \end{equation}
-where $g^\pm$ represent the perturbations to the ion distribution function in Elsasser-like variables (combining density, temperature, and parallel flow perturbations analogous to the Elsasser fields), and $F_0(\vpar) = \exp(-v^2_\parallel/\vth^2)/\sqrt{\pi}\vth$ denotes the one-dimensional Maxwellian background. The convective derivative $d/dt = \partial/\partial t + \pb{\Phifield}{\cdot}$ incorporates perpendicular advection by the $\mathbf{E} \times \mathbf{B}$ flow. The parallel gradient operator $\gradpar = \partial/\partial z + (1/\vA)\pb{\Psifield}{\cdot}$ acts along perturbed magnetic field lines, with the Poisson bracket term accounting for field line bending due to $\Psi$ perturbations. The coupling parameters $\Lambda^\pm = -\taue/\Zion + 1/\betai \pm \sqrt{(1+\taue/\Zion)^2 + 1/\betai^2}$ depend on the ion plasma beta $\betai = 8\pi n_{0i} T_i/\Bzero^2$, the temperature ratio $\taue = T_e/T_i$, and the ion charge state $\Zion$ \citep{Schekochihin2009}.
+where $g^\pm$ represent the perturbations to the ion distribution function in Elsasser-like variables (combining density, temperature, and parallel flow perturbations analogous to the Elsasser fields), $F_0(\vpar) = \exp(-v^2_\parallel/\vth^2)/\sqrt{\pi}\vth$ denotes the one-dimensional Maxwellian background, and the integral is over all parallel velocities $\vpar \in (-\infty, \infty)$. The convective derivative $d/dt = \partial/\partial t + \pb{\Phifield}{\cdot}$ incorporates perpendicular advection by the $\mathbf{E} \times \mathbf{B}$ flow. The parallel gradient operator $\gradpar = \partial/\partial z + (1/\vA)\pb{\Psifield}{\cdot}$ acts along perturbed magnetic field lines, with the Poisson bracket term accounting for field line bending due to $\Psi$ perturbations. The coupling parameters $\Lambda^\pm = -\taue/\Zion + 1/\betai \pm \sqrt{(1+\taue/\Zion)^2 + 1/\betai^2}$ depend on the ion plasma beta $\betai = 8\pi n_{0i} T_i/\Bzero^2$, the temperature ratio $\taue = T_e/T_i$, and the ion charge state $\Zion$ \citep{Schekochihin2009}.
 
 Equation~\eqref{eq:elsasser} describes counter-propagating \Alfven\ wave packets that interact nonlinearly through the Poisson bracket terms, driving turbulent energy transfer to small perpendicular scales. Equation~\eqref{eq:kinetic} governs the passive advection of compressive fluctuations, which undergo phase mixing through the $\vpar \gradpar$ streaming term while being swept along by the turbulent \Alfvenic\ flow. The right-hand side of Eq.~\eqref{eq:kinetic} represents the linear drive of compressive fluctuations by the Elsasser fields through perpendicular gradients. The computational implementation employs a Hermite moment expansion of $g^\pm$, detailed in \S\ref{sec:hermite}.
 
@@ -68,9 +68,9 @@ Collisional damping enters through the Lenard-Bernstein operator \citep{LenardBe
 \Coll{\gm{m}} = -m\coll \gm{m},
 \label{eq:collision_operator}
 \end{equation}
-providing irreversible dissipation at small velocity scales with damping rate $m\coll$ that increases linearly with moment order. Practical simulations truncate the hierarchy at finite $\Mmax$ with closure condition $\gm{\Mmax+1}^{\pm} = 0$ (absorbing boundary) or $\gm{\Mmax+1}^{\pm} = \gm{\Mmax-1}^{\pm}$ (reflecting closure), balancing computational cost against accuracy requirements set by the physical problem.
+providing irreversible dissipation at small velocity scales with damping rate $m\coll$ that increases linearly with moment order. Practical simulations truncate the hierarchy at finite maximum moment order $\Mmax$ with closure condition $\gm{\Mmax+1}^{\pm} = 0$ (absorbing boundary) or $\gm{\Mmax+1}^{\pm} = \gm{\Mmax-1}^{\pm}$ (reflecting closure), balancing computational cost against accuracy requirements set by the physical problem.
 
-The ion beta $\betai$ enters these normalized equations through the coupling between $\Phifield$ and $\Psifield$ in the nonlinear terms, with the relative amplitude of magnetic perturbations scaling as $\sqrt{\betai}$ in the low-$\beta$ regime.
+The ion beta $\betai$ enters these normalized equations through the coupling between $\Phifield$ and $\Psifield$ in the nonlinear terms, with the amplitude of magnetic perturbations ($\Psi$) relative to electric perturbations ($\Phi$) scaling as $\sqrt{\betai}$ in the low-$\beta$ regime.
 
 \subsection{System Properties}
 
