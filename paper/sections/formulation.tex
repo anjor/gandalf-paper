@@ -2,25 +2,25 @@
 
 \subsection{The KRMHD Regime}
 
-Kinetic Reduced MHD (KRMHD) describes low-frequency electromagnetic fluctuations in strongly magnetized plasmas where a guide field $\Bzero = \Bzero \hat{z}$ orders the dynamics. The model captures physics at scales much larger than the ion Larmor radius ($\kperp \rhoi \ll 1$) with parallel wavelengths exceeding perpendicular scales ($\kpar \ll \kperp$). KRMHD emerges from gyrokinetics in the long-wavelength limit through systematic expansion in small $\kperp \rhoi$ \citep{Schekochihin2009}, retaining the essential physics of \Alfvenic\ turbulence while incorporating kinetic effects through Landau damping and phase mixing.
+Kinetic Reduced MHD (KRMHD) describes low-frequency electromagnetic fluctuations in strongly magnetized plasmas where a strong guide field $\mathbf{B}_0 = \Bzero \hat{z}$ of strength $\Bzero$ orders the dynamics. The model captures physics at scales much larger than the ion Larmor radius ($\kperp \rhoi \ll 1$) with parallel wavelengths exceeding perpendicular scales ($\kpar \ll \kperp$). KRMHD emerges from gyrokinetics in the long-wavelength limit through systematic expansion in small $\kperp \rhoi$ \citep{Schekochihin2009}, retaining the essential physics of \Alfvenic\ turbulence while incorporating kinetic effects through Landau damping and phase mixing.
 
 The key simplification of KRMHD lies in the decoupling of \Alfvenic\ and compressive fluctuations at leading order in $\kperp\rhoi$. The \Alfvenic\ component, described by the electrostatic and magnetic potentials, determines the turbulent dynamics through nonlinear interactions that drive energy cascade. The compressive component becomes a passive kinetic scalar advected by the \Alfvenic\ turbulence, undergoing linear phase mixing along magnetic field lines. This separation permits efficient numerical treatment while preserving the critical physics of both anisotropic cascade and kinetic dissipation.
 
 \subsection{Governing Equations}
 
-KRMHD evolves two coupled systems: the Elsasser fields $\elsp$ and $\elsm$ representing counter-propagating \Alfven wave packets, and the kinetic distribution $g^\pm$ describing compressive fluctuations. The Elsasser fields satisfy
+We employ Gaussian CGS units throughout this section. KRMHD evolves two coupled systems: the Elsasser fields $\elsp$ and $\elsm$ representing counter-propagating \Alfven\ wave packets, and the kinetic distribution $g^\pm$ describing compressive fluctuations. The Elsasser fields satisfy
 \begin{equation}
 \pardt \nabla^2_\perp \xi^\pm \mp \vA \pardz \nabla^2_\perp \xi^\pm = -\frac{1}{2}\left[\pb{\elsp}{\nabla^2_\perp \elsm} + \pb{\elsm}{\nabla^2_\perp \elsp} \mp \nabla^2_\perp \pb{\elsp}{\elsm}\right],
 \label{eq:elsasser}
 \end{equation}
-where $\xi^\pm = \Phifield \pm \Psifield$ combine the stream function $\Phifield = c\phi/\Bzero$ (from the electrostatic potential) and flux function $\Psifield = -A_\parallel/\sqrt{4\pi m_i n_{0i}}$ (from the parallel magnetic vector potential). The \Alfven\ velocity $\vA = \Bzero/\sqrt{4\pi m_i n_{0i}}$ sets the linear wave propagation speed, while the Poisson bracket $\pb{P}{Q} = \partial P/\partial x \, \partial Q/\partial y - \partial P/\partial y \, \partial Q/\partial x$ generates the nonlinear interactions responsible for perpendicular cascade.
+where $\xi^\pm = \Phifield \pm \Psifield$ combine the stream function $\Phifield = c\phi/\Bzero$ (from the electrostatic potential $\phi$) and flux function $\Psifield = -A_\parallel/\sqrt{4\pi m_i n_{0i}}$ (from the parallel component of the magnetic vector potential $A_\parallel$). Here $c$ is the speed of light, $m_i$ the ion mass, and $n_{0i}$ the background ion density. The \Alfven\ velocity $\vA = \Bzero/\sqrt{4\pi m_i n_{0i}}$ sets the linear wave propagation speed. The perpendicular Laplacian $\nabla^2_\perp = \partial^2/\partial x^2 + \partial^2/\partial y^2$ and Poisson bracket $\pb{P}{Q} = \partial P/\partial x \, \partial Q/\partial y - \partial P/\partial y \, \partial Q/\partial x$ generate the nonlinear interactions responsible for perpendicular cascade.
 
 The compressive fluctuations evolve according to the kinetic equation
 \begin{equation}
 \ddt g^\pm + \vpar \gradpar g^\pm = \frac{\vpar F_0(\vpar)}{\Lambda^\pm} \bhat \cdot \nabla \int d\vpar \, g^\pm,
 \label{eq:kinetic}
 \end{equation}
-where $g^\pm$ represent Elsasser-like kinetic variables, $F_0(\vpar) = \exp(-v^2_\parallel/\vth^2)/\sqrt{\pi}\vth$ denotes the one-dimensional Maxwellian background, and the convective derivative $d/dt = \partial/\partial t + \pb{\Phifield}{\cdot}$ incorporates perpendicular advection by the $\mathbf{E} \times \mathbf{B}$ flow. The parallel gradient operator $\gradpar = \partial/\partial z + (1/\vA)\pb{\Psifield}{\cdot}$ includes magnetic field line bending, while the coupling parameters $\Lambda^\pm = -\taue/\Zion + 1/\betai \pm \sqrt{(1+\taue/\Zion)^2 + 1/\betai^2}$ depend on the ion plasma beta $\betai = 8\pi n_i T_i/\Bzero^2$, the temperature ratio $\taue = T_e/T_i$, and the ion charge state $\Zion$ \citep{Schekochihin2009}.
+where $g^\pm$ represent the perturbations to the ion distribution function in Elsasser-like variables (combining density, temperature, and parallel flow perturbations analogous to the Elsasser fields), and $F_0(\vpar) = \exp(-v^2_\parallel/\vth^2)/\sqrt{\pi}\vth$ denotes the one-dimensional Maxwellian background. The convective derivative $d/dt = \partial/\partial t + \pb{\Phifield}{\cdot}$ incorporates perpendicular advection by the $\mathbf{E} \times \mathbf{B}$ flow. The parallel gradient operator $\gradpar = \partial/\partial z + (1/\vA)\pb{\Psifield}{\cdot}$ acts along perturbed magnetic field lines, with the Poisson bracket term accounting for field line bending due to $\Psi$ perturbations. The coupling parameters $\Lambda^\pm = -\taue/\Zion + 1/\betai \pm \sqrt{(1+\taue/\Zion)^2 + 1/\betai^2}$ depend on the ion plasma beta $\betai = 8\pi n_i T_i/\Bzero^2$, the temperature ratio $\taue = T_e/T_i$, and the ion charge state $\Zion$ \citep{Schekochihin2009}.
 
 Equation~\eqref{eq:elsasser} describes counter-propagating \Alfven\ wave packets that interact nonlinearly through the Poisson bracket terms, driving turbulent energy transfer to small perpendicular scales. Equation~\eqref{eq:kinetic} governs the passive advection of compressive fluctuations, which undergo phase mixing through the $\vpar \gradpar$ streaming term while being swept along by the turbulent \Alfvenic\ flow. The computational implementation employs a Hermite moment expansion of $g^\pm$, detailed in \S\ref{sec:hermite}.
 
@@ -40,7 +40,7 @@ where $\Hm{m}$ are the Hermite polynomials forming a complete orthogonal basis w
 
 \subsubsection{Normalized Moment Hierarchy}
 
-In normalized coordinates ($x,y$ in units of $\rhoi$, $z$ in units of $\Lpar \gg \rhoi$, time in units of $\Lpar/\vA$), the moment hierarchy becomes:
+In normalized coordinates ($x,y$ in units of $\rhoi$, $z$ in units of $\Lpar \gg \rhoi$, time in units of $\Lpar/\vA$), with velocities normalized to $\vth$ and potentials to $\rhoi\vA$, the moment hierarchy becomes:
 \begin{subequations}
 \label{eq:moment_hierarchy}
 \begin{align}
