@@ -26,7 +26,7 @@ yielding zero truncation error for band-limited functions. The perpendicular Lap
 \end{equation}
 The Poisson bracket $\pb{P}{Q} = \partial_x P \partial_y Q - \partial_y P \partial_x Q$ is evaluated using the pseudospectral method: transform $P$ and $Q$ to real space, compute derivatives and products in real space ($\partial_x P \partial_y Q - \partial_y P \partial_x Q$), then transform the result back to Fourier space. This approach avoids explicit convolution sums while introducing aliasing errors that must be controlled through dealiasing (\S\ref{sec:dealiasing}).
 
-For typical turbulence simulations with resolution $128^3$ to $256^3$, the spectral method resolves maximum wavenumbers (after 2/3 dealiasing) up to $k_{\perp,\text{max}} \rhoi \sim 1$, capturing the transition from fluid-like MHD scales to kinetic-scale dynamics where ion Larmor radius effects become important \citep{Howes2008,TenBarge2013}. KRMHD turbulence cascades typically span 2--3 decades in $\kperp$, making spectral methods particularly advantageous: exponential convergence allows accurate representation of the entire inertial range with modest grid resolution, whereas finite-difference methods would require prohibitively fine grids to achieve comparable accuracy across the full cascade.
+For typical turbulence simulations with resolution $128^3$ to $256^3$, the spectral method resolves maximum wavenumbers (after 2/3 dealiasing) up to $k_{\perp,\text{max}} \rhoi \sim 1$, capturing the transition from fluid-like MHD scales to kinetic-scale dynamics where ion Larmor radius effects become important \citep{Howes2008,TenBarge2013}. KRMHD turbulence cascades typically span 2--3 decades in $\kperp$ \citep{Schekochihin2009}, making spectral methods particularly advantageous: exponential convergence allows accurate representation of the entire inertial range with modest grid resolution, whereas finite-difference methods would require prohibitively fine grids to achieve comparable accuracy across the full cascade.
 
 \subsection{GANDALF Integrating Factor Method}
 
@@ -181,11 +181,11 @@ We summarize the complete GANDALF algorithm for a single time step:
 \STATE \textbf{Input:} Fourier state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at $t_n$
 \STATE Compute CFL time step: $\Delta t = 0.3 \min(\Delta x,\Delta y)/|\mathbf{v}_\perp|_\text{max}$ (perpendicular advection)
 \STATE \textbf{Half-step:}
-\STATE \quad Evaluate nonlinear terms $\mathcal{N}_n$, $\Herm_{m,n}$ in real space
+\STATE \quad Evaluate nonlinear terms $\mathcal{N}_n$, $\Herm^{\pm}_{m,n}$ in real space
 \STATE \quad Transform to Fourier space and apply 2/3 dealiasing mask
 \STATE \quad Advance with integrating factors (Elsasser) and RK2 (Hermite): $\to$ state $_{n+1/2}$
 \STATE \textbf{Midpoint:}
-\STATE \quad Evaluate nonlinear terms $\mathcal{N}_{n+1/2}$, $\Herm_{m,n+1/2}$
+\STATE \quad Evaluate nonlinear terms $\mathcal{N}_{n+1/2}$, $\Herm^{\pm}_{m,n+1/2}$
 \STATE \quad Transform to Fourier space and apply 2/3 dealiasing mask
 \STATE \textbf{Full step:}
 \STATE \quad Advance with integrating factors (Elsasser) and RK2 (Hermite): $\to$ state $_{n+1}$
