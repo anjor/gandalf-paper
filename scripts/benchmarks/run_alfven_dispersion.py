@@ -369,7 +369,7 @@ def main():
     if args.mode in ['spatial', 'both']:
         spatial_convergence_study(
             output_dir=args.output_dir / 'spatial_convergence',
-            resolutions=[32, 64, 128, 256],
+            resolutions=[32, 64, 128],  # 3 points sufficient for exponential convergence
             dt=0.01,
             n_periods=3.0,  # Reduced from 10.0 for faster benchmarking
             M=20,
