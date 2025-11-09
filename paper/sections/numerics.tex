@@ -159,7 +159,7 @@ Key implementation features include:
 
 \paragraph{Pytree Structures.} GANDALF defines custom \texttt{KRMHDState} and \texttt{SpectralGrid} classes registered as JAX pytrees, allowing transformations (\texttt{jax.grad}, \texttt{jax.vmap}, \texttt{jax.scan}) to operate on physics-meaningful objects while maintaining efficient compilation.
 
-Typical performance on a $256^3$ grid with $M=16$ Hermite moments achieves $\sim 0.5$ seconds per time step on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations of scientific computing applications typically achieve 70--90\% of hand-optimized Fortran/C++ performance \citep{Bauer2023}, which we observe for GANDALF as well, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
+Typical performance on a $256^3$ grid with $M=16$ Hermite moments achieves $\sim 0.5$ seconds per time step on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations of scientific computing applications typically achieve 70--90\% of hand-optimized Fortran/C++ performance \citep{Bauer2021}, which we observe for GANDALF as well, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
 
 \subsection{Algorithm Summary}
 
