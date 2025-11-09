@@ -90,10 +90,10 @@ Here $\mathcal{H}^{\pm}_m$ denotes the right-hand side of the Hermite moment hie
 
 The integrating factor removes the \Alfven\ wave CFL \emph{stability} restriction, but accuracy considerations for the second-order nonlinear integration still require time steps that resolve wave propagation timescales. GANDALF computes adaptive time steps satisfying
 \begin{equation}
-\Delta t \leq C \frac{\min(\Delta x, \Delta y, \Delta z)}{\max(v_A, |\mathbf{v}_\perp|_\text{max})},
+\Delta t \leq C \frac{\min(\Delta x, \Delta y, \Delta z)}{\max(\vA, |\mathbf{v}_\perp|_\text{max})},
 \label{eq:cfl_condition}
 \end{equation}
-where $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity and the safety factor $C = 0.3$ accounts for the second-order method. Although the integrating factor permits arbitrarily large time steps without instability, maintaining $\Delta t \sim \Delta z/v_A$ ensures the RK2 scheme accurately captures nonlinear couplings between counter-propagating wave packets.
+where $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity and the safety factor $C = 0.3$ accounts for the second-order method. Although the integrating factor permits arbitrarily large time steps without instability, maintaining $\Delta t \sim \Delta z/\vA$ ensures the RK2 scheme accurately captures nonlinear couplings between counter-propagating wave packets.
 
 For the linear wave propagation handled by the integrating factor, the method achieves \emph{exact} integration regardless of $\Delta t$---numerical errors arise solely from the second-order treatment of nonlinear terms.
 
@@ -112,14 +112,14 @@ in Fourier space. To enhance stability at high wavenumbers while minimizing diss
 \hat{z}^\pm_{n+1} \to \hat{z}^\pm_{n+1} \exp\left[-\eta \left(\frac{\kperp^2}{k^2_{\perp,\text{max}}}\right)^r \Delta t\right],
 \label{eq:hyper_resistivity}
 \end{equation}
-where $k^2_{\perp,\text{max}} = \max(k_x^2 + k_y^2)$ and the hyper-dissipation order $r \geq 1$ concentrates damping near the grid scale. Standard choices are $r=2$ (hyper-resistivity) or $r=4$ (ultra-hyper-resistivity). Normalization by $k^2_{\perp,\text{max}}$ ensures the overflow constraint $\eta\Delta t < 50$ remains independent of resolution, simplifying parameter selection across different grid sizes.
+where $k^2_{\perp,\text{max}} = \max(k_x^2 + k_y^2)$ and the hyper-dissipation order $r \geq 1$ concentrates damping near the grid scale. Standard choices are $r=2$ (hyper-resistivity) or $r=4$ (ultra-hyper-resistivity). Normalization by $k^2_{\perp,\text{max}}$ ensures the stability constraint $\eta\Delta t < 50$ remains independent of resolution, simplifying parameter selection across different grid sizes.
 
 Hermite moment collisions follow the Lenard-Bernstein form Eq.~\eqref{eq:collision_operator} with damping rate $m\coll$ for moment order $m$. GANDALF implements this as
 \begin{equation}
-\hat{g}^{\pm}_{m,n+1} \to \hat{g}^{\pm}_{m,n+1} \exp\left[-\coll \left(\frac{m}{M}\right)^{2p} \Delta t\right],
+\hat{g}^{\pm}_{m,n+1} \to \hat{g}^{\pm}_{m,n+1} \exp\left[-\coll \left(\frac{m}{\Mmax}\right)^{2p} \Delta t\right],
 \label{eq:hermite_dissipation}
 \end{equation}
-where $M$ is the maximum moment order and hyper-collision exponent $p \geq 1$ concentrates dissipation at high moments. Standard values are $p=1$ (linear Lenard-Bernstein) or $p=2$ (hyper-collisions). This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms.
+where $\Mmax$ is the maximum moment order and hyper-collision exponent $p \geq 1$ concentrates dissipation at high moments. Standard values are $p=1$ (linear Lenard-Bernstein) or $p=2$ (hyper-collisions). This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms.
 
 \subsection{Dealiasing}
 \label{sec:dealiasing}
@@ -141,7 +141,7 @@ The spectral spatial discretization delivers exponential convergence for smooth 
 
 Temporal convergence follows the second-order Runge-Kutta scheme for nonlinear terms: $\mathcal{E}_\text{time} = O(\Delta t^2)$. The integrating factor treatment of linear propagation contributes \emph{zero} temporal error regardless of time step size, though the overall accuracy remains limited by the $O(\Delta t^2)$ nonlinear integration. Richardson extrapolation or adaptive time stepping can further reduce temporal errors when high accuracy is required, though turbulence simulations typically tolerate $1$--$2\%$ errors to maximize throughput.
 
-The Hermite moment expansion exhibits spectral convergence in velocity space. For Maxwellian-like distributions, the energy contained in moments $m > M$ decays exponentially with $M$, permitting accurate representation with $M \sim 10$--$20$ moments \citep{Howes2006,TenBarge2013}. GANDALF monitors convergence via the energy ratio $E_M/E_\text{total}$ (energy in the highest retained moment relative to total energy), typically requiring this to fall below $10^{-3}$ to ensure negligible truncation errors from the $\gm{M+1}^{\pm} = 0$ closure condition.
+The Hermite moment expansion exhibits spectral convergence in velocity space. For Maxwellian-like distributions, the energy contained in moments $m > \Mmax$ decays exponentially with $\Mmax$, permitting accurate representation with $\Mmax \sim 10$--$20$ moments \citep{Howes2006,TenBarge2013}. GANDALF monitors convergence via the energy ratio $E_{\Mmax}/E_\text{total}$ (energy in the highest retained moment relative to total energy), typically requiring this to fall below $10^{-3}$ to ensure negligible truncation errors from the $\gm{\Mmax+1}^{\pm} = 0$ closure condition.
 
 Combined spatial-temporal-velocity convergence studies for standard benchmarks (Orszag-Tang vortex, decaying turbulence) demonstrate GANDALF achieves design accuracy: spectral spatial convergence, second-order temporal convergence, and exponential velocity-space convergence controlled by moment truncation. Energy conservation errors in collisionless runs remain below $0.01\%$ over hundreds of dynamical times, validating both the discretization and the energy-conserving properties of the GANDALF formulation \citep{Numata2010}.
 
@@ -182,7 +182,7 @@ We summarize the complete GANDALF algorithm for a single time step:
 \STATE \quad Advance with integrating factors (Elsasser) and RK2 (Hermite): $\to$ state $_{n+1}$
 \STATE \textbf{Dissipation:}
 \STATE \quad Apply $\hat{z}^\pm_{n+1} \to \hat{z}^\pm_{n+1} \exp(-\eta(\kperp^2/k^2_{\perp,\text{max}})^r \Delta t)$
-\STATE \quad Apply $\hat{g}^{\pm}_{m,n+1} \to \hat{g}^{\pm}_{m,n+1} \exp(-\coll(m/M)^{2p} \Delta t)$
+\STATE \quad Apply $\hat{g}^{\pm}_{m,n+1} \to \hat{g}^{\pm}_{m,n+1} \exp(-\coll(m/\Mmax)^{2p} \Delta t)$
 \STATE \textbf{Output:} Updated Fourier state $(\hat{z}^+_{n+1}, \hat{z}^-_{n+1}, \{\hat{g}^{\pm}_{m,n+1}\})$ at $t_{n+1}$
 \end{algorithmic}
 \end{algorithm}
