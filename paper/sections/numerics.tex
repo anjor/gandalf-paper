@@ -95,7 +95,7 @@ The integrating factor removes the \Alfven\ wave CFL \emph{stability} restrictio
 \end{equation}
 where $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity and the safety factor $C = 0.3$ accounts for the second-order method. Although the integrating factor permits arbitrarily large time steps without instability, maintaining $\Delta t \sim \Delta z/\vA$ ensures the RK2 scheme accurately captures nonlinear couplings between counter-propagating wave packets.
 
-For the linear wave propagation handled by the integrating factor, the method achieves \emph{exact} integration regardless of $\Delta t$---numerical errors arise solely from the second-order treatment of nonlinear terms.
+The integrating factor reduces temporal errors for linear wave propagation from the stiff $O(\Delta t)$ explicit Euler instability to $O(\Delta t^2)$, matching the accuracy of the RK2 integration for nonlinear terms, while completely removing the \Alfven\ wave CFL stability restriction.
 
 \subsection{Dissipation}
 \label{sec:dissipation}
@@ -139,7 +139,7 @@ The dealiasing mask is pre-computed during initialization and applied via pointw
 
 The spectral spatial discretization delivers exponential convergence for smooth solutions. For fields with $C^\infty$ regularity, spatial errors decay as $\mathcal{E}_\text{space} \sim \exp(-\alpha N)$ where $N = \min(N_x, N_y, N_z)$ characterizes the minimum grid resolution and $\alpha$ depends on the solution's analyticity radius \citep{Boyd2001}. This stands in contrast to finite-difference methods whose algebraic convergence ($\mathcal{E} \sim N^{-p}$) requires prohibitive resolution to achieve comparable accuracy for turbulent cascades spanning multiple decades in wavenumber.
 
-Temporal convergence follows the second-order Runge-Kutta scheme for nonlinear terms: $\mathcal{E}_\text{time} = O(\Delta t^2)$. The integrating factor treatment of linear propagation contributes \emph{zero} temporal error regardless of time step size, though the overall accuracy remains limited by the $O(\Delta t^2)$ nonlinear integration. Richardson extrapolation or adaptive time stepping can further reduce temporal errors when high accuracy is required, though turbulence simulations typically tolerate $1$--$2\%$ errors to maximize throughput.
+Temporal convergence is $\mathcal{E}_\text{time} = O(\Delta t^2)$ for both linear and nonlinear terms. The GANDALF integrating factor scheme achieves second-order accuracy by matching the RK2 treatment of nonlinear terms with an appropriately constructed integrating factor for linear \Alfven\ wave propagation. Richardson extrapolation or adaptive time stepping can further reduce temporal errors when high accuracy is required, though turbulence simulations typically tolerate $1$--$2\%$ errors to maximize throughput.
 
 The Hermite moment expansion exhibits spectral convergence in velocity space. For Maxwellian-like distributions, the energy contained in moments $m > \Mmax$ decays exponentially with $\Mmax$, permitting accurate representation with $\Mmax \sim 10$--$20$ moments \citep{Howes2006,TenBarge2013}. GANDALF monitors convergence via the energy ratio $E_{\Mmax}/E_\text{total}$ (energy in the highest retained moment relative to total energy), typically requiring this to fall below $10^{-3}$ to ensure negligible truncation errors from the $\gm{\Mmax+1}^{\pm} = 0$ closure condition.
 
@@ -170,7 +170,7 @@ We summarize the complete GANDALF algorithm for a single time step:
 \label{alg:gandalf_complete}
 \begin{algorithmic}[1]
 \STATE \textbf{Input:} Fourier state $(\hat{z}^+_n, \hat{z}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at $t_n$
-\STATE Compute CFL time step: $\Delta t = 0.3 \min(\Delta x,\Delta y,\Delta z)/\max(v_A,|\mathbf{v}_\perp|_\text{max})$
+\STATE Compute CFL time step: $\Delta t = 0.3 \min(\Delta x,\Delta y,\Delta z)/\max(\vA,|\mathbf{v}_\perp|_\text{max})$
 \STATE \textbf{Half-step:}
 \STATE \quad Evaluate nonlinear terms $\mathcal{N}_n$, $\mathcal{H}_{m,n}$ in real space
 \STATE \quad Transform to Fourier space and apply 2/3 dealiasing mask
