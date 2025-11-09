@@ -72,7 +72,7 @@ where the phase factors $\exp(\pm ik_z\vA\Delta t/2)$ appear \emph{twice}: once 
 \hat{w}^+_{n+1/2} &= e^{+ik_z\vA\Delta t/2}\left(\hat{w}^+_n + e^{+ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^+}\right), \\
 \hat{w}^-_{n+1/2} &= e^{-ik_z\vA\Delta t/2}\left(\hat{w}^-_n + e^{-ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^-}\right)
 \end{align*}
-\STATE Hermite moments (no integrating factor):
+\STATE Hermite moments (no integrating factor, RHS from Eq.~\eqref{eq:moment_hierarchy}):
 \[
 \hat{g}^{\pm}_{m,n+1/2} = \hat{g}^{\pm}_{m,n} + \frac{\Delta t}{2} \widehat{\Herm^{\pm}_{m,n}}
 \]
@@ -101,7 +101,7 @@ The integrating factor removes the parallel \Alfven\ wave CFL restriction ($\Del
 \Delta t \leq C \frac{\min(\Delta x, \Delta y, \Delta z)}{\max(\vA, |\mathbf{v}_\perp|_\text{max})},
 \label{eq:cfl_condition}
 \end{equation}
-where all lengths are in physical units, $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity, and the safety factor $C = 0.3$ accounts for the second-order method. For typical anisotropic turbulence simulations where $\Delta z \gg \Delta x \approx \Delta y$ (physically), the minimum automatically selects the perpendicular grid spacing. Similarly, when perpendicular velocities dominate ($|\mathbf{v}_\perp|_\text{max} \gg \vA$ in the nonlinear regime), the formula reduces to the perpendicular advection CFL: $\Delta t \approx C \min(\Delta x, \Delta y)/|\mathbf{v}_\perp|_\text{max}$, with the parallel Alfvén constraint removed by the integrating factor. Critically, this means $\Delta z$ can be \emph{arbitrarily large} without stability issues---a key computational advantage enabling anisotropic grids for turbulence simulations.
+where all lengths are in physical units, $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity, and the safety factor $C = 0.3$ accounts for the second-order method. For typical anisotropic turbulence simulations where $\Delta z \gg \Delta x \approx \Delta y$ (physically), the minimum automatically selects the perpendicular grid spacing. Similarly, when perpendicular velocities dominate ($|\mathbf{v}_\perp|_\text{max} \gg \vA$ in the nonlinear regime), the formula reduces to the perpendicular advection CFL: $\Delta t \approx C \min(\Delta x, \Delta y)/|\mathbf{v}_\perp|_\text{max}$, with the parallel Alfvén constraint removed by the integrating factor. Critically, this means $\Delta z$ can be \emph{arbitrarily large} without stability or accuracy issues (since linear Alfvén wave propagation is treated exactly)---a key computational advantage enabling anisotropic grids for turbulence simulations.
 
 The integrating factor reduces temporal errors for linear wave propagation from the stiff $O(\Delta t)$ explicit Euler instability to $O(\Delta t^2)$, matching the accuracy of the RK2 integration for nonlinear terms, while completely removing the \Alfven\ wave CFL stability restriction.
 
@@ -127,7 +127,7 @@ Hermite moment collisions follow the Lenard-Bernstein form described in the form
 \hat{g}^{\pm}_{m,n+1} \to \hat{g}^{\pm}_{m,n+1} \exp\left[-\coll \left(\frac{m}{\Mmax}\right)^{2p} \Delta t\right],
 \label{eq:hermite_dissipation}
 \end{equation}
-where $\Mmax$ is the moment truncation order (typically 10-20, fixed at initialization) and hyper-collision exponent $p \geq 1$ concentrates dissipation at high moments. This normalization parallels the spatial treatment: $\Mmax$ plays the same role for velocity space as $k_{\perp,\text{max}}$ does for real space, ensuring resolution-independent stability constraints. Standard values are $p=1$ (linear Lenard-Bernstein) or $p=2$ (hyper-collisions). This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms. In practice, stability requires $\eta \Delta t < 50$ for hyper-resistivity and $\coll \Delta t < 10$ for hyper-collisions (empirically determined for typical KRMHD turbulence parameters), constraints that remain independent of grid resolution due to the normalization scheme.
+where $\Mmax$ is the moment truncation order (typically 10-20, fixed at initialization) and hyper-collision exponent $p \geq 1/2$ concentrates dissipation at high moments. This normalization parallels the spatial treatment: $\Mmax$ plays the same role for velocity space as $k_{\perp,\text{max}}$ does for real space, ensuring resolution-independent stability constraints. Setting $p=1/2$ recovers the physical Lenard-Bernstein operator from Eq.~\eqref{eq:collision_operator}, while $p=1$ or $p=2$ (hyper-collisions) concentrate dissipation at high moments for enhanced numerical stability with minimal effect on low-order dynamics. This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms. In practice, stability requires $\eta \Delta t < 50$ for hyper-resistivity and $\coll \Delta t < 10$ for hyper-collisions (empirically determined for typical KRMHD turbulence parameters), constraints that remain independent of grid resolution due to the normalization scheme.
 
 \subsection{Dealiasing}
 \label{sec:dealiasing}
