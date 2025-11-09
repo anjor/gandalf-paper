@@ -101,7 +101,7 @@ The integrating factor removes the parallel \Alfven\ wave CFL restriction ($\Del
 \Delta t \leq C \frac{\min(\Delta x, \Delta y, \Delta z)}{\max(\vA, |\mathbf{v}_\perp|_\text{max})},
 \label{eq:cfl_condition}
 \end{equation}
-where all lengths are in physical units, $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity, and the safety factor $C = 0.3$ accounts for the second-order method. For typical anisotropic turbulence simulations where $\Delta z \gg \Delta x \approx \Delta y$ (physically), the minimum automatically selects the perpendicular grid spacing. Similarly, when perpendicular velocities dominate ($|\mathbf{v}_\perp|_\text{max} \gg \vA$ in the nonlinear regime), the formula reduces to the perpendicular advection CFL: $\Delta t \approx C \min(\Delta x, \Delta y)/|\mathbf{v}_\perp|_\text{max}$, with the parallel Alfvén constraint removed by the integrating factor. Critically, this means $\Delta z$ can be \emph{arbitrarily large} without stability or accuracy issues (since linear Alfvén wave propagation is treated exactly)---a key computational advantage enabling anisotropic grids for turbulence simulations.
+where all lengths are in physical units, $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity, and the safety factor $C = 0.3$ accounts for the second-order method. While $\Delta z$ formally appears in the minimum, it effectively drops out for anisotropic turbulence: the integrating factor removes the parallel Alfvén stability constraint (which would otherwise require $\Delta t < \Delta z/\vA$), and for typical simulations where $\Delta z \gg \Delta x \approx \Delta y$ (physically), the minimum automatically selects the perpendicular grid spacing. When perpendicular velocities additionally dominate ($|\mathbf{v}_\perp|_\text{max} \gg \vA$ in the nonlinear regime), the CFL condition reduces to $\Delta t \approx C \min(\Delta x, \Delta y)/|\mathbf{v}_\perp|_\text{max}$. Consequently, $\Delta z$ can be \emph{arbitrarily large} without affecting stability or accuracy---the timestep is determined entirely by perpendicular advection, a key computational advantage enabling anisotropic grids for turbulence simulations.
 
 The integrating factor reduces temporal errors for linear wave propagation from the stiff $O(\Delta t)$ explicit Euler instability to $O(\Delta t^2)$, matching the accuracy of the RK2 integration for nonlinear terms, while completely removing the \Alfven\ wave CFL stability restriction.
 
@@ -159,7 +159,7 @@ GANDALF implements the above algorithms in JAX \citep{JAX2018}, a Python library
 
 Key implementation features include:
 
-\paragraph{JIT Compilation.} All core functions (time stepping, FFTs, nonlinear terms) are decorated with \texttt{@jax.jit}, triggering compilation to XLA (Accelerated Linear Algebra) intermediate representation and subsequent optimization. Static arguments (grid dimensions, moment orders) are compile-time constants, permitting aggressive loop unrolling and specialization.
+\paragraph{JIT Compilation.} All core functions (time stepping, FFTs, nonlinear terms) are decorated with \texttt{@jax.jit}, triggering compilation via XLA (Accelerated Linear Algebra), an optimizing compiler that translates high-level array operations to hardware-specific machine code. Static arguments (grid dimensions, moment orders) are compile-time constants, permitting aggressive loop unrolling and specialization.
 
 \paragraph{Hardware Portability.} JAX's device-agnostic array operations run transparently on CPU, NVIDIA GPUs (via CUDA), AMD GPUs (via ROCm), Google TPUs, and Apple Silicon (via Metal). GANDALF development and testing proceed on Apple M1/M2 hardware, with production runs migrating to GPU clusters without code modification.
 
@@ -167,7 +167,7 @@ Key implementation features include:
 
 \paragraph{Pytree Structures.} GANDALF defines custom \texttt{KRMHDState} and \texttt{SpectralGrid} classes registered as JAX pytrees (nested container structures that JAX transformations can traverse), allowing transformations (\texttt{jax.grad}, \texttt{jax.vmap}, \texttt{jax.scan}) to operate on physics-meaningful objects while maintaining efficient compilation.
 
-Typical performance on a $256^3$ grid with $M=16$ Hermite moments achieves $\sim 0.5$ seconds per time step on an NVIDIA A100 GPU (based on preliminary benchmarks), enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations can achieve performance competitive with compiled languages for scientific computing applications \citep{Bauer2021}, which we observe for GANDALF, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
+Initial benchmarks on a $256^3$ grid with $M=16$ Hermite moments achieve sub-second time steps on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations can achieve performance competitive with compiled languages for scientific computing applications \citep{Bauer2021}, which we observe for GANDALF, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
 
 \subsection{Algorithm Summary}
 
