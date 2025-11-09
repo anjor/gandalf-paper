@@ -33,7 +33,7 @@ For typical turbulence simulations with resolution $128^3$ to $256^3$, the spect
 
 \subsection{GANDALF Integrating Factor Method}
 
-Direct time integration of the KRMHD equations encounters severe stiffness from the linear \Alfven\ wave terms $\mp \vA \partial/\partial z$ in Eq.~\eqref{eq:elsasser}, which propagate at the fast \Alfven\ velocity $\vA$ and impose restrictive CFL conditions. GANDALF removes this stiffness through an integrating factor transformation that treats linear propagation exactly while advancing nonlinear interactions with a second-order Runge-Kutta scheme.
+Direct time integration of the KRMHD equations encounters severe stiffness from the linear \Alfven\ wave terms $\mp \vA \partial/\partial z$ in Eq.~\eqref{eq:elsasser}, which propagate at the fast \Alfven\ velocity $\vA$ and impose restrictive CFL conditions. GANDALF removes this stiffness through an integrating factor transformation \citep{Numata2010} that treats linear propagation exactly while advancing nonlinear interactions with a second-order Runge-Kutta scheme.
 
 \subsubsection{Integrating Factor Transformation}
 
@@ -51,15 +51,15 @@ This transformation exactly removes the oscillatory linear terms, permitting tim
 
 \subsubsection{Second-Order Time Stepping}
 
-GANDALF advances the transformed variables using a midpoint (second-order Runge-Kutta) scheme. Integrating Eq.~\eqref{eq:integrating_factor_form} from $t_n$ to $t_{n+1/2}$ with constant right-hand side (the forward Euler approximation for the predictor step) gives
+GANDALF advances the transformed variables using a midpoint (second-order Runge-Kutta) scheme following the method of \citet{Numata2010}. Integrating Eq.~\eqref{eq:integrating_factor_form} from $t_n$ to $t_{n+1/2}$ gives
 \begin{equation}
 e^{\mp i k_z \vA t_{n+1/2}} \hat{w}^\pm_{n+1/2} = e^{\mp i k_z \vA t_n} \hat{w}^\pm_n + \frac{\Delta t}{2} e^{\mp i k_z \vA t_n} \widehat{\mathcal{N}_n^\pm}.
 \end{equation}
-Multiplying both sides by $e^{\pm i k_z \vA t_{n+1/2}}$ to obtain $\hat{w}^\pm_{n+1/2}$ yields
+The GANDALF method \citep{Numata2010} removes the integrating factor by multiplying both sides by $e^{\pm i k_z \vA t_{n+1/2}}$ and applying the phase transformation $e^{\pm ik_z \vA (t_{n+1/2} - t_n)}$ to the nonlinear forcing term, yielding
 \begin{equation}
-\hat{w}^\pm_{n+1/2} = e^{\pm i k_z \vA (t_{n+1/2} - t_n)}\left(\hat{w}^\pm_n + e^{\pm i k_z \vA (t_{n+1/2} - t_n)} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^\pm}\right),
+\hat{w}^\pm_{n+1/2} = e^{\pm i k_z \vA \Delta t/2}\left(\hat{w}^\pm_n + e^{\pm i k_z \vA \Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^\pm}\right),
 \end{equation}
-producing the characteristic double phase factor structure. With $t_{n+1/2} - t_n = \Delta t/2$, the phase factors $\exp(\pm ik_z\vA\Delta t/2)$ appear \emph{twice}: once from removing the integrating factor at $t_{n+1/2}$ and once from integrating the nonlinear forcing from $t_n$. Given state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at time $t_n$, we compute:
+where the phase factors $\exp(\pm ik_z\vA\Delta t/2)$ appear \emph{twice}: once from removing the integrating factor transformation and once from the phase-transformed forcing term. This formulation maintains second-order accuracy while exactly treating linear wave propagation. Given state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at time $t_n$, we compute:
 
 \begin{algorithm}[H]
 \caption{GANDALF Time Step $t_n \to t_{n+1} = t_n + \Delta t$}
@@ -74,10 +74,10 @@ producing the characteristic double phase factor structure. With $t_{n+1/2} - t_
 \end{align*}
 \STATE Hermite moments (no integrating factor):
 \[
-\hat{g}^{\pm}_{m,n+1/2} = \hat{g}^{\pm}_{m,n} + \frac{\Delta t}{2} \widehat{\mathcal{H}^{\pm}_{m,n}}
+\hat{g}^{\pm}_{m,n+1/2} = \hat{g}^{\pm}_{m,n} + \frac{\Delta t}{2} \widehat{\Herm^{\pm}_{m,n}}
 \]
 \STATE \textbf{Midpoint evaluation:}
-\STATE Compute $\mathcal{N}_{n+1/2} = \mathcal{N}[\xi^+_{n+1/2}, \xi^-_{n+1/2}]$ and $\mathcal{H}^{\pm}_{m,n+1/2}$
+\STATE Compute $\mathcal{N}_{n+1/2} = \mathcal{N}[\xi^+_{n+1/2}, \xi^-_{n+1/2}]$ and $\Herm^{\pm}_{m,n+1/2}$
 \STATE \textbf{Full-step corrector:}
 \STATE Apply integrating factors with midpoint RHS:
 \begin{align*}
@@ -86,13 +86,13 @@ producing the characteristic double phase factor structure. With $t_{n+1/2} - t_
 \end{align*}
 \STATE Hermite moments:
 \[
-\hat{g}^{\pm}_{m,n+1} = \hat{g}^{\pm}_{m,n} + \Delta t \, \widehat{\mathcal{H}^{\pm}_{m,n+1/2}}
+\hat{g}^{\pm}_{m,n+1} = \hat{g}^{\pm}_{m,n} + \Delta t \, \widehat{\Herm^{\pm}_{m,n+1/2}}
 \]
 \STATE \textbf{Apply dissipation} (see \S\ref{sec:dissipation})
 \end{algorithmic}
 \end{algorithm}
 
-Here $\mathcal{H}^{\pm}_m$ denotes the right-hand side of the Hermite moment hierarchy Eqs.~\eqref{eq:moment_hierarchy}, including advection, phase mixing, and collisions. The phase factors $\exp(\pm ik_z\vA\Delta t)$ appear \emph{twice} in each update (once from the transformation, once from integration), giving the characteristic structure of the GANDALF method \citep{Numata2010}.
+Here $\Herm^{\pm}_m$ denotes the right-hand side of the Hermite moment hierarchy Eqs.~\eqref{eq:moment_hierarchy}, including advection, phase mixing, and collisions. The phase factors $\exp(\pm ik_z\vA\Delta t)$ appear \emph{twice} in each update (once from the transformation, once from integration), giving the characteristic structure of the GANDALF method \citep{Numata2010}.
 
 \subsubsection{Stability and Time Step Selection}
 
@@ -165,7 +165,7 @@ Key implementation features include:
 
 \paragraph{Functional Design.} JAX enforces pure functional programming: time-stepping functions return new state objects rather than mutating existing arrays. This immutability enables automatic parallelization and simplifies debugging, though requiring careful memory management for large simulations.
 
-\paragraph{Pytree Structures.} GANDALF defines custom \texttt{KRMHDState} and \texttt{SpectralGrid} classes registered as JAX pytrees, allowing transformations (\texttt{jax.grad}, \texttt{jax.vmap}, \texttt{jax.scan}) to operate on physics-meaningful objects while maintaining efficient compilation.
+\paragraph{Pytree Structures.} GANDALF defines custom \texttt{KRMHDState} and \texttt{SpectralGrid} classes registered as JAX pytrees (nested container structures that JAX transformations can traverse), allowing transformations (\texttt{jax.grad}, \texttt{jax.vmap}, \texttt{jax.scan}) to operate on physics-meaningful objects while maintaining efficient compilation.
 
 Typical performance on a $256^3$ grid with $M=16$ Hermite moments achieves $\sim 0.5$ seconds per time step on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations can achieve performance competitive with compiled languages for scientific computing applications \citep{Bauer2021}, which we observe for GANDALF as well, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
 
@@ -180,11 +180,11 @@ We summarize the complete GANDALF algorithm for a single time step:
 \STATE \textbf{Input:} Fourier state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at $t_n$
 \STATE Compute CFL time step: $\Delta t = 0.3 \min(\Delta x,\Delta y,\Delta z)/\max(\vA,|\mathbf{v}_\perp|_\text{max})$
 \STATE \textbf{Half-step:}
-\STATE \quad Evaluate nonlinear terms $\mathcal{N}_n$, $\mathcal{H}_{m,n}$ in real space
+\STATE \quad Evaluate nonlinear terms $\mathcal{N}_n$, $\Herm_{m,n}$ in real space
 \STATE \quad Transform to Fourier space and apply 2/3 dealiasing mask
 \STATE \quad Advance with integrating factors (Elsasser) and RK2 (Hermite): $\to$ state $_{n+1/2}$
 \STATE \textbf{Midpoint:}
-\STATE \quad Evaluate nonlinear terms $\mathcal{N}_{n+1/2}$, $\mathcal{H}_{m,n+1/2}$
+\STATE \quad Evaluate nonlinear terms $\mathcal{N}_{n+1/2}$, $\Herm_{m,n+1/2}$
 \STATE \quad Transform to Fourier space and apply 2/3 dealiasing mask
 \STATE \textbf{Full step:}
 \STATE \quad Advance with integrating factors (Elsasser) and RK2 (Hermite): $\to$ state $_{n+1}$
