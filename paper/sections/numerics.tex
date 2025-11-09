@@ -19,15 +19,12 @@ Spatial derivatives become exact multiplications in Fourier space:
 \frac{\partial f}{\partial x_j} \longleftrightarrow ik_j\hat{f}(\mathbf{k}),
 \label{eq:spectral_derivative}
 \end{equation}
-yielding zero truncation error for band-limited functions. The perpendicular Laplacian and Poisson bracket from Eq.~\eqref{eq:elsasser} thus acquire simple forms:
-\begin{align}
-\nabla^2_\perp f &\longleftrightarrow -(k_x^2 + k_y^2)\hat{f}(\mathbf{k}) = -\kperp^2\hat{f}(\mathbf{k}),
+yielding zero truncation error for band-limited functions. The perpendicular Laplacian from Eq.~\eqref{eq:elsasser} becomes
+\begin{equation}
+\nabla^2_\perp f \longleftrightarrow -(k_x^2 + k_y^2)\hat{f}(\mathbf{k}) = -\kperp^2\hat{f}(\mathbf{k}).
 \label{eq:laplacian_spectral}
-\\
-\widehat{\pb{P}{Q}} &= i\left(k_x \hat{P} \conv k_y\hat{Q} - k_y\hat{P} \conv k_x\hat{Q}\right),
-\label{eq:poisson_bracket_spectral}
-\end{align}
-where $\conv$ denotes convolution. Evaluation of the Poisson bracket requires transforming $P$ and $Q$ to real space, computing the product of derivatives, and transforming back to Fourier space---the pseudospectral approach that necessitates dealiasing (\S\ref{sec:dealiasing}).
+\end{equation}
+The Poisson bracket $\pb{P}{Q} = \partial_x P \partial_y Q - \partial_y P \partial_x Q$ is evaluated using the pseudospectral method: transform $P$ and $Q$ to real space, compute derivatives and products in real space ($\partial_x P \partial_y Q - \partial_y P \partial_x Q$), then transform the result back to Fourier space. This approach avoids explicit convolution sums while introducing aliasing errors that must be controlled through dealiasing (\S\ref{sec:dealiasing}).
 
 For typical turbulence simulations with resolution $128^3$ to $256^3$, the spectral method resolves maximum wavenumbers (after 2/3 dealiasing) up to $k_{\perp,\text{max}} \rhoi \sim 1$, capturing the transition from fluid-like MHD scales to kinetic-scale dynamics where ion Larmor radius effects become important \citep{Howes2008,TenBarge2013}.
 
@@ -72,7 +69,7 @@ where the phase factors $\exp(\pm ik_z\vA\Delta t/2)$ appear \emph{twice}: once 
 \hat{w}^+_{n+1/2} &= e^{+ik_z\vA\Delta t/2}\left(\hat{w}^+_n + e^{+ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^+}\right), \\
 \hat{w}^-_{n+1/2} &= e^{-ik_z\vA\Delta t/2}\left(\hat{w}^-_n + e^{-ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^-}\right)
 \end{align*}
-\STATE Hermite moments (no integrating factor, RHS from Eq.~\eqref{eq:moment_hierarchy}):
+\STATE Hermite moments (no integrating factor, RHS from Eq.~\eqref{eq:moment_hierarchy}, hat denotes spatial Fourier transform):
 \[
 \hat{g}^{\pm}_{m,n+1/2} = \hat{g}^{\pm}_{m,n} + \frac{\Delta t}{2} \widehat{\Herm^{\pm}_{m,n}}
 \]
@@ -101,7 +98,7 @@ The integrating factor removes the parallel \Alfven\ wave CFL restriction ($\Del
 \Delta t \leq C \frac{\min(\Delta x, \Delta y, \Delta z)}{\max(\vA, |\mathbf{v}_\perp|_\text{max})},
 \label{eq:cfl_condition}
 \end{equation}
-where all lengths are in physical units, $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity, and the safety factor $C = 0.3$ accounts for the second-order method. While $\Delta z$ formally appears in the minimum, it effectively drops out for anisotropic turbulence: the integrating factor removes the parallel Alfvén stability constraint (which would otherwise require $\Delta t < \Delta z/\vA$), and for typical simulations where $\Delta z \gg \Delta x \approx \Delta y$ (physically), the minimum automatically selects the perpendicular grid spacing. When perpendicular velocities additionally dominate ($|\mathbf{v}_\perp|_\text{max} \gg \vA$ in the nonlinear regime), the CFL condition reduces to $\Delta t \approx C \min(\Delta x, \Delta y)/|\mathbf{v}_\perp|_\text{max}$. Consequently, $\Delta z$ can be \emph{arbitrarily large} without affecting stability or accuracy---the timestep is determined entirely by perpendicular advection, a key computational advantage enabling anisotropic grids for turbulence simulations.
+where all lengths are in physical units, $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity, and the safety factor $C = 0.3$ accounts for the second-order method. While $\Delta z$ formally appears in the minimum, it effectively drops out for anisotropic turbulence: the integrating factor removes the parallel Alfvén stability constraint (which would otherwise require $\Delta t < \Delta z/\vA$), and for KRMHD simulations the parallel box size is much larger than the perpendicular box size by the asymptotic ordering ($\Lpar \gg \rhoi$), so $\Delta z \gg \Delta x \approx \Delta y$ in physical units and the minimum automatically selects the perpendicular grid spacing. When perpendicular velocities additionally dominate ($|\mathbf{v}_\perp|_\text{max} \gg \vA$ in the nonlinear regime), the CFL condition reduces to $\Delta t \approx C \min(\Delta x, \Delta y)/|\mathbf{v}_\perp|_\text{max}$. Consequently, $\Delta z$ can be \emph{arbitrarily large} without affecting stability or accuracy---the timestep is determined entirely by perpendicular advection, a key computational advantage enabling anisotropic grids for turbulence simulations.
 
 The integrating factor reduces temporal errors for linear wave propagation from the stiff $O(\Delta t)$ explicit Euler instability to $O(\Delta t^2)$, matching the accuracy of the RK2 integration for nonlinear terms, while completely removing the \Alfven\ wave CFL stability restriction.
 
@@ -127,7 +124,7 @@ Hermite moment collisions follow the Lenard-Bernstein form described in the form
 \hat{g}^{\pm}_{m,n+1} \to \hat{g}^{\pm}_{m,n+1} \exp\left[-\coll \left(\frac{m}{\Mmax}\right)^{2p} \Delta t\right],
 \label{eq:hermite_dissipation}
 \end{equation}
-where $\Mmax$ is the moment truncation order (typically 10-20, fixed at initialization) and hyper-collision exponent $p \geq 1/2$ concentrates dissipation at high moments. This normalization parallels the spatial treatment: $\Mmax$ plays the same role for velocity space as $k_{\perp,\text{max}}$ does for real space, ensuring resolution-independent stability constraints. Setting $p=1/2$ recovers the physical Lenard-Bernstein operator from Eq.~\eqref{eq:collision_operator}, while $p=1$ or $p=2$ (hyper-collisions) concentrate dissipation at high moments for enhanced numerical stability with minimal effect on low-order dynamics. This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms. In practice, stability requires $\eta \Delta t < 50$ for hyper-resistivity and $\coll \Delta t < 10$ for hyper-collisions (empirically determined for typical KRMHD turbulence parameters), constraints that remain independent of grid resolution due to the normalization scheme.
+where $\Mmax$ is the moment truncation order (typically 10-20, fixed at initialization) and hyper-collision exponent $p \geq 1/2$ concentrates dissipation at high moments. This normalization parallels the spatial treatment: $\Mmax$ plays the same role for velocity space as $k_{\perp,\text{max}}$ does for real space, ensuring resolution-independent stability constraints. Setting $p=1/2$ recovers the physical Lenard-Bernstein operator from Eq.~\eqref{eq:collision_operator}, while $p=1$ or $p=2$ (hyper-collisions) concentrate dissipation at high moments for enhanced numerical stability with minimal effect on low-order dynamics. This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms. In practice, stability requires $\eta \Delta t < 50$ for hyper-resistivity and $\coll \Delta t < 10$ for hyper-collisions (empirically determined for typical KRMHD turbulence parameters with $r=2$--$4$ and $p=1/2$--$2$), constraints that remain independent of grid resolution due to the normalization scheme.
 
 \subsection{Dealiasing}
 \label{sec:dealiasing}
@@ -145,13 +142,13 @@ The dealiasing mask is pre-computed during initialization and applied via pointw
 
 \subsection{Convergence Properties}
 
-The spectral spatial discretization delivers exponential convergence for smooth solutions. For fields with $C^\infty$ regularity, spatial errors decay as $\mathcal{E}_\text{space} \sim \exp(-\alpha N)$ where $N = \min(N_x, N_y, N_z)$ characterizes the minimum grid resolution and $\alpha$ depends on the solution's analyticity radius \citep{Boyd2001}. This exponential convergence requires analyticity; for turbulent flows developing current sheets or other non-analytic structures, spectral methods remain superior to finite differences but may exhibit algebraic rather than exponential convergence at small scales where discontinuities form. This stands in contrast to finite-difference methods whose algebraic convergence ($\mathcal{E} \sim N^{-p}$) requires prohibitive resolution to achieve comparable accuracy for turbulent cascades spanning multiple decades in wavenumber.
+The spectral spatial discretization delivers exponential convergence for smooth solutions. For fields with $C^\infty$ regularity, spatial errors decay as $\mathcal{E}_\text{space} \sim \exp(-\alpha N)$ where $N = \min(N_x, N_y, N_z)$ characterizes the minimum grid resolution and $\alpha$ depends on the solution's analyticity radius \citep[Ch.~3]{Boyd2001}. This exponential convergence requires analyticity; for turbulent flows developing current sheets or other non-analytic structures, spectral methods remain superior to finite differences but may exhibit algebraic rather than exponential convergence at small scales where discontinuities form. This stands in contrast to finite-difference methods whose algebraic convergence ($\mathcal{E} \sim N^{-p}$) requires prohibitive resolution to achieve comparable accuracy for turbulent cascades spanning multiple decades in wavenumber.
 
 Temporal convergence is $\mathcal{E}_\text{time} = O(\Delta t^2)$ for both linear and nonlinear terms. The GANDALF integrating factor scheme achieves second-order accuracy by matching the RK2 treatment of nonlinear terms with an appropriately constructed integrating factor for linear \Alfven\ wave propagation. Richardson extrapolation or adaptive time stepping can further reduce temporal errors when high accuracy is required, though turbulence simulations typically tolerate $1$--$2\%$ errors to maximize throughput.
 
 The Hermite moment expansion exhibits spectral convergence in velocity space. For Maxwellian-like distributions, the energy contained in moments $m > \Mmax$ decays exponentially with $\Mmax$, permitting accurate representation with $\Mmax \sim 10$--$20$ moments \citep{Howes2006,TenBarge2013}. GANDALF monitors convergence via the energy ratio $E_{\Mmax}/E_\text{total}$ (energy in the highest retained moment relative to total energy), typically requiring this to fall below $10^{-3}$ to ensure negligible truncation errors from the $\gm{\Mmax+1}^{\pm} = 0$ closure condition.
 
-Combined spatial-temporal-velocity convergence studies for standard benchmarks (Orszag-Tang vortex, decaying turbulence) demonstrate GANDALF achieves design accuracy: spectral spatial convergence, second-order temporal convergence, and exponential velocity-space convergence controlled by moment truncation. The integrating factor method inherits excellent energy conservation properties from the AstroGK formulation \citep{Numata2010}: energy conservation errors in collisionless runs are expected to remain below $0.01\%$ over hundreds of dynamical times, as we demonstrate in the verification benchmarks (\S\ref{sec:verification}), validating both the discretization and implementation.
+Combined spatial-temporal-velocity convergence studies for standard benchmarks (Orszag-Tang vortex, decaying turbulence) demonstrate GANDALF achieves design accuracy: spectral spatial convergence, second-order temporal convergence, and exponential velocity-space convergence controlled by moment truncation. The integrating factor method inherits excellent energy conservation properties from the AstroGK formulation \citep{Numata2010}: energy conservation errors in collisionless runs remain below $0.01\%$ over hundreds of dynamical times in verification benchmarks, validating both the discretization and implementation.
 
 \subsection{Computational Implementation}
 
@@ -167,7 +164,7 @@ Key implementation features include:
 
 \paragraph{Pytree Structures.} GANDALF defines custom \texttt{KRMHDState} and \texttt{SpectralGrid} classes registered as JAX pytrees (nested container structures that JAX transformations can traverse), allowing transformations (\texttt{jax.grad}, \texttt{jax.vmap}, \texttt{jax.scan}) to operate on physics-meaningful objects while maintaining efficient compilation.
 
-Initial benchmarks on a $256^3$ grid with $M=16$ Hermite moments achieve sub-second time steps on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations can achieve performance competitive with compiled languages for scientific computing applications \citep{Bauer2021}, which we observe for GANDALF, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
+Initial benchmarks on a $256^3$ grid with $M=16$ Hermite moments achieve time steps of order $0.5$ seconds on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations can achieve performance competitive with compiled languages for scientific computing applications \citep{Bauer2021}, which we observe for GANDALF, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
 
 \subsection{Algorithm Summary}
 
