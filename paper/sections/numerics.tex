@@ -95,14 +95,14 @@ The phase factors $\exp(\pm ik_z\vA\Delta t)$ appear \emph{twice} in each update
 
 \subsubsection{Stability and Time Step Selection}
 
-The integrating factor removes the parallel \Alfven\ wave CFL restriction ($\Delta t < \Delta z/\vA$) \emph{completely} for the Elsasser fields, as linear wave propagation is treated exactly by the phase factors. The Hermite moments, advanced with standard RK2 without integrating factors, retain streaming CFL constraints from their $\partial g/\partial z$ terms, but these are less restrictive than the \Alfven\ wave constraint in typical low-$\beta$ plasmas. Accuracy of the second-order method for nonlinear terms requires time steps that resolve nonlinear eddy turnover timescales and perpendicular advection. GANDALF computes adaptive time steps satisfying
+The integrating factor removes the parallel \Alfven\ wave CFL restriction ($\Delta t < \Delta z/\vA$) \emph{completely} for the Elsasser fields, as linear wave propagation is treated exactly by the phase factors. The Hermite moments, advanced with standard RK2 without integrating factors, retain streaming CFL constraints from their $\partial g/\partial z$ terms, but these are less restrictive than the \Alfven\ wave constraint in typical low-$\beta$ plasmas. Accuracy of the second-order method for nonlinear terms requires time steps that resolve nonlinear eddy turnover timescales and perpendicular advection.
+
+For KRMHD turbulence, the timestep is determined by perpendicular advection. GANDALF computes adaptive time steps satisfying
 \begin{equation}
-\Delta t \leq C \frac{\min(\Delta x, \Delta y, \Delta z)}{\max(\vA, |\mathbf{v}_\perp|_\text{max})},
+\Delta t \leq C \frac{\Delta x_\perp}{|\mathbf{v}_\perp|_\text{max}},
 \label{eq:cfl_condition}
 \end{equation}
-where all lengths are in physical units (converting from the normalized coordinates of \S\ref{sec:formulation} via $\Delta x_\text{phys} = \Delta x_\text{norm} \times \rhoi$, $\Delta z_\text{phys} = \Delta z_\text{norm} \times \Lpar$), $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity (where $\Phifield$ is the stream function from Eq.~\eqref{eq:elsasser}), and the safety factor $C = 0.3$ accounts for the second-order method.
-
-While $\Delta z$ formally appears in the minimum, it effectively drops out for anisotropic turbulence. For KRMHD with $\Lpar \gg \rhoi$, physical grid spacing satisfies $\Delta z \gg \Delta x \approx \Delta y$, so the minimum automatically selects the perpendicular grid spacing. The integrating factor removes the Alfvén CFL constraint ($\Delta t < \Delta z/\vA$) for Elsasser fields, allowing much larger parallel grid spacing than perpendicular. When perpendicular velocities additionally dominate ($|\mathbf{v}_\perp|_\text{max} \gg \vA$ in the nonlinear regime), the CFL condition reduces to $\Delta t \approx C \min(\Delta x, \Delta y)/|\mathbf{v}_\perp|_\text{max}$. Consequently, the Elsasser timestep constraint is typically determined by perpendicular advection rather than parallel Alfvén waves, though Hermite moment streaming imposes additional (usually mild) accuracy constraints---a key computational advantage enabling anisotropic grids for turbulence simulations.
+where $\Delta x_\perp = \min(\Delta x, \Delta y)$ is the minimum perpendicular grid spacing in physical units, $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity (with $\Phifield$ the stream function defined in \S\ref{sec:formulation}), and the safety factor $C = 0.3$ accounts for the second-order method. Hermite moment streaming imposes an additional parallel constraint $\Delta t < \Delta z/\vth$ where $\vth$ is the thermal velocity, but this is rarely binding in practice since thermal speeds are typically much smaller than Alfvén velocities in low-$\beta$ plasmas. The integrating factor's removal of the Alfvén CFL constraint ($\Delta t < \Delta z/\vA$) for Elsasser fields enables anisotropic grids with $\Delta z \gg \Delta x, \Delta y$, a key computational advantage for turbulence simulations.
 
 The integrating factor reduces temporal errors for linear wave propagation from the stiff $O(\Delta t)$ explicit Euler instability to $O(\Delta t^2)$, matching the accuracy of the RK2 integration for nonlinear terms, while completely removing the \Alfven\ wave CFL stability restriction.
 
@@ -152,7 +152,7 @@ Temporal convergence is $\mathcal{E}_\text{time} = O(\Delta t^2)$ for both linea
 
 The Hermite moment expansion exhibits spectral convergence in velocity space. For Maxwellian-like distributions, the energy contained in moments $m > \Mmax$ decays exponentially with $\Mmax$, permitting accurate representation with $\Mmax \sim 10$--$20$ moments \citep{Howes2006,TenBarge2013}. GANDALF monitors convergence via the energy ratio $E_{\Mmax}/E_\text{total}$ (energy in the single highest retained moment $m = \Mmax$ relative to total energy), typically requiring this to fall below $10^{-3}$ to ensure negligible truncation errors from the $\gm{\Mmax+1}^{\pm} = 0$ closure condition.
 
-Combined spatial-temporal-velocity convergence studies for standard benchmarks (Orszag-Tang vortex, decaying turbulence) demonstrate GANDALF achieves design accuracy: spectral spatial convergence, second-order temporal convergence, and exponential velocity-space convergence controlled by moment truncation. The integrating factor method inherits excellent energy conservation properties from the AstroGK formulation \citep{Numata2010}: energy conservation errors in collisionless runs remain below $0.01\%$ over hundreds of dynamical times in verification benchmarks, validating both the discretization and implementation.
+Combined spatial-temporal-velocity convergence studies for standard benchmarks (Orszag-Tang vortex, decaying turbulence) demonstrate GANDALF achieves design accuracy: spectral spatial convergence, second-order temporal convergence, and exponential velocity-space convergence controlled by moment truncation. The integrating factor method inherits excellent energy conservation properties from the AstroGK formulation \citep{Numata2010}: energy conservation errors in collisionless runs remain $<0.01\%$ over hundreds of dynamical times in verification benchmarks, validating both the discretization and implementation.
 
 \subsection{Computational Implementation}
 
@@ -179,7 +179,7 @@ We summarize the complete GANDALF algorithm for a single time step:
 \label{alg:gandalf_complete}
 \begin{algorithmic}[1]
 \STATE \textbf{Input:} Fourier state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at $t_n$
-\STATE Compute CFL time step: $\Delta t = 0.3 \min(\Delta x,\Delta y,\Delta z)/\max(\vA,|\mathbf{v}_\perp|_\text{max})$ (typically limited by $\Delta x, \Delta y$)
+\STATE Compute CFL time step: $\Delta t = 0.3 \min(\Delta x,\Delta y)/|\mathbf{v}_\perp|_\text{max}$ (perpendicular advection)
 \STATE \textbf{Half-step:}
 \STATE \quad Evaluate nonlinear terms $\mathcal{N}_n$, $\Herm_{m,n}$ in real space
 \STATE \quad Transform to Fourier space and apply 2/3 dealiasing mask
