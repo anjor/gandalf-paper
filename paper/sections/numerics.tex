@@ -42,7 +42,7 @@ The Elsasser equations~\eqref{eq:elsasser} in Fourier space separate into linear
 \pardt \nabla^2_\perp \hat{\xi}^\pm \mp i k_z \vA \nabla^2_\perp \hat{\xi}^\pm = \widehat{\mathcal{N}[\xi^+,\xi^-]},
 \label{eq:elsasser_fourier}
 \end{equation}
-where $\mathcal{N}$ represents the nonlinear Poisson bracket terms. Defining the perpendicular vorticity variables $\hat{w}^\pm = \nabla^2_\perp \hat{\xi}^\pm = -\kperp^2 \hat{\xi}^\pm$ and applying the integrating factor $\exp(\pm i k_z \vA t)$ yields
+where $\mathcal{N}$ represents the nonlinear Poisson bracket terms on the right-hand side of Eq.~\eqref{eq:elsasser}. Defining the perpendicular vorticity variables $\hat{w}^\pm = \nabla^2_\perp \hat{\xi}^\pm = -\kperp^2 \hat{\xi}^\pm$ and applying the integrating factor $\exp(\pm i k_z \vA t)$ yields
 \begin{equation}
 \pardt \left[e^{\mp i k_z \vA t} \hat{w}^\pm\right] = e^{\mp i k_z \vA t} \widehat{\mathcal{N}[\xi^+,\xi^-]}.
 \label{eq:integrating_factor_form}
@@ -51,7 +51,15 @@ This transformation exactly removes the oscillatory linear terms, permitting tim
 
 \subsubsection{Second-Order Time Stepping}
 
-GANDALF advances the transformed variables using a midpoint (second-order Runge-Kutta) scheme. The phase factors $\exp(\pm ik_z\vA\Delta t)$ appear \emph{twice} in each update: once from the integrating factor transformation and once from integrating the nonlinear terms. Given state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at time $t_n$, we compute:
+GANDALF advances the transformed variables using a midpoint (second-order Runge-Kutta) scheme. Integrating Eq.~\eqref{eq:integrating_factor_form} from $t_n$ to $t_{n+1/2}$ with constant right-hand side (the forward Euler approximation for the predictor step) gives
+\begin{equation}
+e^{\mp i k_z \vA t_{n+1/2}} \hat{w}^\pm_{n+1/2} = e^{\mp i k_z \vA t_n} \hat{w}^\pm_n + \frac{\Delta t}{2} e^{\mp i k_z \vA t_n} \widehat{\mathcal{N}_n^\pm}.
+\end{equation}
+Multiplying both sides by $e^{\pm i k_z \vA t_{n+1/2}}$ to obtain $\hat{w}^\pm_{n+1/2}$ yields
+\begin{equation}
+\hat{w}^\pm_{n+1/2} = e^{\pm i k_z \vA (t_{n+1/2} - t_n)}\left(\hat{w}^\pm_n + e^{\pm i k_z \vA (t_{n+1/2} - t_n)} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^\pm}\right),
+\end{equation}
+producing the characteristic double phase factor structure. With $t_{n+1/2} - t_n = \Delta t/2$, the phase factors $\exp(\pm ik_z\vA\Delta t/2)$ appear \emph{twice}: once from removing the integrating factor at $t_{n+1/2}$ and once from integrating the nonlinear forcing from $t_n$. Given state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at time $t_n$, we compute:
 
 \begin{algorithm}[H]
 \caption{GANDALF Time Step $t_n \to t_{n+1} = t_n + \Delta t$}
@@ -119,7 +127,7 @@ Hermite moment collisions follow the Lenard-Bernstein form Eq.~\eqref{eq:collisi
 \hat{g}^{\pm}_{m,n+1} \to \hat{g}^{\pm}_{m,n+1} \exp\left[-\coll \left(\frac{m}{\Mmax}\right)^{2p} \Delta t\right],
 \label{eq:hermite_dissipation}
 \end{equation}
-where $\Mmax$ is the maximum moment order and hyper-collision exponent $p \geq 1$ concentrates dissipation at high moments. Standard values are $p=1$ (linear Lenard-Bernstein) or $p=2$ (hyper-collisions). This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms.
+where $\Mmax$ is the moment truncation order (typically 10-20, fixed at initialization) and hyper-collision exponent $p \geq 1$ concentrates dissipation at high moments. This normalization parallels the spatial treatment: $\Mmax$ plays the same role for velocity space as $k_{\perp,\text{max}}$ does for real space, ensuring resolution-independent stability constraints. Standard values are $p=1$ (linear Lenard-Bernstein) or $p=2$ (hyper-collisions). This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms.
 
 \subsection{Dealiasing}
 \label{sec:dealiasing}
@@ -131,7 +139,7 @@ GANDALF applies the 2/3 dealiasing rule \citep{Orszag1971,Canuto2006}: after eac
 \max\left(\frac{|k_x|}{k_{x,\text{max}}}, \frac{|k_y|}{k_{y,\text{max}}}, \frac{|k_z|}{k_{z,\text{max}}}\right) > \frac{2}{3}
 \label{eq:dealiasing_rule}
 \end{equation}
-are set to zero. This ensures products of any two modes within the retained $2/3$ sphere remain representable on the grid, eliminating aliasing at the cost of reducing effective resolution from $N$ to approximately $2N/3$ modes.
+are set to zero. This rectangular cutoff (applied independently per direction) ensures products of any two modes within the retained $2/3$ region remain representable on the grid, eliminating aliasing at the cost of reducing effective resolution from $N$ to approximately $2N/3$ modes per direction.
 
 The dealiasing mask is pre-computed during initialization and applied via pointwise multiplication in Fourier space, incurring negligible computational cost. For turbulence simulations where nonlinear energy transfer dominates, proper dealiasing proves essential for long-time numerical stability---unfiltered runs typically develop grid-scale oscillations within tens of eddy turnover times.
 
@@ -143,7 +151,7 @@ Temporal convergence is $\mathcal{E}_\text{time} = O(\Delta t^2)$ for both linea
 
 The Hermite moment expansion exhibits spectral convergence in velocity space. For Maxwellian-like distributions, the energy contained in moments $m > \Mmax$ decays exponentially with $\Mmax$, permitting accurate representation with $\Mmax \sim 10$--$20$ moments \citep{Howes2006,TenBarge2013}. GANDALF monitors convergence via the energy ratio $E_{\Mmax}/E_\text{total}$ (energy in the highest retained moment relative to total energy), typically requiring this to fall below $10^{-3}$ to ensure negligible truncation errors from the $\gm{\Mmax+1}^{\pm} = 0$ closure condition.
 
-Combined spatial-temporal-velocity convergence studies for standard benchmarks (Orszag-Tang vortex, decaying turbulence) demonstrate GANDALF achieves design accuracy: spectral spatial convergence, second-order temporal convergence, and exponential velocity-space convergence controlled by moment truncation. Energy conservation errors in collisionless runs remain below $0.01\%$ over hundreds of dynamical times, validating both the discretization and the energy-conserving properties of the GANDALF formulation \citep{Numata2010}.
+Combined spatial-temporal-velocity convergence studies for standard benchmarks (Orszag-Tang vortex, decaying turbulence) demonstrate GANDALF achieves design accuracy: spectral spatial convergence, second-order temporal convergence, and exponential velocity-space convergence controlled by moment truncation. The integrating factor method inherits excellent energy conservation properties from the AstroGK formulation \citep{Numata2010}: GANDALF's energy conservation errors in collisionless runs remain below $0.01\%$ over hundreds of dynamical times, validating both the discretization and implementation.
 
 \subsection{Computational Implementation}
 
@@ -159,7 +167,7 @@ Key implementation features include:
 
 \paragraph{Pytree Structures.} GANDALF defines custom \texttt{KRMHDState} and \texttt{SpectralGrid} classes registered as JAX pytrees, allowing transformations (\texttt{jax.grad}, \texttt{jax.vmap}, \texttt{jax.scan}) to operate on physics-meaningful objects while maintaining efficient compilation.
 
-Typical performance on a $256^3$ grid with $M=16$ Hermite moments achieves $\sim 0.5$ seconds per time step on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations of scientific computing applications typically achieve 70--90\% of hand-optimized Fortran/C++ performance \citep{Bauer2021}, which we observe for GANDALF as well, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
+Typical performance on a $256^3$ grid with $M=16$ Hermite moments achieves $\sim 0.5$ seconds per time step on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations can achieve performance competitive with compiled languages for scientific computing applications \citep{Bauer2021}, which we observe for GANDALF as well, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
 
 \subsection{Algorithm Summary}
 
