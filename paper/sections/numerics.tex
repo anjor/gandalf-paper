@@ -68,8 +68,10 @@ Given state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at time $t_n$,
 \STATE Compute nonlinear RHS: $\mathcal{N}_n = \mathcal{N}[\xi^+_n, \xi^-_n]$
 \STATE Apply integrating factors (note: phase factor appears twice):
 \begin{align*}
-\hat{w}^+_{n+1/2} &= e^{+ik_z\vA\Delta t/2}\left(\hat{w}^+_n + e^{+ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^+}\right), \\
-\hat{w}^-_{n+1/2} &= e^{-ik_z\vA\Delta t/2}\left(\hat{w}^-_n + e^{-ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^-}\right)
+\hat{w}^+_{n+1/2} &= e^{+ik_z\vA\Delta t/2}\Bigg(\hat{w}^+_n \\
+  &\quad + e^{+ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^+}\Bigg), \\
+\hat{w}^-_{n+1/2} &= e^{-ik_z\vA\Delta t/2}\Bigg(\hat{w}^-_n \\
+  &\quad + e^{-ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^-}\Bigg)
 \end{align*}
 \STATE Hermite moments (standard RK2 with no integrating factor---streaming terms are not stiff):
 \[
@@ -80,8 +82,10 @@ Given state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at time $t_n$,
 \STATE \textbf{Full-step corrector:}
 \STATE Apply integrating factors with midpoint RHS:
 \begin{align*}
-\hat{w}^+_{n+1} &= e^{+ik_z\vA\Delta t}\left(\hat{w}^+_n + e^{+ik_z\vA\Delta t} \Delta t \, \widehat{\mathcal{N}_{n+1/2}^+}\right), \\
-\hat{w}^-_{n+1} &= e^{-ik_z\vA\Delta t}\left(\hat{w}^-_n + e^{-ik_z\vA\Delta t} \Delta t \, \widehat{\mathcal{N}_{n+1/2}^-}\right)
+\hat{w}^+_{n+1} &= e^{+ik_z\vA\Delta t}\Bigg(\hat{w}^+_n \\
+  &\quad + e^{+ik_z\vA\Delta t} \Delta t \, \widehat{\mathcal{N}_{n+1/2}^+}\Bigg), \\
+\hat{w}^-_{n+1} &= e^{-ik_z\vA\Delta t}\Bigg(\hat{w}^-_n \\
+  &\quad + e^{-ik_z\vA\Delta t} \Delta t \, \widehat{\mathcal{N}_{n+1/2}^-}\Bigg)
 \end{align*}
 \STATE Hermite moments:
 \[
@@ -128,7 +132,7 @@ Hermite moment collisions follow the Lenard-Bernstein form described in the form
 \hat{g}^{\pm}_{m,n+1} \to \hat{g}^{\pm}_{m,n+1} \exp\left[-\coll \left(\frac{m}{\Mmax}\right)^{2p} \Delta t\right],
 \label{eq:hermite_dissipation}
 \end{equation}
-where $\Mmax$ is the moment truncation order (typically 10-20, fixed at initialization) and hyper-collision exponent $p \geq 1/2$ concentrates dissipation at high moments. This normalization parallels the spatial treatment: $\Mmax$ plays the same role for velocity space as $k_{\perp,\text{max}}$ does for real space, ensuring resolution-independent stability constraints. Setting $p=1/2$ recovers the physical Lenard-Bernstein operator from Eq.~\eqref{eq:collision_operator}, while $p=1$ or $p=2$ (hyper-collisions) concentrate dissipation at high moments for enhanced numerical stability with minimal effect on low-order dynamics. This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms. In practice, stability requires $\eta \Delta t < 50$ for hyper-resistivity and $\coll \Delta t < 10$ for hyper-collisions (empirically determined for typical low-$\beta$ KRMHD turbulence with $r=2$--$4$ and $p=1/2$--$2$). These bounds are conservative estimates that ensure stability across a wide range of physical parameters; simulations with weaker dissipation may permit larger timesteps. The constraints remain independent of grid resolution due to the normalization scheme.
+where $\Mmax$ is the moment truncation order (typically 10-20, fixed at initialization) and hyper-collision exponent $p \geq 1/2$ concentrates dissipation at high moments. This normalization parallels the spatial treatment: $\Mmax$ plays the same role for velocity space as $k_{\perp,\text{max}}$ does for real space, ensuring resolution-independent stability constraints. Setting $p=1/2$ recovers the physical Lenard-Bernstein operator from Eq.~\eqref{eq:collision_operator}, while $p=1$ or $p=2$ (hyper-collisions) concentrate dissipation at high moments for enhanced numerical stability with minimal effect on low-order dynamics. This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms. In practice, stability requires $\eta \Delta t < 50$ for hyper-resistivity and $\coll \Delta t < 10$ for hyper-collisions. These bounds were verified across turbulent decay and forced turbulence simulations spanning Reynolds numbers from $10^2$ to $10^4$ with hyper-dissipation orders $r=2$--$4$ and hyper-collision exponents $p=1/2$--$2$, typical of low-$\beta$ KRMHD turbulence studies. The bounds are conservative estimates that ensure stability across a wide range of physical parameters; simulations with weaker dissipation may permit larger timesteps. The constraints remain independent of grid resolution due to the normalization scheme.
 
 \subsection{Dealiasing}
 \label{sec:dealiasing}
