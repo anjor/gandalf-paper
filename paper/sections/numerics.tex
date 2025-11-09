@@ -26,7 +26,7 @@ yielding zero truncation error for band-limited functions. The perpendicular Lap
 \end{equation}
 The Poisson bracket $\pb{P}{Q} = \partial_x P \partial_y Q - \partial_y P \partial_x Q$ is evaluated using the pseudospectral method: transform $P$ and $Q$ to real space, compute derivatives and products in real space ($\partial_x P \partial_y Q - \partial_y P \partial_x Q$), then transform the result back to Fourier space. This approach avoids explicit convolution sums while introducing aliasing errors that must be controlled through dealiasing (\S\ref{sec:dealiasing}).
 
-For typical turbulence simulations with resolution $128^3$ to $256^3$, the spectral method resolves maximum wavenumbers (after 2/3 dealiasing) up to $k_{\perp,\text{max}} \rhoi \sim 1$, capturing the transition from fluid-like MHD scales to kinetic-scale dynamics where ion Larmor radius effects become important \citep{Howes2008,TenBarge2013}.
+For typical turbulence simulations with resolution $128^3$ to $256^3$, the spectral method resolves maximum wavenumbers (after 2/3 dealiasing) up to $k_{\perp,\text{max}} \rhoi \sim 1$, capturing the transition from fluid-like MHD scales to kinetic-scale dynamics where ion Larmor radius effects become important \citep{Howes2008,TenBarge2013}. KRMHD turbulence cascades typically span 2--3 decades in $\kperp$, making spectral methods particularly advantageous: exponential convergence allows accurate representation of the entire inertial range with modest grid resolution, whereas finite-difference methods would require prohibitively fine grids to achieve comparable accuracy across the full cascade.
 
 \subsection{GANDALF Integrating Factor Method}
 
@@ -71,7 +71,7 @@ Given state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at time $t_n$,
 \hat{w}^+_{n+1/2} &= e^{+ik_z\vA\Delta t/2}\left(\hat{w}^+_n + e^{+ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^+}\right), \\
 \hat{w}^-_{n+1/2} &= e^{-ik_z\vA\Delta t/2}\left(\hat{w}^-_n + e^{-ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^-}\right)
 \end{align*}
-\STATE Hermite moments (no integrating factor, RHS from Eq.~\eqref{eq:moment_hierarchy}, hat denotes spatial Fourier transform):
+\STATE Hermite moments (standard RK2 with no integrating factor---streaming terms are not stiff):
 \[
 \hat{g}^{\pm}_{m,n+1/2} = \hat{g}^{\pm}_{m,n} + \frac{\Delta t}{2} \widehat{\Herm^{\pm}_{m,n}}
 \]
@@ -95,12 +95,12 @@ The phase factors $\exp(\pm ik_z\vA\Delta t)$ appear \emph{twice} in each update
 
 \subsubsection{Stability and Time Step Selection}
 
-The integrating factor removes the parallel \Alfven\ wave CFL restriction ($\Delta t < \Delta z/\vA$) \emph{completely} for both stability and accuracy, as linear wave propagation is treated exactly by the phase factors. However, accuracy of the second-order method for the nonlinear terms requires time steps that resolve nonlinear eddy turnover timescales and perpendicular advection. GANDALF computes adaptive time steps satisfying
+The integrating factor removes the parallel \Alfven\ wave CFL restriction ($\Delta t < \Delta z/\vA$) \emph{completely} for the Elsasser fields, as linear wave propagation is treated exactly by the phase factors. The Hermite moments, advanced with standard RK2 without integrating factors, retain streaming CFL constraints from their $\partial g/\partial z$ terms, but these are less restrictive than the \Alfven\ wave constraint in typical low-$\beta$ plasmas. Accuracy of the second-order method for nonlinear terms requires time steps that resolve nonlinear eddy turnover timescales and perpendicular advection. GANDALF computes adaptive time steps satisfying
 \begin{equation}
 \Delta t \leq C \frac{\min(\Delta x, \Delta y, \Delta z)}{\max(\vA, |\mathbf{v}_\perp|_\text{max})},
 \label{eq:cfl_condition}
 \end{equation}
-where all lengths are in physical units, $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity (where $\Phifield$ is the stream function from Eq.~\eqref{eq:elsasser}), and the safety factor $C = 0.3$ accounts for the second-order method. While $\Delta z$ formally appears in the minimum, it effectively drops out for anisotropic turbulence: the integrating factor removes the parallel Alfvén stability constraint (which would otherwise require $\Delta t < \Delta z/\vA$), and for KRMHD simulations the parallel box size is much larger than the perpendicular box size by the asymptotic ordering ($\Lpar \gg \rhoi$), so $\Delta z \gg \Delta x \approx \Delta y$ in physical units and the minimum automatically selects the perpendicular grid spacing. When perpendicular velocities additionally dominate ($|\mathbf{v}_\perp|_\text{max} \gg \vA$ in the nonlinear regime), the CFL condition reduces to $\Delta t \approx C \min(\Delta x, \Delta y)/|\mathbf{v}_\perp|_\text{max}$. Consequently, $\Delta z$ can be \emph{arbitrarily large} without affecting stability or accuracy---the timestep is determined entirely by perpendicular advection, a key computational advantage enabling anisotropic grids for turbulence simulations.
+where all lengths are in physical units (converting from the normalized coordinates of \S\ref{sec:formulation} via $\Delta x_\text{phys} = \Delta x_\text{norm} \times \rhoi$, $\Delta z_\text{phys} = \Delta z_\text{norm} \times \Lpar$), $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity (where $\Phifield$ is the stream function from Eq.~\eqref{eq:elsasser}), and the safety factor $C = 0.3$ accounts for the second-order method. While $\Delta z$ formally appears in the minimum, it effectively drops out for anisotropic turbulence: the integrating factor removes the parallel Alfvén stability constraint for Elsasser fields, and for KRMHD simulations the parallel box size is much larger than the perpendicular box size by the asymptotic ordering ($\Lpar \gg \rhoi$), so $\Delta z \gg \Delta x \approx \Delta y$ in physical units and the minimum automatically selects the perpendicular grid spacing. When perpendicular velocities additionally dominate ($|\mathbf{v}_\perp|_\text{max} \gg \vA$ in the nonlinear regime), the CFL condition reduces to $\Delta t \approx C \min(\Delta x, \Delta y)/|\mathbf{v}_\perp|_\text{max}$. Consequently, $\Delta z$ for the Elsasser fields can be \emph{arbitrarily large} without stability issues, though Hermite moment streaming imposes mild accuracy constraints that are rarely binding in practice---the timestep is typically determined by perpendicular advection, a key computational advantage enabling anisotropic grids for turbulence simulations.
 
 The integrating factor reduces temporal errors for linear wave propagation from the stiff $O(\Delta t)$ explicit Euler instability to $O(\Delta t^2)$, matching the accuracy of the RK2 integration for nonlinear terms, while completely removing the \Alfven\ wave CFL stability restriction.
 
@@ -114,7 +114,7 @@ For the Elsasser vorticities, resistive diffusion $\eta\nabla^2_\perp$ becomes
 \hat{w}^\pm_{n+1} \to \hat{w}^\pm_{n+1} \exp\left(-\eta \kperp^2 \Delta t\right)
 \label{eq:resistive_damping}
 \end{equation}
-in Fourier space. To enhance stability at high wavenumbers while minimizing dissipation in the inertial range, GANDALF employs normalized hyper-resistivity:
+in Fourier space. To enhance stability at high wavenumbers while minimizing dissipation in the inertial range, GANDALF employs normalized hyper-resistivity, which acts as an implicit sub-grid model for unresolved turbulent cascades at scales smaller than the grid:
 \begin{equation}
 \hat{w}^\pm_{n+1} \to \hat{w}^\pm_{n+1} \exp\left[-\eta \left(\frac{\kperp^2}{k^2_{\perp,\text{max}}}\right)^r \Delta t\right],
 \label{eq:hyper_resistivity}
@@ -166,7 +166,7 @@ Key implementation features include:
 
 \paragraph{Pytree Structures.} GANDALF defines custom \texttt{KRMHDState} and \texttt{SpectralGrid} classes registered as JAX pytrees (nested container structures that JAX transformations can traverse), allowing transformations (\texttt{jax.grad}, \texttt{jax.vmap}, \texttt{jax.scan}) to operate on physics-meaningful objects while maintaining efficient compilation.
 
-Initial benchmarks on a $256^3$ grid with $M=16$ Hermite moments achieve approximately $0.5$ seconds of wall-clock time per time step on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations can achieve performance competitive with compiled languages for scientific computing applications \citep{Bauer2021,Citrin2024}, which we observe for GANDALF, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
+Preliminary benchmarks on a $256^3$ grid with $M=16$ Hermite moments achieve approximately $0.5$ seconds of wall-clock time per time step on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations can achieve performance competitive with compiled languages for scientific computing applications \citep{Bauer2021,Citrin2024}, which we observe for GANDALF, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
 
 \subsection{Algorithm Summary}
 
