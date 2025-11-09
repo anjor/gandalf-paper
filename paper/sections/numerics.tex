@@ -42,16 +42,16 @@ The Elsasser equations~\eqref{eq:elsasser} in Fourier space separate into linear
 \pardt \nabla^2_\perp \hat{\xi}^\pm \mp i k_z \vA \nabla^2_\perp \hat{\xi}^\pm = \widehat{\mathcal{N}[\xi^+,\xi^-]},
 \label{eq:elsasser_fourier}
 \end{equation}
-where $\mathcal{N}$ represents the nonlinear Poisson bracket terms. Defining the vorticity-like variables $\hat{z}^\pm = \nabla^2_\perp \hat{\xi}^\pm = -\kperp^2 \hat{\xi}^\pm$ and applying the integrating factor $\exp(\pm i k_z \vA t)$ yields
+where $\mathcal{N}$ represents the nonlinear Poisson bracket terms. Defining the perpendicular vorticity variables $\hat{w}^\pm = \nabla^2_\perp \hat{\xi}^\pm = -\kperp^2 \hat{\xi}^\pm$ and applying the integrating factor $\exp(\pm i k_z \vA t)$ yields
 \begin{equation}
-\pardt \left[e^{\mp i k_z \vA t} \hat{z}^\pm\right] = e^{\mp i k_z \vA t} \widehat{\mathcal{N}[\xi^+,\xi^-]}.
+\pardt \left[e^{\mp i k_z \vA t} \hat{w}^\pm\right] = e^{\mp i k_z \vA t} \widehat{\mathcal{N}[\xi^+,\xi^-]}.
 \label{eq:integrating_factor_form}
 \end{equation}
 This transformation exactly removes the oscillatory linear terms, permitting time steps controlled by the slower nonlinear evolution rather than wave propagation.
 
 \subsubsection{Second-Order Time Stepping}
 
-GANDALF advances the transformed variables using a midpoint (second-order Runge-Kutta) scheme. The phase factors $\exp(\pm ik_z\vA\Delta t)$ appear \emph{twice} in each update: once from the integrating factor transformation and once from integrating the nonlinear terms. Given state $(\hat{z}^+_n, \hat{z}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at time $t_n$, we compute:
+GANDALF advances the transformed variables using a midpoint (second-order Runge-Kutta) scheme. The phase factors $\exp(\pm ik_z\vA\Delta t)$ appear \emph{twice} in each update: once from the integrating factor transformation and once from integrating the nonlinear terms. Given state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at time $t_n$, we compute:
 
 \begin{algorithm}[H]
 \caption{GANDALF Time Step $t_n \to t_{n+1} = t_n + \Delta t$}
@@ -61,8 +61,8 @@ GANDALF advances the transformed variables using a midpoint (second-order Runge-
 \STATE Compute nonlinear RHS: $\mathcal{N}_n = \mathcal{N}[\xi^+_n, \xi^-_n]$
 \STATE Apply integrating factors (note: phase factor appears twice):
 \begin{align*}
-\hat{z}^+_{n+1/2} &= e^{+ik_z\vA\Delta t/2}\left(\hat{z}^+_n + e^{+ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^+}\right), \\
-\hat{z}^-_{n+1/2} &= e^{-ik_z\vA\Delta t/2}\left(\hat{z}^-_n + e^{-ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^-}\right)
+\hat{w}^+_{n+1/2} &= e^{+ik_z\vA\Delta t/2}\left(\hat{w}^+_n + e^{+ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^+}\right), \\
+\hat{w}^-_{n+1/2} &= e^{-ik_z\vA\Delta t/2}\left(\hat{w}^-_n + e^{-ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^-}\right)
 \end{align*}
 \STATE Hermite moments (no integrating factor):
 \[
@@ -73,8 +73,8 @@ GANDALF advances the transformed variables using a midpoint (second-order Runge-
 \STATE \textbf{Full-step corrector:}
 \STATE Apply integrating factors with midpoint RHS:
 \begin{align*}
-\hat{z}^+_{n+1} &= e^{+ik_z\vA\Delta t}\left(\hat{z}^+_n + e^{+ik_z\vA\Delta t} \Delta t \, \widehat{\mathcal{N}_{n+1/2}^+}\right), \\
-\hat{z}^-_{n+1} &= e^{-ik_z\vA\Delta t}\left(\hat{z}^-_n + e^{-ik_z\vA\Delta t} \Delta t \, \widehat{\mathcal{N}_{n+1/2}^-}\right)
+\hat{w}^+_{n+1} &= e^{+ik_z\vA\Delta t}\left(\hat{w}^+_n + e^{+ik_z\vA\Delta t} \Delta t \, \widehat{\mathcal{N}_{n+1/2}^+}\right), \\
+\hat{w}^-_{n+1} &= e^{-ik_z\vA\Delta t}\left(\hat{w}^-_n + e^{-ik_z\vA\Delta t} \Delta t \, \widehat{\mathcal{N}_{n+1/2}^-}\right)
 \end{align*}
 \STATE Hermite moments:
 \[
@@ -93,7 +93,7 @@ The integrating factor removes the \Alfven\ wave CFL \emph{stability} restrictio
 \Delta t \leq C \frac{\min(\Delta x, \Delta y, \Delta z)}{\max(\vA, |\mathbf{v}_\perp|_\text{max})},
 \label{eq:cfl_condition}
 \end{equation}
-where $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity and the safety factor $C = 0.3$ accounts for the second-order method. Although the integrating factor permits arbitrarily large time steps without instability, maintaining $\Delta t \sim \Delta z/\vA$ ensures the RK2 scheme accurately captures nonlinear couplings between counter-propagating wave packets.
+where $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity and the safety factor $C = 0.3$ accounts for the second-order method. The integrating factor removes the \emph{parallel} \Alfven\ wave CFL restriction ($\Delta t < \Delta z/\vA$), but the overall time step remains limited by the \emph{perpendicular} advection CFL and accuracy requirements for resolving nonlinear dynamics. For typical anisotropic turbulence simulations with $\Delta x \sim \Delta y \ll \Delta z$, the perpendicular grid spacing controls the time step.
 
 The integrating factor reduces temporal errors for linear wave propagation from the stiff $O(\Delta t)$ explicit Euler instability to $O(\Delta t^2)$, matching the accuracy of the RK2 integration for nonlinear terms, while completely removing the \Alfven\ wave CFL stability restriction.
 
@@ -102,14 +102,14 @@ The integrating factor reduces temporal errors for linear wave propagation from 
 
 Physical dissipation enters GANDALF through magnetic diffusion (resistivity) for the Elsasser fields and collisions for the Hermite moments. Rather than adding explicit dissipation terms to the right-hand side, GANDALF applies exponential damping factors exactly after each time step.
 
-For the Elsasser fields, resistive diffusion $\eta\nabla^2_\perp$ becomes
+For the Elsasser vorticities, resistive diffusion $\eta\nabla^2_\perp$ becomes
 \begin{equation}
-\hat{z}^\pm_{n+1} \to \hat{z}^\pm_{n+1} \exp\left(-\eta \kperp^2 \Delta t\right)
+\hat{w}^\pm_{n+1} \to \hat{w}^\pm_{n+1} \exp\left(-\eta \kperp^2 \Delta t\right)
 \label{eq:resistive_damping}
 \end{equation}
 in Fourier space. To enhance stability at high wavenumbers while minimizing dissipation in the inertial range, GANDALF employs normalized hyper-resistivity:
 \begin{equation}
-\hat{z}^\pm_{n+1} \to \hat{z}^\pm_{n+1} \exp\left[-\eta \left(\frac{\kperp^2}{k^2_{\perp,\text{max}}}\right)^r \Delta t\right],
+\hat{w}^\pm_{n+1} \to \hat{w}^\pm_{n+1} \exp\left[-\eta \left(\frac{\kperp^2}{k^2_{\perp,\text{max}}}\right)^r \Delta t\right],
 \label{eq:hyper_resistivity}
 \end{equation}
 where $k^2_{\perp,\text{max}} = \max(k_x^2 + k_y^2)$ and the hyper-dissipation order $r \geq 1$ concentrates damping near the grid scale. Standard choices are $r=2$ (hyper-resistivity) or $r=4$ (ultra-hyper-resistivity). Normalization by $k^2_{\perp,\text{max}}$ ensures the stability constraint $\eta\Delta t < 50$ remains independent of resolution, simplifying parameter selection across different grid sizes.
@@ -169,7 +169,7 @@ We summarize the complete GANDALF algorithm for a single time step:
 \caption{Complete GANDALF Time Step with Dissipation and Dealiasing}
 \label{alg:gandalf_complete}
 \begin{algorithmic}[1]
-\STATE \textbf{Input:} Fourier state $(\hat{z}^+_n, \hat{z}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at $t_n$
+\STATE \textbf{Input:} Fourier state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at $t_n$
 \STATE Compute CFL time step: $\Delta t = 0.3 \min(\Delta x,\Delta y,\Delta z)/\max(\vA,|\mathbf{v}_\perp|_\text{max})$
 \STATE \textbf{Half-step:}
 \STATE \quad Evaluate nonlinear terms $\mathcal{N}_n$, $\mathcal{H}_{m,n}$ in real space
@@ -181,10 +181,10 @@ We summarize the complete GANDALF algorithm for a single time step:
 \STATE \textbf{Full step:}
 \STATE \quad Advance with integrating factors (Elsasser) and RK2 (Hermite): $\to$ state $_{n+1}$
 \STATE \textbf{Dissipation:}
-\STATE \quad Apply $\hat{z}^\pm_{n+1} \to \hat{z}^\pm_{n+1} \exp(-\eta(\kperp^2/k^2_{\perp,\text{max}})^r \Delta t)$
+\STATE \quad Apply $\hat{w}^\pm_{n+1} \to \hat{w}^\pm_{n+1} \exp(-\eta(\kperp^2/k^2_{\perp,\text{max}})^r \Delta t)$
 \STATE \quad Apply $\hat{g}^{\pm}_{m,n+1} \to \hat{g}^{\pm}_{m,n+1} \exp(-\coll(m/\Mmax)^{2p} \Delta t)$
-\STATE \textbf{Output:} Updated Fourier state $(\hat{z}^+_{n+1}, \hat{z}^-_{n+1}, \{\hat{g}^{\pm}_{m,n+1}\})$ at $t_{n+1}$
+\STATE \textbf{Output:} Updated Fourier state $(\hat{w}^+_{n+1}, \hat{w}^-_{n+1}, \{\hat{g}^{\pm}_{m,n+1}\})$ at $t_{n+1}$
 \end{algorithmic}
 \end{algorithm}
 
-This algorithm conserves energy to machine precision in the inviscid, collisionless limit ($\eta = \coll = 0$), with practical simulations exhibiting $<0.01\%$ drift over hundreds of nonlinear times. The spectral representation combined with exact linear propagation and properly dealiased nonlinear terms yields a robust method for long-time turbulence simulation across the KRMHD parameter space.
+This algorithm conserves energy to machine precision in exact arithmetic for the inviscid, collisionless limit ($\eta = \coll = 0$). Practical simulations exhibit $<0.01\%$ cumulative energy drift over hundreds of nonlinear times due to finite time-step truncation errors and dealiasing. The spectral representation combined with second-order temporal integration and properly dealiased nonlinear terms yields a robust method for long-time turbulence simulation across the KRMHD parameter space.
