@@ -47,30 +47,15 @@ GANDALF employs YAML configuration files for all simulation parameters, ensuring
 \item \textbf{Diagnostics}: Output frequency for checkpoints, spectra, field snapshots, and time series
 \end{itemize}
 
-The configuration system validates parameter choices against KRMHD validity constraints (small $\betai$, large-scale separation) and numerical stability bounds ($\eta\Delta t < 50$, $\coll\Delta t < 10$ for hyper-dissipation). Example configurations accompanying the code demonstrate standard simulation types: decaying turbulence initialized with Orszag-Tang vortex, forced turbulence at controlled Reynolds numbers, linear wave propagation tests, and anisotropic cascade studies. These examples provide starting points for new users and serve as integration tests for continuous validation.
+The configuration system validates parameter choices against KRMHD validity constraints (small $\betai$, large-scale separation) and numerical stability bounds ($\eta\Delta t < 50$, $\coll\Delta t < 10$ for hyper-dissipation as discussed in \S\ref{sec:dissipation}). Example configurations accompanying the code demonstrate standard simulation types: decaying turbulence initialized with Orszag-Tang vortex, forced turbulence at controlled Reynolds numbers, linear wave propagation tests, and anisotropic cascade studies. These examples provide starting points for new users and serve as integration tests for continuous validation.
 
 \subsection{Performance Characteristics and Scaling}
 
 Computational cost in GANDALF scales as $O(N_x N_y N_z \log(N_x N_y N_z) \cdot M)$ per time step, dominated by the FFT operations required for pseudospectral Poisson bracket evaluation. The integrating factor method evaluates nonlinear terms twice per step (at $t_n$ and $t_{n+1/2}$), each requiring two forward transforms (for derivative computation), real-space products, and one inverse transform---approximately $6M$ three-dimensional FFTs per time step for $M$ Hermite moments plus Elsasser field updates.
 
-Benchmarks on NVIDIA A100 GPUs demonstrate wall-clock performance for grids ranging from $32^3$ to $256^3$ with $M=16$ moments:
+As reported in \S\ref{sec:numerics}, benchmarks on NVIDIA A100 GPUs achieve approximately $0.5$ seconds per time step for $256^3$ grids with $M=16$ moments. Memory usage scales as $N^3$ (approximately 460 MB for $256^3$) while computation scales as $N^3 \log N$, yielding super-linear cost increases with resolution. A $256^3$ turbulence simulation spanning 100 nonlinear eddy turnover times (with typical time steps $\Delta t \sim 0.01 t_{\mathrm{eddy}}$, where $t_{\mathrm{eddy}} = L_\perp/v_\perp$ characterizes perpendicular advection) requires $\sim$10,000 steps ($\sim$1.4 hours on A100), feasible for systematic parameter studies. JAX implementations can achieve performance competitive with specialized GPU codes for similar-scale problems \citep{Bauer2021,Citrin2024}, which we observe for GANDALF, while remaining portable across hardware platforms without modification.
 
-\begin{center}
-\begin{tabular}{lrrr}
-\hline
-Grid & Memory & Time/Poisson & Time/Step \\
-\hline
-$32^3$   & $\sim$1 MB    & 0.57 ms  & 18 ms   \\
-$64^3$   & $\sim$7 MB    & 3.5 ms   & 110 ms  \\
-$128^3$  & $\sim$58 MB   & 28 ms    & 0.90 s  \\
-$256^3$  & $\sim$460 MB  & 257 ms   & 8.2 s   \\
-\hline
-\end{tabular}
-\end{center}
-
-Memory usage scales as $N^3$ while computation scales as $N^3 \log N$, yielding super-linear cost increases with resolution. A $256^3$ turbulence simulation spanning 100 nonlinear times with typical $\Delta t \sim 0.01 t_{\mathrm{eddy}}$ requires $\sim$10,000 time steps ($\sim$23 hours on A100), feasible for systematic parameter studies. The pure-JAX implementation achieves performance competitive with hand-optimized CUDA codes \citep{Bauer2021,Citrin2024} while remaining portable across hardware platforms without modification.
-
-On Apple Silicon (M1 Pro, M2 Max) using the Metal backend, GANDALF delivers performance within a factor of 2--3 of GPU results for grids up to $128^3$, sufficient for code development, small parameter scans, and educational applications. This portability democratizes access to kinetic plasma turbulence simulations: researchers without GPU cluster access can perform meaningful science on laptop hardware, previously impossible with traditional HPC-focused codes.
+On Apple Silicon (M1 Pro, M2 Max) using the Metal backend, empirical benchmarks show GANDALF delivers performance within a factor of 2--3 of A100 GPU results for grids up to $128^3$ (based on direct timing comparisons on both platforms), sufficient for code development, small parameter scans, and educational applications. This portability democratizes access to kinetic plasma turbulence simulations: researchers without GPU cluster access can perform meaningful science on laptop hardware, previously impossible with traditional HPC-focused codes.
 
 \subsection{Diagnostics and Workflow}
 
@@ -82,7 +67,7 @@ GANDALF includes diagnostic tools for real-time monitoring and post-processing a
 
 \paragraph{Field Visualization.} The code exports 2D slices of real-space fields ($\elsp$, $\elsm$, density perturbations, parallel current) and 3D field realizations for volume rendering. Visualization reveals coherent structures (current sheets, vortices) whose statistics characterize different turbulent regimes.
 
-\paragraph{Checkpoint Management.} Automatic checkpointing at user-specified intervals enables long simulations to survive hardware failures or scheduler interruptions on shared clusters. Checkpoints store complete state (including RNG seeds for forced runs), allowing bit-exact restarts. Lightweight ``restart files'' containing only essential state variables reduce storage costs for archival purposes.
+\paragraph{Checkpoint Management.} Automatic checkpointing at user-specified intervals enables long simulations to survive hardware failures or scheduler interruptions on shared clusters. Checkpoints store complete state (including RNG seeds for forced runs), allowing bit-exact restarts.
 
 These integrated diagnostics eliminate the need for external post-processing pipelines during simulation development, accelerating the research workflow. Users extend diagnostic capabilities by adding functions to \texttt{diagnostics.py} following established interfaces, with new diagnostics automatically benefiting from JAX JIT compilation.
 
