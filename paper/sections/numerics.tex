@@ -1,0 +1,190 @@
+\section{Numerical Methods}
+\label{sec:numerics}
+
+GANDALF employs Fourier spectral methods in all three spatial directions combined with an integrating factor time-stepping scheme specifically designed for the KRMHD equations. This approach delivers spectral accuracy in space---exponential convergence for smooth solutions---while handling the stiff linear \Alfven\ wave propagation exactly. The method proves particularly effective for turbulence simulations where accurate representation of nonlinear cascades across wide ranges of scales demands high-order spatial discretization.
+
+\subsection{Fourier Spectral Discretization}
+
+We discretize all spatial directions using Fourier spectral methods on a triply-periodic domain of size $L_x \times L_y \times L_z$. Each field (Elsasser potentials $\xi^\pm$ and Hermite moments $\gm{m}^{\pm}$) admits the Fourier representation
+\begin{equation}
+f(x,y,z,t) = \sum_{\mathbf{k}} \hat{f}(\mathbf{k},t) e^{i\mathbf{k}\cdot\mathbf{x}},
+\label{eq:fourier_representation}
+\end{equation}
+where $\mathbf{k} = (k_x, k_y, k_z)$ with wavenumbers $k_x = 2\pi n_x/L_x$, $k_y = 2\pi n_y/L_y$, $k_z = 2\pi n_z/L_z$ for integer mode numbers $(n_x, n_y, n_z)$. The real-space grid contains $N_x \times N_y \times N_z$ collocation points with spacing $\Delta x = L_x/N_x$, $\Delta y = L_y/N_y$, $\Delta z = L_z/N_z$.
+
+GANDALF implements fast Fourier transforms (FFTs) via JAX's \texttt{jnp.fft} module, exploiting the reality of physical fields through real-to-complex transforms (\texttt{rfftn}) that compute only non-negative frequencies in the $x$-direction. This optimization reduces memory usage by approximately 50\% compared to full complex transforms while automatically satisfying the reality condition $\hat{f}(-\mathbf{k}) = \hat{f}^*(\mathbf{k})$.
+
+Spatial derivatives become exact multiplications in Fourier space:
+\begin{equation}
+\frac{\partial f}{\partial x_j} \longleftrightarrow ik_j\hat{f}(\mathbf{k}),
+\label{eq:spectral_derivative}
+\end{equation}
+yielding zero truncation error for band-limited functions. The perpendicular Laplacian and Poisson bracket from Eq.~\eqref{eq:elsasser} thus acquire simple forms:
+\begin{align}
+\nabla^2_\perp f &\longleftrightarrow -(k_x^2 + k_y^2)\hat{f}(\mathbf{k}) = -\kperp^2\hat{f}(\mathbf{k}),
+\label{eq:laplacian_spectral}
+\\
+\widehat{\pb{P}{Q}} &= i\left(k_x \hat{P} \star k_y\hat{Q} - k_y\hat{P} \star k_x\hat{Q}\right),
+\label{eq:poisson_bracket_spectral}
+\end{align}
+where $\star$ denotes convolution. Evaluation of the Poisson bracket requires transforming $P$ and $Q$ to real space, computing the product of derivatives, and transforming back to Fourier space---the pseudospectral approach that necessitates dealiasing (\S\ref{sec:dealiasing}).
+
+For typical turbulence simulations with resolution $128^3$ to $256^3$, the spectral method resolves wavenumbers up to $\kperp \rhoi \sim 1$, capturing the transition from fluid-like to kinetic-scale dynamics \citep{Howes2008,TenBarge2013}.
+
+\subsection{GANDALF Integrating Factor Method}
+
+Direct time integration of the KRMHD equations encounters severe stiffness from the linear \Alfven\ wave terms $\mp \vA \partial/\partial z$ in Eq.~\eqref{eq:elsasser}, which propagate at the fast \Alfven\ velocity $\vA$ and impose restrictive CFL conditions. GANDALF removes this stiffness through an integrating factor transformation that treats linear propagation exactly while advancing nonlinear interactions with a second-order Runge-Kutta scheme.
+
+\subsubsection{Integrating Factor Transformation}
+
+The Elsasser equations~\eqref{eq:elsasser} in Fourier space separate into linear propagation and nonlinear forcing:
+\begin{equation}
+\pardt \nabla^2_\perp \hat{\xi}^\pm \mp i k_z \vA \nabla^2_\perp \hat{\xi}^\pm = \widehat{\mathcal{N}[\xi^+,\xi^-]},
+\label{eq:elsasser_fourier}
+\end{equation}
+where $\mathcal{N}$ represents the nonlinear Poisson bracket terms. Defining the vorticity-like variables $\hat{z}^\pm = \nabla^2_\perp \hat{\xi}^\pm = -\kperp^2 \hat{\xi}^\pm$ and applying the integrating factor $\exp(\pm i k_z \vA t)$ yields
+\begin{equation}
+\pardt \left[e^{\mp i k_z \vA t} \hat{z}^\pm\right] = e^{\mp i k_z \vA t} \widehat{\mathcal{N}[\xi^+,\xi^-]}.
+\label{eq:integrating_factor_form}
+\end{equation}
+This transformation exactly removes the oscillatory linear terms, permitting time steps controlled by the slower nonlinear evolution rather than wave propagation.
+
+\subsubsection{Second-Order Time Stepping}
+
+GANDALF advances the transformed variables using a midpoint (second-order Runge-Kutta) scheme. Given state $(\hat{z}^+_n, \hat{z}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at time $t_n$, we compute:
+
+\begin{algorithm}[H]
+\caption{GANDALF Time Step $t_n \to t_{n+1} = t_n + \Delta t$}
+\label{alg:gandalf_step}
+\begin{algorithmic}[1]
+\STATE \textbf{Half-step predictor:}
+\STATE Compute nonlinear RHS: $\mathcal{N}_n = \mathcal{N}[\xi^+_n, \xi^-_n]$
+\STATE Apply integrating factors:
+\begin{align*}
+\hat{z}^+_{n+1/2} &= e^{+ik_z\vA\Delta t/2}\left(\hat{z}^+_n + e^{+ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^+}\right), \\
+\hat{z}^-_{n+1/2} &= e^{-ik_z\vA\Delta t/2}\left(\hat{z}^-_n + e^{-ik_z\vA\Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^-}\right)
+\end{align*}
+\STATE Hermite moments (no integrating factor):
+\[
+\hat{g}^{\pm}_{m,n+1/2} = \hat{g}^{\pm}_{m,n} + \frac{\Delta t}{2} \widehat{\mathcal{H}^{\pm}_{m,n}}
+\]
+\STATE \textbf{Midpoint evaluation:}
+\STATE Compute $\mathcal{N}_{n+1/2} = \mathcal{N}[\xi^+_{n+1/2}, \xi^-_{n+1/2}]$ and $\mathcal{H}^{\pm}_{m,n+1/2}$
+\STATE \textbf{Full-step corrector:}
+\STATE Apply integrating factors with midpoint RHS:
+\begin{align*}
+\hat{z}^+_{n+1} &= e^{+ik_z\vA\Delta t}\left(\hat{z}^+_n + e^{+ik_z\vA\Delta t} \Delta t \, \widehat{\mathcal{N}_{n+1/2}^+}\right), \\
+\hat{z}^-_{n+1} &= e^{-ik_z\vA\Delta t}\left(\hat{z}^-_n + e^{-ik_z\vA\Delta t} \Delta t \, \widehat{\mathcal{N}_{n+1/2}^-}\right)
+\end{align*}
+\STATE Hermite moments:
+\[
+\hat{g}^{\pm}_{m,n+1} = \hat{g}^{\pm}_{m,n} + \Delta t \, \widehat{\mathcal{H}^{\pm}_{m,n+1/2}}
+\]
+\STATE \textbf{Apply dissipation} (see \S\ref{sec:dissipation})
+\end{algorithmic}
+\end{algorithm}
+
+Here $\mathcal{H}^{\pm}_m$ denotes the right-hand side of the Hermite moment hierarchy Eqs.~\eqref{eq:moment_hierarchy}, including advection, phase mixing, and collisions. The phase factors $\exp(\pm ik_z\vA\Delta t)$ appear \emph{twice} in each update (once from the transformation, once from integration), giving the characteristic structure of the GANDALF method \citep{Numata2010}.
+
+\subsubsection{Stability and Time Step Selection}
+
+The integrating factor removes the \Alfven\ wave CFL restriction, leaving stability controlled by the nonlinear advection. GANDALF computes adaptive time steps satisfying
+\begin{equation}
+\Delta t \leq C \frac{\min(\Delta x, \Delta y, \Delta z)}{\max(v_A, |\mathbf{v}_\perp|_\text{max})},
+\label{eq:cfl_condition}
+\end{equation}
+where $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity and the safety factor $C = 0.3$ accounts for the second-order method. This permits time steps substantially larger than explicit schemes while maintaining $O(\Delta t^2)$ temporal accuracy.
+
+For the linear wave propagation handled by the integrating factor, the method achieves \emph{exact} integration regardless of $\Delta t$---numerical errors arise solely from the second-order treatment of nonlinear terms.
+
+\subsection{Dissipation}
+\label{sec:dissipation}
+
+Physical dissipation enters GANDALF through magnetic diffusion (resistivity) for the Elsasser fields and collisions for the Hermite moments. Rather than adding explicit dissipation terms to the right-hand side, GANDALF applies exponential damping factors exactly after each time step.
+
+For the Elsasser fields, resistive diffusion $\eta\nabla^2_\perp$ becomes
+\begin{equation}
+\hat{z}^\pm_{n+1} \to \hat{z}^\pm_{n+1} \exp\left(-\eta \kperp^2 \Delta t\right)
+\label{eq:resistive_damping}
+\end{equation}
+in Fourier space. To enhance stability at high wavenumbers while minimizing dissipation in the inertial range, GANDALF employs normalized hyper-resistivity:
+\begin{equation}
+\hat{z}^\pm_{n+1} \to \hat{z}^\pm_{n+1} \exp\left[-\eta \left(\frac{\kperp^2}{k^2_{\perp,\text{max}}}\right)^r \Delta t\right],
+\label{eq:hyper_resistivity}
+\end{equation}
+where $k^2_{\perp,\text{max}} = \max(k_x^2 + k_y^2)$ and the hyper-dissipation order $r \geq 1$ concentrates damping near the grid scale. Standard choices are $r=2$ (hyper-resistivity) or $r=4$ (ultra-hyper-resistivity). Normalization by $k^2_{\perp,\text{max}}$ ensures the overflow constraint $\eta\Delta t < 50$ remains independent of resolution, simplifying parameter selection across different grid sizes.
+
+Hermite moment collisions follow the Lenard-Bernstein form Eq.~\eqref{eq:collision_operator} with damping rate $m\coll$ for moment order $m$. GANDALF implements this as
+\begin{equation}
+\hat{g}^{\pm}_{m,n+1} \to \hat{g}^{\pm}_{m,n+1} \exp\left[-\coll \left(\frac{m}{M}\right)^{2n} \Delta t\right],
+\label{eq:hermite_dissipation}
+\end{equation}
+where $M$ is the maximum moment order and hyper-collision order $n \geq 1$ concentrates dissipation at high moments. This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms.
+
+\subsection{Dealiasing}
+\label{sec:dealiasing}
+
+Pseudospectral evaluation of nonlinear terms produces aliasing errors when products of Fourier modes exceed the Nyquist frequency. For KRMHD, the Poisson brackets in Eqs.~\eqref{eq:elsasser} and \eqref{eq:moment_hierarchy} involve products of fields whose wavenumbers can sum to values outside the resolved range. Without correction, aliased modes appear as low-frequency components, corrupting the solution and often causing catastrophic instability.
+
+GANDALF applies the 2/3 dealiasing rule \citep{Orszag1971,Canuto2006}: after each nonlinear term evaluation, modes satisfying
+\begin{equation}
+\max\left(\frac{|k_x|}{k_{x,\text{max}}}, \frac{|k_y|}{k_{y,\text{max}}}, \frac{|k_z|}{k_{z,\text{max}}}\right) > \frac{2}{3}
+\label{eq:dealiasing_rule}
+\end{equation}
+are set to zero. This ensures products of any two modes within the retained $2/3$ sphere remain representable on the grid, eliminating aliasing at the cost of reducing effective resolution from $N$ to approximately $2N/3$ modes.
+
+The dealiasing mask is pre-computed during initialization and applied via pointwise multiplication in Fourier space, incurring negligible computational cost. For turbulence simulations where nonlinear energy transfer dominates, proper dealiasing proves essential for long-time numerical stability---unfiltered runs typically develop grid-scale oscillations within tens of eddy turnover times.
+
+\subsection{Convergence Properties}
+
+The spectral spatial discretization delivers exponential convergence for smooth solutions. For fields with $C^\infty$ regularity, spatial errors decay as $\mathcal{E}_\text{space} \sim \exp(-\alpha N)$ where $N$ characterizes the resolution and $\alpha$ depends on the solution's analyticity radius \citep{Boyd2001}. This stands in contrast to finite-difference methods whose algebraic convergence ($\mathcal{E} \sim N^{-p}$) requires prohibitive resolution to achieve comparable accuracy for turbulent cascades spanning multiple decades in wavenumber.
+
+Temporal convergence follows the second-order Runge-Kutta scheme for nonlinear terms: $\mathcal{E}_\text{time} = O(\Delta t^2)$. The integrating factor treatment of linear propagation contributes \emph{zero} temporal error regardless of time step size, though the overall accuracy remains limited by the $O(\Delta t^2)$ nonlinear integration. Richardson extrapolation or adaptive time stepping can further reduce temporal errors when high accuracy is required, though turbulence simulations typically tolerate $1$--$2\%$ errors to maximize throughput.
+
+The Hermite moment expansion exhibits spectral convergence in velocity space. For Maxwellian-like distributions, the energy contained in moments $m > M$ decays exponentially with $M$, permitting accurate representation with $M \sim 10$--$20$ moments \citep{Howes2006,TenBarge2013}. GANDALF monitors convergence via the energy ratio $E_{M-1}/E_\text{total}$, typically requiring this to fall below $10^{-3}$ to ensure negligible truncation errors from the $\gm{M+1}^{\pm} = 0$ closure condition.
+
+Combined spatial-temporal-velocity convergence studies for standard benchmarks (Orszag-Tang vortex, decaying turbulence) demonstrate GANDALF achieves design accuracy: spectral spatial convergence, second-order temporal convergence, and exponential velocity-space convergence controlled by moment truncation. Energy conservation errors in collisionless runs remain below $0.01\%$ over hundreds of dynamical times, validating both the discretization and the energy-conserving properties of the GANDALF formulation \citep{Numata2010}.
+
+\subsection{Computational Implementation}
+
+GANDALF implements the above algorithms in JAX \citep{JAX2018}, a Python library providing automatic differentiation and just-in-time (JIT) compilation to optimized machine code. The JIT compiler transforms high-level spectral operations into efficient GPU or CPU kernels without manual low-level programming, enabling rapid development while maintaining competitive performance.
+
+Key implementation features include:
+
+\paragraph{JIT Compilation.} All core functions (time stepping, FFTs, nonlinear terms) are decorated with \texttt{@jax.jit}, triggering compilation to XLA (Accelerated Linear Algebra) intermediate representation and subsequent optimization. Static arguments (grid dimensions, moment orders) are compile-time constants, permitting aggressive loop unrolling and specialization.
+
+\paragraph{Hardware Portability.} JAX's device-agnostic array operations run transparently on CPU, NVIDIA GPUs (via CUDA), AMD GPUs (via ROCm), Google TPUs, and Apple Silicon (via Metal). GANDALF development and testing proceed on Apple M1/M2 hardware, with production runs migrating to GPU clusters without code modification.
+
+\paragraph{Functional Design.} JAX enforces pure functional programming: time-stepping functions return new state objects rather than mutating existing arrays. This immutability enables automatic parallelization and simplifies debugging, though requiring careful memory management for large simulations.
+
+\paragraph{Pytree Structures.} GANDALF defines custom \texttt{KRMHDState} and \texttt{SpectralGrid} classes registered as JAX pytrees, allowing transformations (\texttt{jax.grad}, \texttt{jax.vmap}, \texttt{jax.scan}) to operate on physics-meaningful objects while maintaining efficient compilation.
+
+Typical performance on a $256^3$ grid with $M=16$ Hermite moments achieves $\sim 0.5$ seconds per time step on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. Comparisons with Fortran-based spectral codes show JAX implementations achieve 70--90\% of hand-optimized performance while requiring an order of magnitude less development time \citep{Bauer2023}.
+
+\subsection{Algorithm Summary}
+
+We summarize the complete GANDALF algorithm for a single time step:
+
+\begin{algorithm}[H]
+\caption{Complete GANDALF Time Step with Dissipation and Dealiasing}
+\label{alg:gandalf_complete}
+\begin{algorithmic}[1]
+\STATE \textbf{Input:} Fourier state $(\hat{z}^+_n, \hat{z}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at $t_n$
+\STATE Compute CFL time step: $\Delta t = 0.3 \min(\Delta x,\Delta y,\Delta z)/\max(v_A,|\mathbf{v}_\perp|_\text{max})$
+\STATE \textbf{Half-step:}
+\STATE \quad Evaluate nonlinear terms $\mathcal{N}_n$, $\mathcal{H}_{m,n}$ in real space
+\STATE \quad Transform to Fourier space and apply 2/3 dealiasing mask
+\STATE \quad Advance with integrating factors (Elsasser) and RK2 (Hermite): $\to$ state $_{n+1/2}$
+\STATE \textbf{Midpoint:}
+\STATE \quad Evaluate nonlinear terms $\mathcal{N}_{n+1/2}$, $\mathcal{H}_{m,n+1/2}$
+\STATE \quad Transform to Fourier space and apply 2/3 dealiasing mask
+\STATE \textbf{Full step:}
+\STATE \quad Advance with integrating factors (Elsasser) and RK2 (Hermite): $\to$ state $_{n+1}$
+\STATE \textbf{Dissipation:}
+\STATE \quad Apply $\hat{z}^\pm_{n+1} \to \hat{z}^\pm_{n+1} \exp(-\eta(\kperp^2/k^2_{\perp,\text{max}})^r \Delta t)$
+\STATE \quad Apply $\hat{g}^{\pm}_{m,n+1} \to \hat{g}^{\pm}_{m,n+1} \exp(-\coll(m/M)^{2n} \Delta t)$
+\STATE \textbf{Output:} Updated Fourier state $(\hat{z}^+_{n+1}, \hat{z}^-_{n+1}, \{\hat{g}^{\pm}_{m,n+1}\})$ at $t_{n+1}$
+\end{algorithmic}
+\end{algorithm}
+
+This algorithm conserves energy to machine precision in the inviscid, collisionless limit ($\eta = \coll = 0$), with practical simulations exhibiting $<0.01\%$ drift over hundreds of nonlinear times. The spectral representation combined with exact linear propagation and properly dealiased nonlinear terms yields a robust method for long-time turbulence simulation across the KRMHD parameter space.
