@@ -24,10 +24,10 @@ yielding zero truncation error for band-limited functions. The perpendicular Lap
 \nabla^2_\perp f &\longleftrightarrow -(k_x^2 + k_y^2)\hat{f}(\mathbf{k}) = -\kperp^2\hat{f}(\mathbf{k}),
 \label{eq:laplacian_spectral}
 \\
-\widehat{\pb{P}{Q}} &= i\left(k_x \hat{P} \star k_y\hat{Q} - k_y\hat{P} \star k_x\hat{Q}\right),
+\widehat{\pb{P}{Q}} &= i\left(k_x \hat{P} \conv k_y\hat{Q} - k_y\hat{P} \conv k_x\hat{Q}\right),
 \label{eq:poisson_bracket_spectral}
 \end{align}
-where $\star$ denotes convolution. Evaluation of the Poisson bracket requires transforming $P$ and $Q$ to real space, computing the product of derivatives, and transforming back to Fourier space---the pseudospectral approach that necessitates dealiasing (\S\ref{sec:dealiasing}).
+where $\conv$ denotes convolution. Evaluation of the Poisson bracket requires transforming $P$ and $Q$ to real space, computing the product of derivatives, and transforming back to Fourier space---the pseudospectral approach that necessitates dealiasing (\S\ref{sec:dealiasing}).
 
 For typical turbulence simulations with resolution $128^3$ to $256^3$, the spectral method resolves maximum wavenumbers (after 2/3 dealiasing) up to $k_{\perp,\text{max}} \rhoi \sim 1$, capturing the transition from fluid-like MHD scales to kinetic-scale dynamics where ion Larmor radius effects become important \citep{Howes2008,TenBarge2013}.
 
@@ -88,7 +88,7 @@ Here $\mathcal{H}^{\pm}_m$ denotes the right-hand side of the Hermite moment hie
 
 \subsubsection{Stability and Time Step Selection}
 
-The integrating factor removes the \Alfven\ wave CFL \emph{stability} restriction, but accuracy considerations for the second-order nonlinear integration still require time steps that resolve wave propagation timescales. GANDALF computes adaptive time steps satisfying
+The integrating factor removes the parallel \Alfven\ wave CFL restriction ($\Delta t < \Delta z/\vA$) \emph{completely} for both stability and accuracy, as linear wave propagation is treated exactly by the phase factors. However, accuracy of the second-order method for the nonlinear terms requires time steps that resolve nonlinear eddy turnover timescales and perpendicular advection. GANDALF computes adaptive time steps satisfying
 \begin{equation}
 \Delta t \leq C \frac{\min(\Delta x, \Delta y, \Delta z)}{\max(\vA, |\mathbf{v}_\perp|_\text{max})},
 \label{eq:cfl_condition}

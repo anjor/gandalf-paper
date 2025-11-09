@@ -1,0 +1,144 @@
+\begin{thebibliography}{}
+
+\bibitem[Bauer et~al., 2021]{Bauer2021}
+Bauer, P., Dueben, P.~D., Hoefler, T., Quintino, T., Schulthess, T.~C., and
+  Wedi, N.~P. (2021).
+\newblock The digital revolution of {E}arth-system science.
+\newblock {\em Nature Computational Science}, 1:104--113.
+
+\bibitem[Boyd, 2001]{Boyd2001}
+Boyd, J.~P. (2001).
+\newblock {\em Chebyshev and Fourier Spectral Methods}.
+\newblock Dover Publications, 2nd edition.
+
+\bibitem[Bradbury et~al., 2018]{JAX2018}
+Bradbury, J., Frostig, R., Hawkins, P., Johnson, M.~J., Leary, C., Maclaurin,
+  D., Necula, G., Paszke, A., {VanderPlas}, J., {Wanderman-Milne}, S., and
+  Zhang, Q. (2018).
+\newblock {JAX}: Composable transformations of {P}ython+{N}um{P}y programs.
+
+\bibitem[Canuto et~al., 2006]{Canuto2006}
+Canuto, C., Hussaini, M.~Y., Quarteroni, A., and Zang, T.~A. (2006).
+\newblock {\em Spectral Methods: Fundamentals in Single Domains}.
+\newblock Springer.
+
+\bibitem[Citrin et~al., 2024]{Citrin2024}
+Citrin, J., Goodfellow, I., Raju, A., Chen, J., Degrave, J., Donner, C.,
+  Felici, F., Hamel, P., Huber, A., Nikulin, D., Pfau, D., Tracey, B.,
+  Riedmiller, M., and Kohli, P. (2024).
+\newblock {TORAX}: A fast and differentiable tokamak transport simulator in
+  {JAX}.
+\newblock {\em arXiv preprint arXiv:2406.06718}.
+
+\bibitem[Els{\"a}sser, 1950]{Elsasser1950}
+Els{\"a}sser, W.~M. (1950).
+\newblock The hydromagnetic equations.
+\newblock {\em Physical Review}, 79(1):183.
+
+\bibitem[Goldreich and Sridhar, 1995]{GoldreichSridhar1995}
+Goldreich, P. and Sridhar, S. (1995).
+\newblock Toward a theory of interstellar turbulence. 2: Strong alfvenic
+  turbulence.
+\newblock {\em The Astrophysical Journal}, 438:763--775.
+
+\bibitem[Grad, 1949]{Grad1949}
+Grad, H. (1949).
+\newblock On the kinetic theory of rarefied gases.
+\newblock {\em Communications on Pure and Applied Mathematics}, 2(4):331--407.
+
+\bibitem[Howes et~al., 2006]{Howes2006}
+Howes, G.~G., Cowley, S.~C., Dorland, W., Hammett, G.~W., Quataert, E., and
+  Schekochihin, A.~A. (2006).
+\newblock Astrophysical gyrokinetics: Basic equations and linear theory.
+\newblock {\em The Astrophysical Journal}, 651(1):590--614.
+
+\bibitem[Howes et~al., 2008]{Howes2008}
+Howes, G.~G., Cowley, S.~C., Dorland, W., Hammett, G.~W., Quataert, E., and
+  Schekochihin, A.~A. (2008).
+\newblock A model of turbulence in magnetized plasmas: Implications for the
+  dissipation range in the solar wind.
+\newblock {\em Journal of Geophysical Research}, 113:A05103.
+
+\bibitem[Jenko et~al., 2000]{Jenko2000}
+Jenko, F., Dorland, W., Hammett, G.~W., and Howes, G.~G. (2000).
+\newblock Electron temperature gradient driven turbulence.
+\newblock {\em Physics of Plasmas}, 7(5):1904--1910.
+
+\bibitem[Landau, 1946]{Landau1946}
+Landau, L. (1946).
+\newblock On the vibrations of the electronic plasma.
+\newblock {\em Journal of Physics (USSR)}, 10:25--34.
+\newblock English translation in JETP 16, 574.
+
+\bibitem[Lenard and Bernstein, 1958]{LenardBernstein1958}
+Lenard, A. and Bernstein, I.~B. (1958).
+\newblock Plasma oscillations with diffusion in velocity space.
+\newblock {\em Physical Review}, 112(5):1456--1459.
+
+\bibitem[Lithwick and Goldreich, 2001]{LithwickGoldreich2001}
+Lithwick, Y. and Goldreich, P. (2001).
+\newblock Compressible magnetohydrodynamic turbulence in interstellar plasmas.
+\newblock {\em The Astrophysical Journal}, 562(1):279--296.
+
+\bibitem[Loureiro et~al., 2016]{Loureiro2016}
+Loureiro, N.~F., Dorland, W., Fazendeiro, L., Kanekar, A., Mallet, A., Vilelas,
+  M.~S., and Zocco, A. (2016).
+\newblock Viriato: A {F}ourier--{H}ermite spectral code for strongly magnetized
+  fluid--kinetic plasma dynamics.
+\newblock {\em Computer Physics Communications}, 206:45--63.
+
+\bibitem[Mandell et~al., 2024]{Mandell2024}
+Mandell, N.~R., Dorland, W., Abel, I., Gaur, R., Kim, P., Martin, M., and Qian,
+  T. (2024).
+\newblock {GX}: A {GPU}-native gyrokinetic turbulence code for tokamak and
+  stellarator design.
+\newblock {\em Journal of Plasma Physics}, 90(6):905900620.
+\newblock arXiv:2209.06731.
+
+\bibitem[Numata et~al., 2010]{Numata2010}
+Numata, R., Howes, G.~G., Tatsuno, T., Barnes, M., and Dorland, W. (2010).
+\newblock {AstroGK}: Astrophysical gyrokinetics code.
+\newblock {\em Journal of Computational Physics}, 229(24):9347--9372.
+
+\bibitem[Orszag, 1971]{Orszag1971}
+Orszag, S.~A. (1971).
+\newblock On the elimination of aliasing in finite-difference schemes by
+  filtering high-wavenumber components.
+\newblock {\em Journal of the Atmospheric Sciences}, 28:1074.
+
+\bibitem[Rivera et~al., 2024]{Rivera2024}
+Rivera, Y.~J., Badman, S.~T., Stevens, M.~L., Verniero, J.~L., Stawarz, J.~E.,
+  Shi, C., Raines, J.~M., Paulson, K.~W., Owen, C.~J., Niembro, T., Louarn, P.,
+  Livi, S.~A., Lepri, S.~T., Kasper, J.~C., Horbury, T.~S., Halekas, J.~S.,
+  Dewey, R.~M., {De Marco}, R., and Bale, S.~D. (2024).
+\newblock In situ observations of large-amplitude {A}lfv\'{e}n waves heating
+  and accelerating the solar wind.
+\newblock {\em Science}, 385(6712):962--966.
+
+\bibitem[Schekochihin et~al., 2009]{Schekochihin2009}
+Schekochihin, A.~A., Cowley, S.~C., Dorland, W., Hammett, G.~W., Howes, G.~G.,
+  Quataert, E., and Tatsuno, T. (2009).
+\newblock Astrophysical gyrokinetics: Kinetic and fluid turbulent cascades in
+  magnetized weakly collisional plasmas.
+\newblock {\em The Astrophysical Journal Supplement Series}, 182(1):310--377.
+
+\bibitem[Strauss, 1976]{Strauss1976}
+Strauss, H.~R. (1976).
+\newblock Nonlinear, three-dimensional magnetohydrodynamics of noncircular
+  tokamaks.
+\newblock {\em Physics of Fluids}, 19(1):134--140.
+
+\bibitem[TenBarge and Howes, 2013]{TenBarge2013}
+TenBarge, J.~M. and Howes, G.~G. (2013).
+\newblock Current sheets and collisionless damping in kinetic plasma
+  turbulence.
+\newblock {\em The Astrophysical Journal Letters}, 771:L27.
+
+\bibitem[Yang et~al., 2023]{Yang2023}
+Yang, L., He, J., Verscharen, D., Li, H., Bowen, T.~A., Bale, S.~D., Wu, H.,
+  Li, W., Wang, Y., Zhang, L., Feng, X., and Wu, Z. (2023).
+\newblock Energy transfer of imbalanced {A}lfv\'{e}nic turbulence in the
+  heliosphere.
+\newblock {\em Nature Communications}, 14(1):7955.
+
+\end{thebibliography}

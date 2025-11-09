@@ -1,0 +1,20 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Mathematical Formulation}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{The KRMHD Regime}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Governing Equations}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Hermite Moment Expansion}{section.2}% 5
+\BOOKMARK [3][-]{subsubsection.2.3.1}{Expansion in Hermite Basis}{subsection.2.3}% 6
+\BOOKMARK [3][-]{subsubsection.2.3.2}{Normalized Moment Hierarchy}{subsection.2.3}% 7
+\BOOKMARK [3][-]{subsubsection.2.3.3}{Dissipation and Closure}{subsection.2.3}% 8
+\BOOKMARK [2][-]{subsection.2.4}{System Properties}{section.2}% 9
+\BOOKMARK [1][-]{section.3}{Numerical Methods}{}% 10
+\BOOKMARK [2][-]{subsection.3.1}{Fourier Spectral Discretization}{section.3}% 11
+\BOOKMARK [2][-]{subsection.3.2}{GANDALF Integrating Factor Method}{section.3}% 12
+\BOOKMARK [3][-]{subsubsection.3.2.1}{Integrating Factor Transformation}{subsection.3.2}% 13
+\BOOKMARK [3][-]{subsubsection.3.2.2}{Second-Order Time Stepping}{subsection.3.2}% 14
+\BOOKMARK [3][-]{subsubsection.3.2.3}{Stability and Time Step Selection}{subsection.3.2}% 15
+\BOOKMARK [2][-]{subsection.3.3}{Dissipation}{section.3}% 16
+\BOOKMARK [2][-]{subsection.3.4}{Dealiasing}{section.3}% 17
+\BOOKMARK [2][-]{subsection.3.5}{Convergence Properties}{section.3}% 18
+\BOOKMARK [2][-]{subsection.3.6}{Computational Implementation}{section.3}% 19
+\BOOKMARK [2][-]{subsection.3.7}{Algorithm Summary}{section.3}% 20
