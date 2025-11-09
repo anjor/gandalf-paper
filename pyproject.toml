@@ -1,0 +1,17 @@
+[project]
+name = "gandalf-paper-scripts"
+version = "0.1.0"
+description = "GANDALF paper benchmarks and analysis scripts - not a package, just dependencies"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "matplotlib>=3.7.0",
+    "h5py>=3.11.0",
+    "jax>=0.4.20",
+    "pydantic>=2.12.4",
+    "pyyaml>=6.0.3",
+]
+
+[tool.setuptools]
+py-modules = []
