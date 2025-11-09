@@ -24,7 +24,7 @@ Writing a Journal of Plasma Physics paper on GANDALF, a modern reimplementation 
 ### Numerics
 - Fourier spectral in perpendicular plane (x,y)
 - Configurable parallel direction (z): spectral or finite difference
-- Time stepping: RK4
+- Time stepping: GANDALF integrating factor method (RK2 midpoint with exact linear wave propagation)
 - Dealiasing: 2/3 rule
 
 ### Implementation

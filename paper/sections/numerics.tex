@@ -47,7 +47,7 @@ where $\mathcal{N}$ represents the nonlinear Poisson bracket terms on the right-
 \pardt \left[e^{\mp i k_z \vA t} \hat{w}^\pm\right] = e^{\mp i k_z \vA t} \widehat{\mathcal{N}[\xi^+,\xi^-]}.
 \label{eq:integrating_factor_form}
 \end{equation}
-This transformation exactly removes the oscillatory linear terms, permitting time steps controlled by the slower nonlinear evolution rather than wave propagation.
+This transformation exactly removes the oscillatory linear terms, permitting time steps controlled by the slower nonlinear evolution rather than wave propagation. The subsequent discretization (detailed in Algorithm~\ref{alg:gandalf_step}) applies the phase transformation both to remove the integrating factor and to the integrated forcing term, resulting in the characteristic double appearance of phase factors in the GANDALF update formulas.
 
 \subsubsection{Second-Order Time Stepping}
 
@@ -101,7 +101,7 @@ The integrating factor removes the parallel \Alfven\ wave CFL restriction ($\Del
 \Delta t \leq C \frac{\min(\Delta x, \Delta y, \Delta z)}{\max(\vA, |\mathbf{v}_\perp|_\text{max})},
 \label{eq:cfl_condition}
 \end{equation}
-where $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity and the safety factor $C = 0.3$ accounts for the second-order method. The integrating factor removes the \emph{parallel} \Alfven\ wave CFL restriction ($\Delta t < \Delta z/\vA$), but the overall time step remains limited by the \emph{perpendicular} advection CFL and accuracy requirements for resolving nonlinear dynamics. For typical anisotropic turbulence simulations with $\Delta x \sim \Delta y \ll \Delta z$, the perpendicular grid spacing controls the time step.
+where $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity and the safety factor $C = 0.3$ accounts for the second-order method. The integrating factor removes the \emph{parallel} \Alfven\ wave CFL restriction ($\Delta t < \Delta z/\vA$), but the overall time step remains limited by the \emph{perpendicular} advection CFL and accuracy requirements for resolving nonlinear dynamics. Critically, this means $\Delta z$ can be \emph{arbitrarily large} without stability issues---a key computational advantage enabling anisotropic grids with $\Delta z \gg \Delta x, \Delta y$ for turbulence simulations. For typical anisotropic setups with $\Delta x \sim \Delta y \ll \Delta z$, the perpendicular grid spacing controls the time step.
 
 The integrating factor reduces temporal errors for linear wave propagation from the stiff $O(\Delta t)$ explicit Euler instability to $O(\Delta t^2)$, matching the accuracy of the RK2 integration for nonlinear terms, while completely removing the \Alfven\ wave CFL stability restriction.
 
@@ -127,7 +127,7 @@ Hermite moment collisions follow the Lenard-Bernstein form Eq.~\eqref{eq:collisi
 \hat{g}^{\pm}_{m,n+1} \to \hat{g}^{\pm}_{m,n+1} \exp\left[-\coll \left(\frac{m}{\Mmax}\right)^{2p} \Delta t\right],
 \label{eq:hermite_dissipation}
 \end{equation}
-where $\Mmax$ is the moment truncation order (typically 10-20, fixed at initialization) and hyper-collision exponent $p \geq 1$ concentrates dissipation at high moments. This normalization parallels the spatial treatment: $\Mmax$ plays the same role for velocity space as $k_{\perp,\text{max}}$ does for real space, ensuring resolution-independent stability constraints. Standard values are $p=1$ (linear Lenard-Bernstein) or $p=2$ (hyper-collisions). This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms.
+where $\Mmax$ is the moment truncation order (typically 10-20, fixed at initialization) and hyper-collision exponent $p \geq 1$ concentrates dissipation at high moments. This normalization parallels the spatial treatment: $\Mmax$ plays the same role for velocity space as $k_{\perp,\text{max}}$ does for real space, ensuring resolution-independent stability constraints. Standard values are $p=1$ (linear Lenard-Bernstein) or $p=2$ (hyper-collisions). This exact exponential integration preserves positivity and avoids instabilities from stiff collision terms. In practice, stability requires $\eta \Delta t < 50$ for hyper-resistivity and $\coll \Delta t < 10$ for hyper-collisions, constraints that remain independent of grid resolution due to the normalization scheme.
 
 \subsection{Dealiasing}
 \label{sec:dealiasing}
@@ -151,7 +151,7 @@ Temporal convergence is $\mathcal{E}_\text{time} = O(\Delta t^2)$ for both linea
 
 The Hermite moment expansion exhibits spectral convergence in velocity space. For Maxwellian-like distributions, the energy contained in moments $m > \Mmax$ decays exponentially with $\Mmax$, permitting accurate representation with $\Mmax \sim 10$--$20$ moments \citep{Howes2006,TenBarge2013}. GANDALF monitors convergence via the energy ratio $E_{\Mmax}/E_\text{total}$ (energy in the highest retained moment relative to total energy), typically requiring this to fall below $10^{-3}$ to ensure negligible truncation errors from the $\gm{\Mmax+1}^{\pm} = 0$ closure condition.
 
-Combined spatial-temporal-velocity convergence studies for standard benchmarks (Orszag-Tang vortex, decaying turbulence) demonstrate GANDALF achieves design accuracy: spectral spatial convergence, second-order temporal convergence, and exponential velocity-space convergence controlled by moment truncation. The integrating factor method inherits excellent energy conservation properties from the AstroGK formulation \citep{Numata2010}: GANDALF's energy conservation errors in collisionless runs remain below $0.01\%$ over hundreds of dynamical times, validating both the discretization and implementation.
+Combined spatial-temporal-velocity convergence studies for standard benchmarks (Orszag-Tang vortex, decaying turbulence) demonstrate GANDALF achieves design accuracy: spectral spatial convergence, second-order temporal convergence, and exponential velocity-space convergence controlled by moment truncation. The integrating factor method inherits excellent energy conservation properties from the AstroGK formulation \citep{Numata2010}: energy conservation errors in collisionless runs are expected to remain below $0.01\%$ over hundreds of dynamical times, as we demonstrate in the verification benchmarks (\S\ref{sec:verification}), validating both the discretization and implementation.
 
 \subsection{Computational Implementation}
 
@@ -167,7 +167,7 @@ Key implementation features include:
 
 \paragraph{Pytree Structures.} GANDALF defines custom \texttt{KRMHDState} and \texttt{SpectralGrid} classes registered as JAX pytrees (nested container structures that JAX transformations can traverse), allowing transformations (\texttt{jax.grad}, \texttt{jax.vmap}, \texttt{jax.scan}) to operate on physics-meaningful objects while maintaining efficient compilation.
 
-Typical performance on a $256^3$ grid with $M=16$ Hermite moments achieves $\sim 0.5$ seconds per time step on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations can achieve performance competitive with compiled languages for scientific computing applications \citep{Bauer2021}, which we observe for GANDALF as well, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
+Typical performance on a $256^3$ grid with $M=16$ Hermite moments achieves $\sim 0.5$ seconds per time step on an NVIDIA A100 GPU (based on preliminary benchmarks), enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations can achieve performance competitive with compiled languages for scientific computing applications \citep{Bauer2021}, which we observe for GANDALF, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
 
 \subsection{Algorithm Summary}
 
