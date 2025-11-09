@@ -44,7 +44,7 @@ where $\mathcal{N}[\xi^+,\xi^-] = (\mathcal{N}^+, \mathcal{N}^-)$ represents the
 \pardt \left[e^{\mp i k_z \vA t} \hat{w}^\pm\right] = e^{\mp i k_z \vA t} \widehat{\mathcal{N}[\xi^+,\xi^-]}.
 \label{eq:integrating_factor_form}
 \end{equation}
-This transformation (with sign conventions following Numata et al.\ 2010, Eqs.\ 16--19) exactly removes the oscillatory linear terms, permitting time steps controlled by the slower nonlinear evolution rather than wave propagation. The subsequent discretization (detailed in Algorithm~\ref{alg:gandalf_step}) applies the phase transformation both to remove the integrating factor and to the integrated forcing term, resulting in the characteristic double appearance of phase factors in the GANDALF update formulas.
+This transformation (with sign conventions following Numata et al.\ 2010, Eqs.\ 16--19) exactly removes the oscillatory linear terms, permitting time steps controlled by the slower nonlinear evolution rather than wave propagation. Note that the $\pm$ sign in the integrating factor $\exp(\pm i k_z \vA t)$ corresponds to the $\mp$ sign in the linear term of Eq.~\eqref{eq:elsasser_fourier}: $\xi^+$ uses $\exp(+i k_z \vA t)$ to cancel its $-i k_z \vA$ term, while $\xi^-$ uses $\exp(-i k_z \vA t)$ to cancel its $+i k_z \vA$ term. The subsequent discretization (detailed in Algorithm~\ref{alg:gandalf_step}) applies the phase transformation both to remove the integrating factor and to the integrated forcing term, resulting in the characteristic double appearance of phase factors in the GANDALF update formulas.
 
 \subsubsection{Second-Order Time Stepping}
 
@@ -56,7 +56,9 @@ The GANDALF method \citep{Numata2010} removes the integrating factor by multiply
 \begin{equation}
 \hat{w}^\pm_{n+1/2} = e^{\pm i k_z \vA \Delta t/2}\left(\hat{w}^\pm_n + e^{\pm i k_z \vA \Delta t/2} \frac{\Delta t}{2} \widehat{\mathcal{N}_n^\pm}\right),
 \end{equation}
-where the phase factors $\exp(\pm ik_z\vA\Delta t/2)$ appear \emph{twice}: once from removing the integrating factor transformation and once from the phase-transformed forcing term. This formulation maintains second-order accuracy while exactly treating linear wave propagation. Given state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at time $t_n$, we compute:
+where the phase factors $\exp(\pm ik_z\vA\Delta t/2)$ appear \emph{twice}: once from removing the integrating factor transformation and once from the phase-transformed forcing term. This formulation maintains second-order accuracy while exactly treating linear wave propagation.
+
+Given state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at time $t_n$, we advance the system using the GANDALF integrating factor method. Here $\Herm^{\pm}_m$ denotes the right-hand side of the Hermite moment hierarchy Eqs.~\eqref{eq:moment_hierarchy}, including advection, phase mixing, and collisions. The complete time step proceeds as follows:
 
 \begin{algorithm}[H]
 \caption{GANDALF Time Step $t_n \to t_{n+1} = t_n + \Delta t$}
@@ -89,7 +91,7 @@ where the phase factors $\exp(\pm ik_z\vA\Delta t/2)$ appear \emph{twice}: once 
 \end{algorithmic}
 \end{algorithm}
 
-Here $\Herm^{\pm}_m$ denotes the right-hand side of the Hermite moment hierarchy Eqs.~\eqref{eq:moment_hierarchy}, including advection, phase mixing, and collisions. The phase factors $\exp(\pm ik_z\vA\Delta t)$ appear \emph{twice} in each update (once from the transformation, once from integration), giving the characteristic structure of the GANDALF method \citep{Numata2010}.
+The phase factors $\exp(\pm ik_z\vA\Delta t)$ appear \emph{twice} in each update (once from the transformation, once from integration), giving the characteristic structure of the GANDALF method \citep{Numata2010}.
 
 \subsubsection{Stability and Time Step Selection}
 
@@ -98,7 +100,7 @@ The integrating factor removes the parallel \Alfven\ wave CFL restriction ($\Del
 \Delta t \leq C \frac{\min(\Delta x, \Delta y, \Delta z)}{\max(\vA, |\mathbf{v}_\perp|_\text{max})},
 \label{eq:cfl_condition}
 \end{equation}
-where all lengths are in physical units, $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity, and the safety factor $C = 0.3$ accounts for the second-order method. While $\Delta z$ formally appears in the minimum, it effectively drops out for anisotropic turbulence: the integrating factor removes the parallel Alfvén stability constraint (which would otherwise require $\Delta t < \Delta z/\vA$), and for KRMHD simulations the parallel box size is much larger than the perpendicular box size by the asymptotic ordering ($\Lpar \gg \rhoi$), so $\Delta z \gg \Delta x \approx \Delta y$ in physical units and the minimum automatically selects the perpendicular grid spacing. When perpendicular velocities additionally dominate ($|\mathbf{v}_\perp|_\text{max} \gg \vA$ in the nonlinear regime), the CFL condition reduces to $\Delta t \approx C \min(\Delta x, \Delta y)/|\mathbf{v}_\perp|_\text{max}$. Consequently, $\Delta z$ can be \emph{arbitrarily large} without affecting stability or accuracy---the timestep is determined entirely by perpendicular advection, a key computational advantage enabling anisotropic grids for turbulence simulations.
+where all lengths are in physical units, $|\mathbf{v}_\perp|_\text{max} = \max|\nabla_\perp \Phifield|$ measures the maximum perpendicular $\mathbf{E}\times\mathbf{B}$ velocity (where $\Phifield$ is the stream function from Eq.~\eqref{eq:elsasser}), and the safety factor $C = 0.3$ accounts for the second-order method. While $\Delta z$ formally appears in the minimum, it effectively drops out for anisotropic turbulence: the integrating factor removes the parallel Alfvén stability constraint (which would otherwise require $\Delta t < \Delta z/\vA$), and for KRMHD simulations the parallel box size is much larger than the perpendicular box size by the asymptotic ordering ($\Lpar \gg \rhoi$), so $\Delta z \gg \Delta x \approx \Delta y$ in physical units and the minimum automatically selects the perpendicular grid spacing. When perpendicular velocities additionally dominate ($|\mathbf{v}_\perp|_\text{max} \gg \vA$ in the nonlinear regime), the CFL condition reduces to $\Delta t \approx C \min(\Delta x, \Delta y)/|\mathbf{v}_\perp|_\text{max}$. Consequently, $\Delta z$ can be \emph{arbitrarily large} without affecting stability or accuracy---the timestep is determined entirely by perpendicular advection, a key computational advantage enabling anisotropic grids for turbulence simulations.
 
 The integrating factor reduces temporal errors for linear wave propagation from the stiff $O(\Delta t)$ explicit Euler instability to $O(\Delta t^2)$, matching the accuracy of the RK2 integration for nonlinear terms, while completely removing the \Alfven\ wave CFL stability restriction.
 
@@ -146,7 +148,7 @@ The spectral spatial discretization delivers exponential convergence for smooth 
 
 Temporal convergence is $\mathcal{E}_\text{time} = O(\Delta t^2)$ for both linear and nonlinear terms. The GANDALF integrating factor scheme achieves second-order accuracy by matching the RK2 treatment of nonlinear terms with an appropriately constructed integrating factor for linear \Alfven\ wave propagation. Richardson extrapolation or adaptive time stepping can further reduce temporal errors when high accuracy is required, though turbulence simulations typically tolerate $1$--$2\%$ errors to maximize throughput.
 
-The Hermite moment expansion exhibits spectral convergence in velocity space. For Maxwellian-like distributions, the energy contained in moments $m > \Mmax$ decays exponentially with $\Mmax$, permitting accurate representation with $\Mmax \sim 10$--$20$ moments \citep{Howes2006,TenBarge2013}. GANDALF monitors convergence via the energy ratio $E_{\Mmax}/E_\text{total}$ (energy in the highest retained moment relative to total energy), typically requiring this to fall below $10^{-3}$ to ensure negligible truncation errors from the $\gm{\Mmax+1}^{\pm} = 0$ closure condition.
+The Hermite moment expansion exhibits spectral convergence in velocity space. For Maxwellian-like distributions, the energy contained in moments $m > \Mmax$ decays exponentially with $\Mmax$, permitting accurate representation with $\Mmax \sim 10$--$20$ moments \citep{Howes2006,TenBarge2013}. GANDALF monitors convergence via the energy ratio $E_{\Mmax}/E_\text{total}$ (energy in the single highest retained moment $m = \Mmax$ relative to total energy), typically requiring this to fall below $10^{-3}$ to ensure negligible truncation errors from the $\gm{\Mmax+1}^{\pm} = 0$ closure condition.
 
 Combined spatial-temporal-velocity convergence studies for standard benchmarks (Orszag-Tang vortex, decaying turbulence) demonstrate GANDALF achieves design accuracy: spectral spatial convergence, second-order temporal convergence, and exponential velocity-space convergence controlled by moment truncation. The integrating factor method inherits excellent energy conservation properties from the AstroGK formulation \citep{Numata2010}: energy conservation errors in collisionless runs remain below $0.01\%$ over hundreds of dynamical times in verification benchmarks, validating both the discretization and implementation.
 
@@ -164,7 +166,7 @@ Key implementation features include:
 
 \paragraph{Pytree Structures.} GANDALF defines custom \texttt{KRMHDState} and \texttt{SpectralGrid} classes registered as JAX pytrees (nested container structures that JAX transformations can traverse), allowing transformations (\texttt{jax.grad}, \texttt{jax.vmap}, \texttt{jax.scan}) to operate on physics-meaningful objects while maintaining efficient compilation.
 
-Initial benchmarks on a $256^3$ grid with $M=16$ Hermite moments achieve time steps of order $0.5$ seconds on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations can achieve performance competitive with compiled languages for scientific computing applications \citep{Bauer2021}, which we observe for GANDALF, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
+Initial benchmarks on a $256^3$ grid with $M=16$ Hermite moments achieve approximately $0.5$ seconds of wall-clock time per time step on an NVIDIA A100 GPU, enabling multi-hundred-eddy-turnover turbulence simulations within days. JAX implementations can achieve performance competitive with compiled languages for scientific computing applications \citep{Bauer2021,Citrin2024}, which we observe for GANDALF, while requiring substantially less development time through high-level array abstractions and automatic GPU compilation.
 
 \subsection{Algorithm Summary}
 
@@ -175,7 +177,7 @@ We summarize the complete GANDALF algorithm for a single time step:
 \label{alg:gandalf_complete}
 \begin{algorithmic}[1]
 \STATE \textbf{Input:} Fourier state $(\hat{w}^+_n, \hat{w}^-_n, \{\hat{g}^{\pm}_{m,n}\})$ at $t_n$
-\STATE Compute CFL time step: $\Delta t = 0.3 \min(\Delta x,\Delta y,\Delta z)/\max(\vA,|\mathbf{v}_\perp|_\text{max})$
+\STATE Compute CFL time step: $\Delta t = 0.3 \min(\Delta x,\Delta y,\Delta z)/\max(\vA,|\mathbf{v}_\perp|_\text{max})$ (typically limited by $\Delta x, \Delta y$)
 \STATE \textbf{Half-step:}
 \STATE \quad Evaluate nonlinear terms $\mathcal{N}_n$, $\Herm_{m,n}$ in real space
 \STATE \quad Transform to Fourier space and apply 2/3 dealiasing mask
