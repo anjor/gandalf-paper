@@ -103,7 +103,7 @@ Having validated linear wave propagation, we now test GANDALF's handling of nonl
 The Orszag-Tang vortex consists of intersecting velocity and magnetic field vortices with initial conditions \citep{OrszagTang1979}:
 \begin{align}
 \mathbf{v} &= (-\sin y, \sin x, 0), \\
-\mathbf{B} &= \frac{1}{\sqrt{4\pi}}(-\sin y, \sin 2x, 0) \approx (0.282)(-\sin y, \sin 2x, 0).
+\mathbf{B} &= \frac{1}{\sqrt{4\pi}}(-\sin y, \sin 2x, 0).
 \end{align}
 In GANDALF's incompressible RMHD formulation, we initialize via the stream function $\phi$ and vector potential $\Psi$ with Fourier coefficients selected to reproduce these fields (see \texttt{initialize\_orszag\_tang} in GANDALF documentation).
 
@@ -111,9 +111,9 @@ We integrate on a periodic domain of unit size ($L_x = L_y = L_z = 1$) for $t \i
 
 \subsubsection{Energy Conservation and Selective Decay}
 
-\Cref{fig:orszag_energy} shows energy evolution for the highest resolution run ($N = 128^2 \times 2$). Total energy conservation achieves $|\Delta E/E_0| = 2.7 \times 10^{-3}$ over 3 Alfvén times - excellent for nonlinear dynamics where spectral aliasing and dealiasing operations can introduce numerical dissipation. This validates GANDALF's energy-conserving formulation of the nonlinear Poisson bracket $\{\phi, \Psi\}$ and confirms correct implementation of the 2/3 dealiasing rule.
+\Cref{fig:orszag_energy} shows energy evolution for the highest resolution run ($N = 128^2 \times 2$). Total energy conservation achieves maximum drift $|\Delta E/E_0|_{\max} = 2.7 \times 10^{-3}$ over 3 Alfvén times - excellent for nonlinear dynamics where spectral aliasing and dealiasing operations can introduce numerical dissipation. This validates GANDALF's energy-conserving formulation of the nonlinear Poisson bracket $\{\phi, \Psi\}$ and confirms correct implementation of the 2/3 dealiasing rule \citep{Orszag1971}.
 
-The energy components exhibit \textbf{selective decay}, a hallmark of 2D MHD: magnetic energy increases relative to kinetic energy as $E_{\mathrm{mag}}/E_{\mathrm{kin}}$ grows from 1.0 initially to 2.55 by $t = 3\tau_A$. This physical process arises because 2D turbulence preferentially cascades kinetic energy to small scales (where it would be dissipated in viscous simulations) while magnetic energy inverse-cascades to large scales \citep{Biskamp2003}. The observed ratio evolution matches qualitative expectations for inviscid 2D MHD, though quantitative comparison requires reference simulations beyond the scope of this verification test.
+The energy components exhibit \textbf{selective decay}, a hallmark of 2D MHD: magnetic energy increases relative to kinetic energy as $E_{\mathrm{mag}}/E_{\mathrm{kin}}$ grows from 1.0 initially to 2.55 by $t = 3\tau_A$. This physical process arises because 2D turbulence preferentially cascades kinetic energy to small scales (where it would be dissipated in viscous simulations) while magnetic helicity conservation drives magnetic energy toward large scales through an inverse cascade \citep{Biskamp2003}. The observed ratio evolution is consistent with 2D MHD theory, though quantitative comparison with reference simulations is beyond the scope of this verification test.
 
 \subsubsection{Structure Formation}
 
@@ -150,7 +150,7 @@ Combined with the Alfvén wave benchmark's validation of linear wave physics, th
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/orszag_tang_energy_evolution.pdf}
-\caption{Orszag-Tang vortex energy evolution. Top: Total, kinetic, and magnetic energy versus time. Selective decay causes $E_{\mathrm{mag}}/E_{\mathrm{kin}}$ to increase from 1.0 to 2.55 over 3 Alfvén crossing times, characteristic of 2D MHD inverse cascade physics. Bottom: Energy conservation error $|\Delta E/E_0|$ stays below $3 \times 10^{-3}$ (0.3\%) despite strong nonlinear interactions, validating the energy-conserving discretization. Resolution: $N = 128^2 \times 2$, timestep $\Delta t = 0.01$.}
+\caption{Orszag-Tang vortex energy evolution. Top: Total, kinetic, and magnetic energy versus time. Selective decay causes $E_{\mathrm{mag}}/E_{\mathrm{kin}}$ to increase from 1.0 to 2.55 over 3 Alfvén crossing times, characteristic of 2D MHD inverse cascade physics. Bottom: Energy conservation error $|\Delta E/E_0|$ reaches maximum of $2.7 \times 10^{-3}$ (0.27\%) despite strong nonlinear interactions, validating the energy-conserving discretization. Resolution: $N = 128^2 \times 2$, timestep $\Delta t = 0.01$.}
 \label{fig:orszag_energy}
 \end{figure}
 
