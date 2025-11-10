@@ -138,9 +138,16 @@ def fit_power_law_convergence(dts: np.ndarray, errors: np.ndarray) -> Tuple[floa
         p: Power law exponent (should be ~2 for RK2)
         C: Prefactor
     """
+    # Filter out zeros and near-machine-precision values (< 1e-14)
+    # These indicate analytically exact integration
+    mask = errors > 1e-14
+    if np.sum(mask) < 2:
+        # Not enough non-zero points for fit - integrating factor is analytically exact!
+        return np.nan, np.nan
+
     # Fit in log-log space: log(E) = log(C) + p*log(dt)
-    log_dts = np.log(dts)
-    log_errors = np.log(errors)
+    log_dts = np.log(dts[mask])
+    log_errors = np.log(errors[mask])
     coeffs = np.polyfit(log_dts, log_errors, deg=1)
     p = coeffs[0]  # Slope = exponent
     C = np.exp(coeffs[1])  # Exponential of intercept
@@ -225,23 +232,40 @@ def plot_frequency_convergence(spatial_results: List[BenchmarkResult],
     dts = np.array([r.dt for r in temporal_results])
     errors_temporal = np.array([r.relative_error for r in temporal_results])
 
-    # Fit power law convergence
+    # Fit power law convergence (only to non-zero errors)
     p, C = fit_power_law_convergence(dts, errors_temporal)
 
-    # Plot data
-    ax2.loglog(dts, errors_temporal, 's-', color='C2',
-              label='Measured error', markersize=7, linewidth=1.5)
+    # Replace zeros with a floor value for visualization (machine precision)
+    errors_plot = np.maximum(errors_temporal, 1e-16)
 
-    # Plot fit
-    dt_fit = np.linspace(dts[-1], dts[0], 100)
-    E_fit_temp = C * dt_fit**p
-    ax2.loglog(dt_fit, E_fit_temp, '--', color='C3',
-              label=f'Fit: $E = C\\,\\Delta t^p$\n$p = {p:.2f}$', linewidth=1.2)
+    # Plot data - use different markers for zeros vs non-zeros
+    mask_nonzero = errors_temporal > 1e-14
+    if np.any(mask_nonzero):
+        ax2.loglog(dts[mask_nonzero], errors_temporal[mask_nonzero], 's', color='C2',
+                  label='Measured error', markersize=8, linewidth=0)
+    mask_zero = errors_temporal <= 1e-14
+    if np.any(mask_zero):
+        ax2.loglog(dts[mask_zero], np.full(np.sum(mask_zero), 1e-16), 'v', color='C2',
+                  label='Zero error (exact)', markersize=8, alpha=0.7)
 
-    # Reference O(Δt²) line
-    if len(dts) > 1:
+    # Plot fit if available
+    if not np.isnan(p):
+        dt_fit = np.linspace(dts[-1], dts[0], 100)
+        E_fit_temp = C * dt_fit**p
+        ax2.loglog(dt_fit, E_fit_temp, '--', color='C3',
+                  label=f'Fit: $E = C\\,\\Delta t^p$\n$p = {p:.2f}$', linewidth=1.2)
+    else:
+        # Add text annotation for exact integration
+        ax2.text(0.5, 0.05, 'Integrating factor:\nanalytically exact',
+                transform=ax2.transAxes, ha='center', va='bottom',
+                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5),
+                fontsize=10)
+
+    # Reference O(Δt²) line (use largest non-zero error as reference)
+    if len(dts) > 1 and np.any(mask_nonzero):
+        idx_ref = np.where(mask_nonzero)[0][-1]  # Largest dt with non-zero error
         dt_ref = np.array([dts[-1], dts[0]])
-        E_ref = errors_temporal[-1] * (dt_ref / dts[-1])**2
+        E_ref = errors_temporal[idx_ref] * (dt_ref / dts[idx_ref])**2
         ax2.loglog(dt_ref, E_ref, ':', color='gray', label=r'$O(\Delta t^2)$ reference', linewidth=1.5)
 
     ax2.set_xlabel(r'Timestep $\Delta t$')

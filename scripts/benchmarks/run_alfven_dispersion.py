@@ -290,7 +290,8 @@ def temporal_convergence_study(
     if timesteps is None:
         # Analytical period for kz=1, v_A=1: T = 2π/ω = 2π/1 = 2π
         T = 2.0 * np.pi
-        timesteps = [T/10, T/20, T/40, T/80, T/160]
+        # Use larger timesteps to test temporal convergence regime (not spatial error floor)
+        timesteps = [T/2, T/4, T/8, T/16, T/32]
 
     print(f"Timesteps: {[f'{dt:.6f}' for dt in timesteps]}")
     print()
@@ -382,7 +383,7 @@ def main():
         temporal_convergence_study(
             output_dir=args.output_dir / 'temporal_convergence',
             resolution=64,
-            n_periods=5.0,
+            n_periods=1.0,  # Reduced from 5.0 to minimize accumulated dissipation
             M=20,
         )
 
