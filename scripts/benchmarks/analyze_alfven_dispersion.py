@@ -171,12 +171,12 @@ def plot_energy_evolution(results: List[BenchmarkResult], output_dir: Path):
     # Labels and formatting
     ax.set_xlabel(r'Time $t$ $(v_A/L)$')
     ax.set_ylabel(r'Total Energy $E$')
-    ax.set_title(f'Alfvén Wave Energy Conservation ($N={result.resolution}^3$, $\Delta t={result.dt}$)')
+    ax.set_title(f'Alfvén Wave Energy Conservation ($N={result.resolution}^3$, $\\Delta t={result.dt}$)')
     ax.grid(True, alpha=0.3)
     ax.legend(loc='best')
 
     # Add text box with conservation info
-    textstr = f'$\Delta E / E_0 = {rel_change:.2e}$'
+    textstr = f'$\\Delta E / E_0 = {rel_change:.2e}$'
     ax.text(0.95, 0.05, textstr, transform=ax.transAxes,
             verticalalignment='bottom', horizontalalignment='right',
             bbox=dict(boxstyle='round', facecolor='white', alpha=0.8, edgecolor='gray'))
@@ -242,7 +242,7 @@ def plot_frequency_convergence(spatial_results: List[BenchmarkResult],
     if len(dts) > 1:
         dt_ref = np.array([dts[-1], dts[0]])
         E_ref = errors_temporal[-1] * (dt_ref / dts[-1])**2
-        ax2.loglog(dt_ref, E_ref, ':', color='gray', label='$O(\Delta t^2)$ reference', linewidth=1.5)
+        ax2.loglog(dt_ref, E_ref, ':', color='gray', label=r'$O(\Delta t^2)$ reference', linewidth=1.5)
 
     ax2.set_xlabel(r'Timestep $\Delta t$')
     ax2.set_ylabel(r'Relative frequency error')
@@ -291,6 +291,42 @@ def plot_phase_accuracy(results: List[BenchmarkResult], output_dir: Path):
     plt.savefig(output_file, format='pdf', dpi=300)
     plt.close()
     print(f"✓ Generated: {output_file}")
+
+
+def plot_spatial_convergence_only(spatial_results: List[BenchmarkResult], output_dir: Path):
+    """
+    Generate spatial convergence plot only (when temporal data not available).
+    """
+    fig, ax = plt.subplots(figsize=(6, 5))
+
+    resolutions = np.array([r.resolution for r in spatial_results])
+    errors_spatial = np.array([r.relative_error for r in spatial_results])
+
+    # Fit exponential convergence
+    alpha, A = fit_exponential_convergence(resolutions, errors_spatial)
+
+    # Plot data
+    ax.semilogy(resolutions, errors_spatial, 'o-', color='C0',
+                label='Measured error', markersize=8, linewidth=2)
+
+    # Plot fit
+    N_fit = np.linspace(resolutions[0], resolutions[-1], 100)
+    E_fit = A * np.exp(-alpha * N_fit)
+    ax.semilogy(N_fit, E_fit, '--', color='C1',
+                label=f'Fit: $E = A e^{{-\\alpha N}}$\n$\\alpha = {alpha:.3f}$', linewidth=1.5)
+
+    ax.set_xlabel(r'Resolution $N$ ($N^3$ grid)')
+    ax.set_ylabel(r'Relative frequency error')
+    ax.set_title('Spatial Convergence (Spectral Method)')
+    ax.grid(True, alpha=0.3, which='both')
+    ax.legend(loc='best')
+
+    plt.tight_layout()
+    output_file = output_dir / 'alfven_spatial_convergence.pdf'
+    plt.savefig(output_file, format='pdf', dpi=300)
+    plt.close()
+    print(f"✓ Generated: {output_file}")
+    print(f"  Spatial convergence rate: α = {alpha:.3f} (exponential)")
 
 
 def plot_dispersion_validation(spatial_results: List[BenchmarkResult],
@@ -380,9 +416,16 @@ def main():
     print()
 
     plot_energy_evolution(spatial_results, output_dir)
-    plot_frequency_convergence(spatial_results, temporal_results, output_dir)
+
+    if len(temporal_results) > 0:
+        plot_frequency_convergence(spatial_results, temporal_results, output_dir)
+        plot_dispersion_validation(spatial_results, temporal_results, output_dir)
+    else:
+        print("⚠️  Skipping temporal convergence plots (no temporal data yet)")
+        print("⚠️  Generating spatial-only plots...")
+        plot_spatial_convergence_only(spatial_results, output_dir)
+
     plot_phase_accuracy(spatial_results, output_dir)
-    plot_dispersion_validation(spatial_results, temporal_results, output_dir)
 
     print()
     print("="*70)
