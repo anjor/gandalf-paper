@@ -8,11 +8,11 @@ We verify GANDALF's implementation through a hierarchy of benchmarks progressing
 
 \subsubsection{Analytical Prediction}
 
-For a single Fourier mode with wavenumber $\kvec = (0, 0, \kpar)$ aligned with the guide field, Eqs.~\eqref{eq:elsasser} reduce to the linear Alfvén wave dispersion relation \eqref{eq:alfven_dispersion}:
+For a single Fourier mode, the KRMHD equations reduce to the linear Alfvén wave dispersion relation:
 \begin{equation}
 \omega = \kpar \vA
 \end{equation}
-This relation holds exactly in the KRMHD regime defined by the orderings $\kperp \rhoi \ll 1$ (low-frequency), $\kpar \ll \kperp$ (anisotropic), and $\delta B/B_0 \ll 1$ (strong guide field), where kinetic modifications from finite Larmor radius effects remain negligible. The wave propagates without distortion or damping in the collisionless limit ($\eta = \nu = \coll = 0$), providing a clean test of numerical accuracy.
+This relation is independent of the perpendicular wavenumber $\kperp$, holding for any mode with parallel component $\kpar$. It applies exactly in the KRMHD regime defined by the orderings $\kperp \rhoi \ll 1$ (low-frequency), $\kpar \ll \kperp$ (anisotropic), and $\delta B/B_0 \ll 1$ (strong guide field), where kinetic modifications from finite Larmor radius effects remain negligible. The wave propagates without distortion or damping in the collisionless limit ($\eta = \nu = \coll = 0$), providing a clean test of numerical accuracy.
 
 The Alfvén wave represents the fundamental mode of magnetized plasma dynamics. In the Elsasser formulation, parallel-propagating Alfvén waves manifest as independent propagation of $\elsp$ and $\elsm$ at velocities $\mp\vA$ along field lines. The parallel derivative terms $\mp\vA\pardz$ in \Cref{eq:elsasser} produce oscillations at frequency $\omega = |\kpar|\vA$. The perpendicular structure remains frozen, making this an ideal benchmark for time integration accuracy independent of perpendicular spectral operations.
 
@@ -43,9 +43,9 @@ The two timesteps with non-zero error ($\Delta t = T/2$ and $T/32$) show frequen
 Crucially, even the largest tested timestep $\Delta t = T/2 \approx 3.14$ (two timesteps per wave period!) achieves relative error $6 \times 10^{-8}$. Standard explicit schemes would require $\Delta t \lesssim \Delta z/\vA \sim 2\pi/(64 \times 1) \approx 0.098$ for stability, making GANDALF over $30\times$ faster for this linear problem. The stability advantage increases with resolution as CFL timestep scales $\Delta t_{\mathrm{CFL}} \sim N^{-1}$, while GANDALF's timestep remains limited only by accuracy requirements for nonlinear terms.
 
 \paragraph{Dispersion Relation Validation}
-\Cref{fig:alfven_dispersion} plots measured frequency against analytical prediction for all benchmark runs (spatial and temporal convergence studies combined). All data points lie on the $\omega_{\mathrm{measured}} = \omega_{\mathrm{analytical}}$ line within error bars, with maximum relative error $2.0 \times 10^{-5}$ and mean error $7.6 \times 10^{-6}$ across all configurations.
+\Cref{tab:alfven_dispersion} summarizes measured frequencies for all benchmark configurations. All runs achieve the analytical prediction $\omega = \kpar\vA = 1.0$ within numerical precision, with maximum relative error $2.0 \times 10^{-5}$ across all configurations. The spatial convergence runs exhibit a constant error floor (temporal discretization dominates), while three temporal convergence runs achieve machine precision (identically zero error), demonstrating analytically exact integration of linear Alfvén waves.
 
-The tight clustering of points around the identity line confirms that GANDALF correctly implements the KRMHD equations with no systematic bias in wave propagation speed. Both the real and imaginary parts of the Elsasser field evolution match analytical solutions, verifying phase and amplitude accuracy simultaneously.
+The consistency across all configurations confirms that GANDALF correctly implements the KRMHD equations with no systematic bias in wave propagation speed. Both the real and imaginary parts of the Elsasser field evolution match analytical solutions, verifying phase and amplitude accuracy simultaneously.
 
 \subsubsection{Discussion}
 
@@ -54,7 +54,7 @@ The Alfvén wave benchmark demonstrates three key properties of GANDALF:
 \begin{enumerate}
 \item \textbf{Spectral spatial accuracy}: Exponential convergence with resolution confirms correct implementation of Fourier spectral derivatives and dealiasing. For smooth solutions, spectral methods achieve machine precision with modest grid sizes, making them ideal for resolving turbulent cascades extending over multiple decades in wavenumber.
 
-\item \textbf{Integrating factor advantage}: Second-order temporal convergence without Alfvén CFL constraint enables larger timesteps than explicit schemes, improving computational efficiency for problems where $\vA \gg v_{\mathrm{rms}}$. The $\sim 6\times$ speedup observed here compounds with the parallelizability of spectral transforms on GPUs/TPUs.
+\item \textbf{Integrating factor advantage}: Removal of Alfvén CFL constraint enables larger timesteps than explicit schemes, improving computational efficiency for problems where $\vA \gg v_{\mathrm{rms}}$. The $\sim 30\times$ speedup observed here compounds with the parallelizability of spectral transforms on GPUs/TPUs.
 
 \item \textbf{Linear wave fidelity}: Accurate reproduction of $\omega = \kpar\vA$ validates the parallel derivative operator, Elsasser field coupling, and time integration of wave propagation. This provides confidence for simulations of Alfvénic turbulence where linear wave physics competes with nonlinear interactions.
 \end{enumerate}
@@ -68,9 +68,25 @@ Future benchmarks will extend validation to nonlinear regimes (Orszag-Tang vorte
 \label{fig:alfven_convergence}
 \end{figure}
 
-\begin{figure}[t]
+\begin{table}[t]
 \centering
-\includegraphics[width=0.65\textwidth]{figures/alfven_dispersion_validation.pdf}
-\caption{Measured Alfvén wave frequency versus analytical prediction $\omega = \kpar\vA$ for all benchmark configurations (circles: spatial convergence at varying $N$; squares: temporal convergence at varying $\Delta t$). All points lie on the identity line (dashed) within numerical error, with maximum relative deviation $2.0 \times 10^{-5}$. This confirms correct implementation of the KRMHD dispersion relation across a wide range of numerical parameters.}
-\label{fig:alfven_dispersion}
-\end{figure}
+\caption{Alfvén wave dispersion validation: measured frequencies for all benchmark configurations with $\omega_{\mathrm{analytical}} = \kpar\vA = 1.0$. Spatial convergence studies (varying $N$ at fixed $\Delta t = 0.01$) show constant error dominated by temporal discretization. Temporal convergence studies (varying $\Delta t$ at fixed $N = 64^3$) achieve machine precision for three configurations, demonstrating analytically exact integration.}
+\label{tab:alfven_dispersion}
+\begin{tabular}{lccc}
+\hline\hline
+Configuration & Resolution/Timestep & $\omega_{\mathrm{measured}}$ & Relative Error \\
+\hline
+\multicolumn{4}{l}{\textit{Spatial Convergence} ($\Delta t = 0.01$, $T = 2\pi$)} \\
+& $N = 32^3$ & $1.00002$ & $2.0 \times 10^{-5}$ \\
+& $N = 64^3$ & $1.00002$ & $2.0 \times 10^{-5}$ \\
+& $N = 128^3$ & $1.00002$ & $2.0 \times 10^{-5}$ \\
+\hline
+\multicolumn{4}{l}{\textit{Temporal Convergence} ($N = 64^3$)} \\
+& $\Delta t = T/2$ & $1.00000006$ & $6 \times 10^{-8}$ \\
+& $\Delta t = T/4$ & $1.00000000$ & $< 10^{-15}$ \\
+& $\Delta t = T/8$ & $1.00000000$ & $< 10^{-15}$ \\
+& $\Delta t = T/16$ & $1.00000000$ & $< 10^{-15}$ \\
+& $\Delta t = T/32$ & $1.00000020$ & $2 \times 10^{-7}$ \\
+\hline\hline
+\end{tabular}
+\end{table}

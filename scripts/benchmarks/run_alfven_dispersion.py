@@ -42,7 +42,17 @@ from typing import Dict, List, Tuple
 import time
 
 # Add GANDALF to path
+# Expected directory structure: gandalf-paper/scripts/benchmarks/ and gandalf/ as siblings
 gandalf_path = Path(__file__).resolve().parents[3] / "gandalf" / "src"
+if not gandalf_path.exists():
+    raise FileNotFoundError(
+        f"GANDALF source not found at {gandalf_path}\n"
+        f"Expected directory structure:\n"
+        f"  parent/\n"
+        f"    gandalf/src/  (GANDALF source code)\n"
+        f"    gandalf-paper/scripts/benchmarks/  (this script)\n"
+        f"Please ensure GANDALF is cloned in the correct location."
+    )
 if str(gandalf_path) not in sys.path:
     sys.path.insert(0, str(gandalf_path))
 
