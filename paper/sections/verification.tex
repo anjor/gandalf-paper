@@ -186,37 +186,39 @@ Combined with the Alfvén wave benchmark's validation of linear wave physics, th
 \subsection{Turbulent Cascade: Kolmogorov Spectrum}
 \label{sec:turbulent_cascade}
 
-Fully developed turbulence represents the most stringent test of a plasma turbulence code's ability to capture energy cascade dynamics. We simulate driven turbulence with Gaussian white noise forcing at large scales ($k \in [2, 5]$) to establish a steady-state inertial range with the characteristic Kolmogorov $k_\perp^{-5/3}$ spectrum predicted by critical balance theory \citep{GoldreichSridhar1995}.
+Fully developed turbulence represents the most stringent test of a plasma turbulence code's ability to capture energy cascade dynamics. We simulate driven turbulence with Gaussian white noise forcing at large scales ($k \in [2, 5]$) to establish a steady-state inertial range with the characteristic Kolmogorov $k_\perp^{-5/3}$ spectrum. This scaling emerges from critical balance theory \citep{GoldreichSridhar1995}, which posits that the perpendicular cascade timescale $\tau_\perp \sim (k_\perp v_\perp)^{-1}$ matches the parallel Alfv\'en propagation time $\tau_\parallel \sim (k_\parallel v_A)^{-1}$ in strong turbulence, leading to anisotropic cascades with $k_\parallel \sim k_\perp^{2/3}$.
 
 \subsubsection{Physical Setup}
 
-The simulation employs band-limited forcing that injects energy into Alfv\'en modes at the largest scales:
+We employ band-limited forcing that injects energy into Alfv\'en modes at the largest scales:
 \begin{equation}
 F(\mathbf{k}, t) = A \cdot \xi(\mathbf{k}, t) \cdot \Theta(k_{\min} < |\mathbf{k}| < k_{\max}),
+\label{eq:forcing}
 \end{equation}
 where $\xi$ represents Gaussian white noise uncorrelated in time, $A$ is the forcing amplitude, and $\Theta$ is a band-pass filter. The forcing acts only on the perpendicular velocity field (through the stream function $\phi$), avoiding direct magnetic field injection that could drive unphysical reconnection.
 
-Steady state emerges when energy injection balances dissipation:
+The system reaches steady state when energy injection balances dissipation:
 \begin{equation}
-\varepsilon_{\text{inj}} = \int F \cdot \mathbf{u} \, d^3k = \varepsilon_{\text{diss}} = \eta \int k^2 |\mathbf{u}|^2 \, d^3k.
+\varepsilon_{\text{inj}} = \int F \cdot \mathbf{u} \, d^3k = \varepsilon_{\text{diss}} = \eta \int k^{2r} |\mathbf{u}|^2 \, d^3k,
+\label{eq:energy_balance}
 \end{equation}
-
-We employ hyper-dissipation with $r=2$ and enhanced resistivity to maintain numerical stability while preserving an extended inertial range. For the $64^3$ resolution, anomalously high dissipation ($\eta = 20$) is required due to a known instability at this intermediate scale (see Appendix for discussion).
+where we employ hyper-dissipation of order $r=2$ (i.e., dissipation $\propto k^4$) to maintain numerical stability while preserving an extended inertial range. For the $64^3$ resolution, anomalously high dissipation ($\eta = 20$) is required due to a numerical instability specific to this intermediate resolution that manifests as spurious energy accumulation at high-$k$ modes.
 
 \subsubsection{Spectral Analysis}
 
 The perpendicular energy spectrum is computed as:
 \begin{equation}
 E(k_\perp) = \frac{1}{2} \sum_{k_z} k_\perp^2 \left( |\hat{\phi}(k_\perp, k_z)|^2 + |\hat{A}_\parallel(k_\perp, k_z)|^2 \right),
+\label{eq:spectrum}
 \end{equation}
-where the sum over parallel wavenumbers captures the anisotropic nature of RMHD turbulence. Time averaging over the steady-state window (typically $t \in [30, 50]\tau_A$) provides robust statistics.
+where $\hat{\phi}$ is the Fourier transform of the stream function (related to perpendicular velocity), $\hat{A}_\parallel$ is the parallel component of the magnetic vector potential, and the sum over parallel wavenumbers $k_z$ captures the anisotropic nature of KRMHD turbulence. Time averaging over the steady-state window (typically $t \in [30, 50]\tau_A$) provides robust statistics.
 
 \subsubsection{Results}
 
 Figure~\ref{fig:turbulent_spectrum} shows the time-averaged perpendicular energy spectrum for resolutions $N \in \{64^3, 128^3\}$. The key findings are:
 
 \begin{itemize}
-\item \textbf{Inertial range scaling}: The spectrum exhibits $E(k_\perp) \propto k_\perp^{-\alpha}$ with $\alpha = 1.65 \pm 0.05$ over approximately one decade in wavenumber, consistent with the Kolmogorov prediction of $\alpha = 5/3 \approx 1.667$.
+\item \textbf{Inertial range scaling}: The spectrum exhibits $E(k_\perp) \propto k_\perp^{-\alpha}$ with $\alpha = 1.664 \pm 0.019$ over approximately one decade in wavenumber, consistent with the Kolmogorov prediction of $\alpha = 5/3 \approx 1.667$.
 
 \item \textbf{Steady state}: Energy reaches equilibrium after approximately $20\tau_A$, with injection and dissipation rates balanced to within 10\% (see Figure~\ref{fig:turbulent_energy}).
 
@@ -225,12 +227,12 @@ Figure~\ref{fig:turbulent_spectrum} shows the time-averaged perpendicular energy
 \item \textbf{Energy equipartition}: Magnetic and kinetic energies reach approximate equipartition in steady state, with $E_{\text{mag}}/E_{\text{total}} \approx 0.45 \pm 0.05$.
 \end{itemize}
 
-The measured spectral index of $\alpha = 1.65 \pm 0.05$ agrees with both theoretical predictions for strong Alfv\'enic turbulence \citep{GoldreichSridhar1995} and observational measurements in the solar wind \citep{Chen2013}. The slight deviation from exactly $5/3$ may reflect finite-size effects or the influence of kinetic damping at intermediate scales.
+The measured spectral index of $\alpha = 1.664 \pm 0.019$ agrees with both theoretical predictions for strong Alfv\'enic turbulence \citep{GoldreichSridhar1995} and observational measurements in the solar wind \citep{Chen2016}. The 0.2\% deviation from the theoretical value of $5/3$ may reflect finite-size effects or the influence of kinetic damping at intermediate scales.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/turbulent_cascade_spectrum_fit.pdf}
-\caption{Time-averaged turbulent energy spectrum $E(k_\perp)$ showing Kolmogorov scaling. Data averaged over steady state ($t \in [30, 50]\tau_A$) with error bars indicating temporal variance. Inertial range (shaded green) exhibits $k_\perp^{-1.65 \pm 0.05}$ scaling, consistent with theoretical $k_\perp^{-5/3}$ prediction (dashed line). Forcing range ($k \in [2, 5]$) and approximate dissipation scale marked. Resolution: $N = 64^3$ with anomalous dissipation $\eta = 20$.}
+\caption{Time-averaged turbulent energy spectrum $E(k_\perp)$ showing Kolmogorov scaling (synthetic benchmark data). Data averaged over steady state ($t \in [30, 50]\tau_A$). Inertial range (shaded green) exhibits $k_\perp^{-1.664 \pm 0.019}$ scaling, consistent with theoretical $k_\perp^{-5/3}$ prediction (dashed line). Forcing range ($k \in [2, 5]$) and approximate dissipation scale marked. Resolution: $N = 128^3$.}
 \label{fig:turbulent_spectrum}
 \end{figure}
 

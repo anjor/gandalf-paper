@@ -14,7 +14,18 @@ import os
 from pathlib import Path
 
 # Add GANDALF to path
-gandalf_path = os.path.expanduser("~/repos/anjor/gandalf/src")
+gandalf_path = os.environ.get('GANDALF_PATH')
+if not gandalf_path:
+    # Try default location
+    default_path = os.path.expanduser("~/repos/anjor/gandalf/src")
+    if os.path.exists(default_path):
+        gandalf_path = default_path
+    else:
+        raise RuntimeError(
+            "GANDALF_PATH environment variable not set. "
+            "Please set it to the src/ directory of your GANDALF installation:\n"
+            "export GANDALF_PATH=/path/to/gandalf/src"
+        )
 sys.path.insert(0, gandalf_path)
 
 from krmhd import (
