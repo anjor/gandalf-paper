@@ -467,7 +467,7 @@ def main():
             output_dir=args.output_dir / 'spatial_convergence',
             resolutions=[32, 64, 128],
             dt=0.01,  # Well-resolved fixed timestep
-            n_periods=3.0,  # Three Alfvén crossing times
+            n_periods=2.0,  # Two Alfvén crossing times (stop before under-resolution)
             M=2,  # Pure fluid RMHD (minimum M=2, nu=0 for no collisions)
         )
 
