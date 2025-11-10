@@ -92,10 +92,13 @@ def measure_alfven_frequency(
     print(f"  Running N={resolution}³, dt={dt:.6f}...")
 
     # Initialize Alfvén wave
+    # NOTE: Use kx_mode=1.0 (not 0) to get non-zero energy
+    # RMHD energy ∝ k_perp², so pure k_z wave has zero energy
+    # Dispersion ω = k_∥v_A is independent of k_perp
     state = initialize_alfven_wave(
         grid=grid,
         M=M,
-        kx_mode=0.0,
+        kx_mode=1.0,  # Non-zero k_perp for energy diagnostic
         ky_mode=0.0,
         kz_mode=float(kz_mode),
         amplitude=amplitude,
@@ -119,10 +122,10 @@ def measure_alfven_frequency(
     amplitudes = []
     energies = []
 
-    # Find grid indices for the mode
+    # Find grid indices for the mode (kx=1, ky=0, kz=1)
     ikz = kz_mode
     iky = 0
-    ikx = 0
+    ikx = 1  # Changed from 0 since we're using kx_mode=1.0
 
     # Time integration loop
     for step in range(n_steps):
