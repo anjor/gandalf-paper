@@ -179,6 +179,6 @@ Combined with the Alfvén wave benchmark's validation of linear wave physics, th
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/orszag_tang_convergence.pdf}
-\caption{Orszag-Tang convergence studies. (a) Spatial: Energy conservation error versus resolution shows slow exponential convergence ($\alpha = 0.008$) typical of nonlinear problems, but maintains $<1\%$ error even at modest $N$. (b) Temporal: Only smallest timestep ($\Delta t = 0.0125$) remained stable; larger timesteps developed instabilities despite passing linear CFL criterion, highlighting nonlinear stiffness beyond integrating factor's linear wave treatment.}
+\caption{Orszag-Tang convergence studies. (a) Spatial: Energy conservation error versus resolution shows exponential convergence ($\alpha = 0.076$) typical of spectral methods for nonlinear problems, reaching $10^{-4}$ levels even at modest $N$. (b) Temporal: Only smallest timestep ($\Delta t = 0.0125$) remained stable; larger timesteps developed instabilities despite passing linear CFL criterion, highlighting nonlinear stiffness beyond integrating factor's linear wave treatment.}
 \label{fig:orszag_convergence}
 \end{figure}
