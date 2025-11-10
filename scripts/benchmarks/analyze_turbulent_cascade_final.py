@@ -113,8 +113,9 @@ def generate_figures():
     ax.loglog(k_bins, avg_spectrum, 'b-', linewidth=2, label=f'N={N}³ simulation', alpha=0.7)
 
     # Fit power law in inertial range
-    k_fit_min = 8
-    k_fit_max = min(30, N//4)
+    # Inertial range: above forcing (k>7) and below dissipation (k<N/4)
+    k_fit_min = 8  # Just above forcing range k ∈ [2, 5]
+    k_fit_max = min(30, N//4)  # Well before dissipation scale
     alpha, C, std_err = fit_power_law(k_bins, avg_spectrum, k_fit_min, k_fit_max)
 
     if alpha is not None:
@@ -204,9 +205,10 @@ def generate_figures():
         ax.loglog(data_128['k_bins'], avg_128, 'r-', linewidth=2, label='N=128³', alpha=0.7)
 
         # Fit both
-        k_fit_min = 8
-        k_fit_max_64 = min(20, 64//4)
-        k_fit_max_128 = min(30, 128//4)
+        # Inertial range: above forcing (k>7) and resolution-dependent upper limit
+        k_fit_min = 8  # Just above forcing range k ∈ [2, 5]
+        k_fit_max_64 = min(20, 64//4)  # Limited inertial range at lower resolution
+        k_fit_max_128 = min(30, 128//4)  # Extended inertial range at higher resolution
 
         alpha_64, C_64, err_64 = fit_power_law(data_64['k_bins'], avg_64, k_fit_min, k_fit_max_64)
         alpha_128, C_128, err_128 = fit_power_law(data_128['k_bins'], avg_128, k_fit_min, k_fit_max_128)

@@ -56,7 +56,7 @@ def run_cascade_simulation():
     Lx = Ly = Lz = 2 * np.pi
 
     # Initial spectrum parameters
-    alpha = 2.0         # Initial spectral index
+    alpha_init = 2.0    # Initial spectral index
     amplitude = 1e-3    # Initial amplitude (weak)
     k_min = 1
     k_max = N // 3
@@ -92,7 +92,7 @@ def run_cascade_simulation():
     state = initialize_random_spectrum(
         grid,
         M=20,              # Number of Hermite moments
-        alpha=alpha,
+        alpha=alpha_init,
         amplitude=amplitude,
         k_min=k_min,
         k_max=k_max,
@@ -102,7 +102,7 @@ def run_cascade_simulation():
         Lambda=1.0,
         seed=42,
     )
-    print(f"✓ Initialized weak k^(-{alpha:.2f}) spectrum")
+    print(f"✓ Initialized weak k^(-{alpha_init:.2f}) spectrum")
 
     # Initialize JAX random key for forcing
     key = jax.random.PRNGKey(42)
@@ -248,16 +248,16 @@ def run_cascade_simulation():
                 log_k = np.log10(k_perp[mask])
                 log_E = np.log10(E_perp_avg[mask] + 1e-20)
                 slope, intercept, r_value, p_value, std_err = stats.linregress(log_k, log_E)
-                alpha = -slope
+                alpha_fit = -slope
 
-                f.attrs['spectral_index'] = alpha
+                f.attrs['spectral_index'] = alpha_fit
                 f.attrs['spectral_index_err'] = std_err
                 f.attrs['fit_r_value'] = r_value
 
                 print(f"\nSpectral fit in k ∈ [{k_fit_min}, {k_fit_max}]:")
-                print(f"  α = {alpha:.3f} ± {std_err:.3f}")
+                print(f"  α = {alpha_fit:.3f} ± {std_err:.3f}")
                 print(f"  Expected: α = 5/3 = 1.667")
-                print(f"  Deviation: {abs(alpha - 5/3):.3f}")
+                print(f"  Deviation: {abs(alpha_fit - 5/3):.3f}")
 
     print(f"\n✓ Results saved to: {output_file}")
     return output_file
