@@ -16,6 +16,9 @@ Writing a Journal of Plasma Physics paper on GANDALF, a modern reimplementation 
 
 ## Technical Foundation
 
+The main code used in this project is gandalf.
+It is available at https://github.com/anjor/gandalf
+
 ### Physics
 - **KRMHD**: Kinetic Reduced MHD - captures Alfvén waves + slow modes
 - **Regime**: Strong guide field, k∥ ≪ k⊥
