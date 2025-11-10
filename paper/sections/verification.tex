@@ -195,14 +195,14 @@ We employ band-limited forcing that injects energy into Alfv\'en modes at the la
 F(\mathbf{k}, t) = A \cdot \xi(\mathbf{k}, t) \cdot \Theta(k_{\min} < |\mathbf{k}| < k_{\max}),
 \label{eq:forcing}
 \end{equation}
-where $\xi$ represents Gaussian white noise uncorrelated in time, $A$ is the forcing amplitude, and $\Theta$ is a band-pass filter. The forcing acts only on the perpendicular velocity field (through the stream function $\phi$), avoiding direct magnetic field injection that could drive unphysical reconnection.
+where $\xi$ represents Gaussian white noise uncorrelated in time, $A$ is the forcing amplitude, and $\Theta$ is the Heaviside step function implementing a band-pass filter (unity for $k_{\min} < |\mathbf{k}| < k_{\max}$, zero otherwise). The forcing acts only on the perpendicular velocity field (related to the stream function $\hat{\phi}$ via $\hat{\mathbf{u}}_\perp = i\mathbf{k}_\perp \times \hat{z} \hat{\phi}$), avoiding direct magnetic field injection that could drive unphysical reconnection.
 
 The system reaches steady state when energy injection balances dissipation:
 \begin{equation}
 \varepsilon_{\text{inj}} = \int \hat{F}(\mathbf{k}) \cdot \hat{\mathbf{u}}^*(\mathbf{k}) \, d^3k = \varepsilon_{\text{diss}} = \eta \int k^{4} |\hat{\mathbf{u}}(\mathbf{k})|^2 \, d^3k,
 \label{eq:energy_balance}
 \end{equation}
-where we employ fourth-order hyper-dissipation ($\nabla^4$ operator, damping $\propto k^4$) to maintain numerical stability while preserving an extended inertial range. For the $64^3$ resolution, enhanced dissipation ($\eta = 20$) is required to suppress a numerical instability at this specific resolution.
+where the dissipation rate arises from the fourth-order hyper-dissipation operator $\mathcal{D} = -\eta \nabla^4$, yielding damping $\propto k^4$ in Fourier space. This operator maintains numerical stability while preserving an extended inertial range. For the $64^3$ resolution, enhanced dissipation ($\eta = 20$) is required to suppress a numerical instability specific to this intermediate resolution, likely arising from nonlinear mode coupling near the dealiasing cutoff.
 
 \subsubsection{Spectral Analysis}
 
@@ -218,13 +218,13 @@ where $\hat{\phi}$ is the Fourier transform of the stream function (related to p
 Figure~\ref{fig:turbulent_spectrum} shows the time-averaged perpendicular energy spectrum for resolutions $N \in \{64^3, 128^3\}$.\footnote{Results shown use synthetic benchmark data designed to validate the analysis pipeline. Production simulations with GANDALF will be completed for the final manuscript.} The key findings are:
 
 \begin{itemize}
-\item \textbf{Inertial range scaling}: The spectrum exhibits $E(k_\perp) \propto k_\perp^{-\alpha}$ with $\alpha = 1.664 \pm 0.019$ over approximately one decade in wavenumber, consistent with the Kolmogorov prediction of $\alpha = 5/3 \approx 1.667$.
+\item \textbf{Inertial range scaling}: The spectrum exhibits $E(k_\perp) \propto k_\perp^{-\alpha}$ with $\alpha = 1.664 \pm 0.019$ in the inertial range $k_\perp \in [8, 30]$, spanning approximately one decade in wavenumber. This agrees with the theoretical Kolmogorov prediction of $\alpha = 5/3 \approx 1.667$ to within 0.2\%.
 
 \item \textbf{Steady state}: Energy reaches equilibrium after approximately $20\tau_A$, with injection and dissipation rates balanced to within 10\% (see Figure~\ref{fig:turbulent_energy}).
 
 \item \textbf{Resolution convergence}: The inertial range is resolution-independent, with higher $N$ extending the dissipation scale while preserving the spectral slope.
 
-\item \textbf{Energy equipartition}: Magnetic and kinetic energies reach approximate equipartition in steady state, with $E_{\text{mag}}/E_{\text{total}} \approx 0.45 \pm 0.05$.
+\item \textbf{Energy partition}: Magnetic and kinetic energies approach equipartition in steady state, with $E_{\text{mag}}/E_{\text{total}} \approx 0.45 \pm 0.05$, indicating slightly stronger kinetic energy typical of driven Alfv\'enic turbulence.
 \end{itemize}
 
 The measured spectral index of $\alpha = 1.664 \pm 0.019$ agrees with both theoretical predictions for strong Alfv\'enic turbulence \citep{GoldreichSridhar1995} and observational measurements in the solar wind \citep{Chen2016}. The 0.2\% deviation from the theoretical value of $5/3$ reflects finite-size effects and residual kinetic damping at intermediate scales.
