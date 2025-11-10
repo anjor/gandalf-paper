@@ -20,7 +20,7 @@ The Alfvén wave represents the fundamental mode of magnetized plasma dynamics. 
 
 We initialize a single Fourier mode at $\kvec = (1, 0, 1)$ with amplitude $A = 0.01$ (linear regime) on a periodic domain of size $L_x = L_y = L_z = 2\pi$. Note that while the dispersion relation $\omega = \kpar\vA$ is independent of $\kperp$, we use $k_x = 1$ (rather than pure parallel propagation with $\kperp = 0$) to obtain non-zero RMHD energy ($E \propto \kperp^2$) for energy conservation diagnostics.
 
-The parallel wavenumber $\kpar = 2\pi/L_z = 1$ with $\vA = 1$ yields analytical frequency $\omega_{\mathrm{analytical}} = 1$. We integrate for 1--3 Alfvén periods to measure frequency while minimizing accumulated numerical dissipation from Hermite moment truncation.
+The parallel wavenumber $\kpar = 2\pi/L_z = 1$ with $\vA = 1$ yields analytical frequency $\omega_{\mathrm{analytical}} = 1$. We integrate for 3 Alfvén periods ($T = 2\pi$) in spatial convergence studies and 1 period in temporal convergence studies, chosen to measure frequency accurately while minimizing accumulated numerical dissipation from Hermite moment truncation.
 
 Physical parameters are $\betai = 1$, $\vth = 1$, and $M = 20$ Hermite moments with all dissipation coefficients set to zero ($\eta = \nu = \coll = 0$). The simulation tracks the complex amplitude of the Fourier mode $\hat{\elsp}(\kpar, t)$ at each timestep, measuring frequency via phase evolution:
 \begin{equation}
@@ -45,7 +45,7 @@ Crucially, even the largest tested timestep $\Delta t = T/2 \approx 3.14$ (two t
 \paragraph{Dispersion Relation Validation}
 \Cref{tab:alfven_dispersion} summarizes measured frequencies for all benchmark configurations. All runs achieve the analytical prediction $\omega = \kpar\vA = 1.0$ within numerical precision, with maximum relative error $2.0 \times 10^{-5}$ across all configurations. The spatial convergence runs exhibit a constant error floor (temporal discretization dominates), while three temporal convergence runs achieve machine precision (identically zero error), demonstrating analytically exact integration of linear Alfvén waves.
 
-The consistency across all configurations confirms that GANDALF correctly implements the KRMHD equations with no systematic bias in wave propagation speed. Both the real and imaginary parts of the Elsasser field evolution match analytical solutions, verifying phase and amplitude accuracy simultaneously.
+The consistency across all configurations confirms that GANDALF correctly implements the KRMHD equations with no systematic bias in wave propagation speed. Both the real and imaginary parts of the Elsasser field evolution match analytical solutions, verifying phase and amplitude accuracy simultaneously. Additional validation checks confirm energy conservation (drift $<10^{-7}$ per period from Hermite truncation) and phase error accumulation consistent with measured frequency errors.
 
 \subsubsection{Discussion}
 
