@@ -52,7 +52,6 @@ import jax.numpy as jnp
 from krmhd.physics import initialize_alfven_wave, KRMHDState, energy
 from krmhd.spectral import SpectralGrid3D
 from krmhd.timestepping import gandalf_step
-from krmhd.diagnostics import EnergyHistory
 
 
 def measure_alfven_frequency(
