@@ -71,7 +71,7 @@ Future benchmarks will extend validation to nonlinear regimes (Orszag-Tang vorte
 
 \begin{table}[t]
 \centering
-\caption{Alfvén wave dispersion validation across spatial (N) and temporal ($\Delta t$) convergence studies. Analytical prediction: $\omega = \kpar\vA = 1.0$.\footnotemark}
+\caption{Alfvén wave dispersion validation across spatial (N) and temporal ($\Delta t$) convergence studies. Analytical prediction: $\omega = \kpar\vA = 1.0$.\protect\footnotemark}
 \label{tab:alfven_dispersion}
 \begin{tabular}{lccc}
 \hline\hline
@@ -103,17 +103,17 @@ Having validated linear wave propagation, we now test GANDALF's handling of nonl
 The Orszag-Tang vortex consists of intersecting velocity and magnetic field vortices with initial conditions \citep{OrszagTang1979}:
 \begin{align}
 \mathbf{v} &= (-\sin y, \sin x, 0), \\
-\mathbf{B} &= (-B_0\sin y, B_0\sin 2x, 0), \quad B_0 = \frac{1}{\sqrt{4\pi}} \approx 0.282.
+\mathbf{B} &= \frac{1}{\sqrt{4\pi}}(-\sin y, \sin 2x, 0) \approx (0.282)(-\sin y, \sin 2x, 0).
 \end{align}
 In GANDALF's incompressible RMHD formulation, we initialize via the stream function $\phi$ and vector potential $\Psi$ with Fourier coefficients selected to reproduce these fields (see \texttt{initialize\_orszag\_tang} in GANDALF documentation).
 
-We integrate on a periodic domain of unit size ($L_x = L_y = L_z = 1$) for $t \in [0, 3\tau_A]$ where $\tau_A = L_z/\vA = 1$ is the Alfvén crossing time. We use inviscid parameters ($\eta = \nu = 0$, $M=2$ minimum Hermite moments) to test energy conservation. Spatial convergence tests use resolutions $N \in \{32, 64, 128\}$ (for $N^2 \times 2$ grids, treating this as essentially 2D) with fixed timestep $\Delta t = 0.01$.
+We integrate on a periodic domain of unit size ($L_x = L_y = L_z = 1$) for $t \in [0, 3\tau_A]$ where $\tau_A = L_z/\vA = 1$ is the Alfvén crossing time. We use inviscid parameters ($\eta = \nu = 0$, $M=2$ minimum Hermite moments) to test energy conservation. Spatial convergence tests use resolutions $N \in \{32, 64, 128\}$ (for $N^2 \times 2$ grids with $N_z=2$ providing only the $k_z=0$ mode, effectively 2D dynamics) with fixed timestep $\Delta t = 0.01$.
 
 \subsubsection{Energy Conservation and Selective Decay}
 
 \Cref{fig:orszag_energy} shows energy evolution for the highest resolution run ($N = 128^2 \times 2$). Total energy conservation achieves $|\Delta E/E_0| = 2.7 \times 10^{-3}$ over 3 Alfvén times - excellent for nonlinear dynamics where spectral aliasing and dealiasing operations can introduce numerical dissipation. This validates GANDALF's energy-conserving formulation of the nonlinear Poisson bracket $\{\phi, \Psi\}$ and confirms correct implementation of the 2/3 dealiasing rule.
 
-The energy components exhibit \textbf{selective decay}, a hallmark of 2D MHD: magnetic energy increases relative to kinetic energy as $E_{\mathrm{mag}}/E_{\mathrm{kin}}$ grows from 1.0 initially to 2.55 by $t = 3\tau_A$. This physical process arises because 2D turbulence preferentially cascades kinetic energy to small scales (where it would be dissipated in viscous simulations) while magnetic energy inverse-cascades to large scales \citep{Biskamp2003}.  The observed ratio evolution matches qualitative expectations for inviscid 2D MHD, though quantitative comparison requires reference simulations beyond the scope of this verification test.
+The energy components exhibit \textbf{selective decay}, a hallmark of 2D MHD: magnetic energy increases relative to kinetic energy as $E_{\mathrm{mag}}/E_{\mathrm{kin}}$ grows from 1.0 initially to 2.55 by $t = 3\tau_A$. This physical process arises because 2D turbulence preferentially cascades kinetic energy to small scales (where it would be dissipated in viscous simulations) while magnetic energy inverse-cascades to large scales \citep{Biskamp2003}. The observed ratio evolution matches qualitative expectations for inviscid 2D MHD, though quantitative comparison requires reference simulations beyond the scope of this verification test.
 
 \subsubsection{Structure Formation}
 
@@ -131,9 +131,7 @@ Importantly, no artificial accumulation appears at $k_{\max}$, confirming that d
 
 \Cref{fig:orszag_convergence}(a) shows spatial convergence of energy conservation error with resolution. The exponential fit yields $\alpha = 0.008$, indicating slow convergence - expected for nonlinear problems where cascade dynamics introduce inherent scale coupling, unlike the clean single-mode Alfvén test. Even at modest resolutions, energy conservation remains within 1\% over multiple Alfvén times, demonstrating robustness of the energy-conserving scheme.
 
-Temporal convergence (\Cref{fig:orszag_convergence}b) proved more challenging: only the smallest tested timestep ($\Delta t = 0.0125$) maintained stability, with larger timesteps exhibiting numerical instabilities (NaN values) despite passing the linear CFL criterion. This highlights that nonlinear stiffness differs fundamentally from linear wave stiffness. The integrating factor removes linear Alfvén propagation, but cannot anticipate nonlinear coupling rates that depend on flow
-
- structure and cascade development. Adaptive timestepping based on monitoring nonlinear term magnitudes may prove necessary for efficient integration of strongly nonlinear states.
+Temporal convergence (\Cref{fig:orszag_convergence}b) proved more challenging: only the smallest tested timestep ($\Delta t = 0.0125$) maintained stability, with larger timesteps exhibiting numerical instabilities (NaN values) despite passing the linear CFL criterion. This highlights that nonlinear stiffness differs fundamentally from linear wave stiffness. The integrating factor removes linear Alfvén propagation, but cannot anticipate nonlinear coupling rates that depend on the evolving flow structure and cascade development. Adaptive timestepping based on monitoring nonlinear term magnitudes may prove necessary for efficient integration of strongly nonlinear states.
 
 \subsubsection{Discussion}
 
