@@ -93,11 +93,15 @@ def main():
     # Reference line normalization point
     idx_ref = 2  # n=3 or k⊥=3 (0-indexed)
 
+    # Extract hyper-order from metadata if available
+    hyper_order = metadata.get("hyper_order", None) if metadata else None
+    grid_label = f"{grid.Nx}³, r={hyper_order}" if hyper_order else f"{grid.Nx}³"
+
     if args.thesis_style:
         # Thesis style: Kinetic on left, Magnetic on right, clean titles
         # Left panel: Kinetic
-        ax1.loglog(x_axis, E_kin_spec, "-", linewidth=3, color='#1f77b4', label=f"{grid.Nx}³, r=2")
-        if len(E_kin_spec) > idx_ref:
+        ax1.loglog(x_axis, E_kin_spec, "-", linewidth=3, color='#1f77b4', label=grid_label)
+        if len(E_kin_spec) > idx_ref and len(x_axis) > idx_ref and E_kin_spec[idx_ref] > 0:
             ref_line = (x_axis ** (-5 / 3)) * (E_kin_spec[idx_ref] / (x_axis[idx_ref] ** (-5 / 3)))
             ax1.loglog(x_axis, ref_line, "k--", label=x_ref_label, alpha=0.7, linewidth=1.5)
         ax1.set_xlabel(x_label, fontsize=14)
@@ -107,8 +111,8 @@ def main():
         ax1.grid(alpha=0.3, which="both")
 
         # Right panel: Magnetic
-        ax2.loglog(x_axis, E_mag_spec, "-", linewidth=3, color='#ff7f0e', label=f"{grid.Nx}³, r=2")
-        if len(E_mag_spec) > idx_ref:
+        ax2.loglog(x_axis, E_mag_spec, "-", linewidth=3, color='#ff7f0e', label=grid_label)
+        if len(E_mag_spec) > idx_ref and len(x_axis) > idx_ref and E_mag_spec[idx_ref] > 0:
             ref_line = (x_axis ** (-5 / 3)) * (E_mag_spec[idx_ref] / (x_axis[idx_ref] ** (-5 / 3)))
             ax2.loglog(x_axis, ref_line, "k--", label=x_ref_label, alpha=0.7, linewidth=1.5)
         ax2.set_xlabel(x_label, fontsize=14)
@@ -120,7 +124,7 @@ def main():
         # Standard style: Total on left, Kinetic vs Magnetic on right
         # Left panel: Total spectrum
         ax1.loglog(x_axis, E_total_spec, "o-", label="Total", linewidth=2, markersize=5)
-        if len(E_total_spec) > idx_ref:
+        if len(E_total_spec) > idx_ref and len(x_axis) > idx_ref and E_total_spec[idx_ref] > 0:
             ref_line = (x_axis ** (-5 / 3)) * (E_total_spec[idx_ref] / (x_axis[idx_ref] ** (-5 / 3)))
             ax1.loglog(x_axis, ref_line, "k--", label=x_ref_label, alpha=0.5, linewidth=1.5)
         ax1.set_xlabel(x_label, fontsize=12)
@@ -132,7 +136,7 @@ def main():
         # Right panel: Kinetic vs Magnetic
         ax2.loglog(x_axis, E_kin_spec, "o-", label="Kinetic", linewidth=2, markersize=5, alpha=0.8)
         ax2.loglog(x_axis, E_mag_spec, "s-", label="Magnetic", linewidth=2, markersize=5, alpha=0.8)
-        if len(E_kin_spec) > idx_ref:
+        if len(E_kin_spec) > idx_ref and len(x_axis) > idx_ref and E_kin_spec[idx_ref] > 0:
             ref_line_kin = (x_axis ** (-5 / 3)) * (E_kin_spec[idx_ref] / (x_axis[idx_ref] ** (-5 / 3)))
             ax2.loglog(x_axis, ref_line_kin, "k--", label=x_ref_label, alpha=0.5, linewidth=1.5)
         ax2.set_xlabel(x_label, fontsize=12)
