@@ -221,14 +221,14 @@ The turbulent cascade benchmark validates GANDALF's capability for long-duration
 
 \item \textbf{Balanced forcing efficacy}: Restricting forcing to low $|k_z|$ modes ($|n_z| \leq 1$) proved essential for numerical stability at $64^3$ resolution, respecting RMHD ordering and avoiding energy accumulation at high-$k_z$ modes that violated the $k_\parallel \ll k_\perp$ assumption.
 
-\item \textbf{Stable quasi-steady state}: Integration to $200\tau_A$ (32 times longer than Orszag-Tang benchmark duration) demonstrates robustness for production turbulence studies requiring long-time statistics.
+\item \textbf{Long-time integration}: Stable evolution to $200\tau_A$ (32 times longer than Orszag-Tang benchmark duration) demonstrates robustness for production turbulence studies requiring long-time statistics.
 \end{itemize}
 
-This benchmark complements the linear Alfv\'en wave test (spectral accuracy for linear physics) and Orszag-Tang vortex (energy conservation in nonlinear dynamics) by validating GANDALF's handling of sustained turbulent cascades with external forcing and dissipation. Higher resolution studies ($N = 128^3$) are ongoing to demonstrate convergence of inertial range scaling and broaden the scale separation for more stringent validation of cascade physics.
+This benchmark complements the linear Alfv\'en wave test (spectral accuracy for linear physics) and Orszag-Tang vortex (energy conservation in nonlinear dynamics) by validating GANDALF's handling of sustained turbulent cascades with external forcing and dissipation. Higher resolution studies ($N = 128^3$) are ongoing to demonstrate convergence of inertial range scaling and broaden the scale separation for more stringent validation of cascade physics. Benchmark data and analysis scripts are available in the paper repository, with the $N = 64^3$ checkpoint ($t = 200\tau_A$, 759~KB HDF5 format) enabling independent verification of the spectral results presented in \Cref{fig:turbulent_spectrum}.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/turbulent_cascade_spectrum_N64.pdf}
-\caption{Time-averaged turbulent energy spectrum $E(k_\perp)$ for driven Alfv\'enic turbulence at $N = 64^3$ resolution. Left: Kinetic energy spectrum. Right: Magnetic energy spectrum. Both components exhibit clean $k_\perp^{-5/3}$ Kolmogorov scaling (dashed reference line) across the inertial range $k_\perp \in [2, 12]$. Balanced Elsasser forcing at $k_\perp \in [1, 2]$ with $|k_z| \leq 1$ restriction provides stable energy injection respecting RMHD ordering. Time-averaged over $t \in [180, 200]\tau_A$ after initial transients decay. Total energy: $1.73 \times 10^4$ (normalized units); magnetic fraction: 0.46 (approaching equipartition).}
+\caption{Time-averaged turbulent energy spectrum $E(k_\perp)$ from production GANDALF simulation at $N = 64^3$ resolution. Left: Kinetic energy spectrum. Right: Magnetic energy spectrum. Both components exhibit clean $k_\perp^{-5/3}$ Kolmogorov scaling (dashed reference line) across the inertial range $k_\perp \in [2, 12]$. Balanced Elsasser forcing at $k_\perp \in [1, 2]$ with $|k_z| \leq 1$ restriction provides stable energy injection respecting RMHD ordering. Time-averaged over $t \in [180, 200]\tau_A$ after initial transients decay. Total energy: $1.73 \times 10^4$ (normalized units); magnetic fraction: 0.46 (approaching equipartition). Data from checkpoint at $t = 200\tau_A$.}
 \label{fig:turbulent_spectrum}
 \end{figure}
