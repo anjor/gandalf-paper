@@ -5,9 +5,9 @@ This script loads a checkpoint file and computes/plots the energy spectra
 without needing to rerun the simulation.
 
 Usage:
-    python plot_checkpoint_spectrum.py checkpoint_final_t0200.0.h5
-    python plot_checkpoint_spectrum.py --output custom_name.png checkpoint.h5
-    python plot_checkpoint_spectrum.py --thesis-style checkpoint.h5
+    python analyze_turbulent_cascade.py checkpoint_final_t0200.0.h5
+    python analyze_turbulent_cascade.py --output custom_name.png checkpoint.h5
+    python analyze_turbulent_cascade.py --thesis-style checkpoint.h5
 """
 
 import argparse
