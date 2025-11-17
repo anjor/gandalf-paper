@@ -107,7 +107,7 @@ The Orszag-Tang vortex consists of intersecting velocity and magnetic field vort
 \end{align}
 In GANDALF's incompressible RMHD formulation, we initialize via the stream function $\phi$ and vector potential $\Psi$ with Fourier coefficients computed to reproduce these fields exactly (see \texttt{initialize\_orszag\_tang} in \texttt{krmhd/physics.py}).
 
-We integrate on a periodic domain of unit size ($L_x = L_y = L_z = 1$) for $t \in [0, 2\tau_A]$ where $\tau_A = L_z/\vA = 1$ is the Alfvén crossing time. We use inviscid parameters ($\eta = \nu = 0$, $M=2$ minimum Hermite moments) to test energy conservation. Spatial convergence tests use resolutions $N \in \{32, 64, 128\}$ (for $N^2 \times 2$ grids with $N_z=2$ providing only the $k_z=0$ mode, effectively 2D dynamics) with fixed timestep $\Delta t = 0.01$.
+We integrate on a periodic domain of unit size ($L_x = L_y = L_z = 1$) for $t \in [0, 2\tauA]$ where $\tauA = L_z/\vA = 1$ is the Alfvén crossing time. We use inviscid parameters ($\eta = \nu = 0$, $M=2$ minimum Hermite moments) to test energy conservation. Spatial convergence tests use resolutions $N \in \{32, 64, 128\}$ (for $N^2 \times 2$ grids with $N_z=2$ providing only the $k_z=0$ mode, effectively 2D dynamics) with fixed timestep $\Delta t = 0.01$.
 
 \subsubsection{Energy Conservation and Selective Decay}
 
@@ -135,9 +135,9 @@ We found temporal convergence (\Cref{fig:orszag_convergence}b) more challenging:
 
 \subsubsection{Resolution Limits in Inviscid Simulations}
 
-We terminate simulations at $t = 2\tau_A$ where energy conservation remains excellent ($|\Delta E/E_0| \sim 10^{-6}$). Beyond this point, the nonlinear cascade generates structures approaching the grid resolution limit. Without explicit dissipation ($\eta = 0$, $\nu = 0$), continued integration produces under-resolved features and numerical instability, manifesting as spurious energy growth rather than conservation.
+We terminate simulations at $t = 2\tauA$ where energy conservation remains excellent ($|\Delta E/E_0| \sim 10^{-6}$). Beyond this point, the nonlinear cascade generates structures approaching the grid resolution limit. Without explicit dissipation ($\eta = 0$, $\nu = 0$), continued integration produces under-resolved features and numerical instability, manifesting as spurious energy growth rather than conservation.
 
-This behavior is expected for inviscid spectral codes: as the cascade reaches wavenumbers near the Nyquist limit, spectral dealiasing can no longer prevent aliasing errors from accumulating, eventually overwhelming the energy-conserving discretization. Had we continued beyond $t \approx 2\tau_A$, the energy conservation error would exhibit exponential growth, transitioning from the $\sim 10^{-6}$ level to $>10^{-3}$ and eventually NaN values.
+This behavior is expected for inviscid spectral codes: as the cascade reaches wavenumbers near the Nyquist limit, spectral dealiasing can no longer prevent aliasing errors from accumulating, eventually overwhelming the energy-conserving discretization. Had we continued beyond $t \approx 2\tauA$, the energy conservation error would exhibit exponential growth, transitioning from the $\sim 10^{-6}$ level to $>10^{-3}$ and eventually NaN values.
 
 This limitation motivates the use of explicit resistivity ($\eta > 0$) or hyperdiffusion (selective damping of high-$k$ modes) in production turbulence simulations. The present benchmark validates that GANDALF correctly conserves energy in the \emph{resolved regime} before the cascade reaches the dissipation scale, which is the intended operating regime for KRMHD turbulence studies where explicit dissipation models small-scale physics.
 
@@ -165,14 +165,14 @@ Combined with the Alfvén wave benchmark's validation of linear wave physics, th
 \begin{figure}[p]
 \centering
 \includegraphics[width=\textwidth]{figures/orszag_tang_structures.pdf}
-\caption{Orszag-Tang vortex 2D field structures at $t = 2\tau_A$ showing (a) vorticity $\omega = \nabla^2\phi$, (b) current density $J_\parallel = \nabla^2\Psi$, (c) stream function $\phi$, and (d) vector potential $\Psi$. Current sheets (intense localized $J_\parallel$) form at flow stagnation points, demonstrating nonlinear cascade to small scales. Spectral methods resolve steep gradients without oscillations. Resolution: $N = 128^2 \times 2$.}
+\caption{Orszag-Tang vortex 2D field structures at $t = 2\tauA$ showing (a) vorticity $\omega = \nabla^2\phi$, (b) current density $J_\parallel = \nabla^2\Psi$, (c) stream function $\phi$, and (d) vector potential $\Psi$. Current sheets (intense localized $J_\parallel$) form at flow stagnation points, demonstrating nonlinear cascade to small scales. Spectral methods resolve steep gradients without oscillations. Resolution: $N = 128^2 \times 2$.}
 \label{fig:orszag_structures}
 \end{figure}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.8\textwidth]{figures/orszag_tang_spectra.pdf}
-\caption{Orszag-Tang vortex energy spectra $E(k_\perp)$ at four times showing cascade development from initial peaked distribution to broadband turbulent spectrum. Energy flux reaches Nyquist wavenumber $k_{\max} \approx 400$ by $t = 2\tau_A$ with slopes between $k^{-3}$ (2D MHD prediction) and $k^{-5/3}$ (forward cascade). No artificial accumulation at $k_{\max}$ confirms effective dealiasing. Resolution: $N = 128^2 \times 2$.}
+\caption{Orszag-Tang vortex energy spectra $E(k_\perp)$ at four times showing cascade development from initial peaked distribution to broadband turbulent spectrum. Energy flux reaches Nyquist wavenumber $k_{\max} \approx 400$ by $t = 2\tauA$ with slopes between $k^{-3}$ (2D MHD prediction) and $k^{-5/3}$ (forward cascade). No artificial accumulation at $k_{\max}$ confirms effective dealiasing. Resolution: $N = 128^2 \times 2$.}
 \label{fig:orszag_spectra}
 \end{figure}
 
@@ -197,7 +197,7 @@ F_\pm(\mathbf{k}, t) = A \cdot \xi_\pm(\mathbf{k}, t) \cdot \Theta(n_{\min} \leq
 \end{equation}
 where mode numbers $n = kL/(2\pi)$ specify forcing band $n_\perp \in [1, 2]$ with $|n_z| \leq 1$. Here $\xi_\pm$ represents independent Gaussian white noise realizations for each Elsasser field, $A = 0.048$ is the forcing amplitude, and $\Theta$ is the Heaviside step function. The low-$|k_z|$ restriction respects RMHD ordering $k_\parallel \ll k_\perp$ and prevents spurious magnetic reconnection from unbalanced high-$k_z$ forcing that plagued earlier attempts.
 
-We integrate on a cubic periodic domain $L = 2\pi$ for $t \in [0, 200]\tau_A$ where $\tau_A = L/\vA = 2\pi$ is the Alfv\'en crossing time. Dissipation uses hyper-resistivity $\eta(-\nabla^2)^r$ with $\eta = 6.0$ and $r = 2$ (Laplacian operator applied $r$ times), giving $\eta k_\perp^4$ damping rate in Fourier space. The hyper-resistivity coefficient is chosen to place the dissipation scale well above the inertial range at $64^3$ resolution while maintaining numerical stability. Higher-order dissipation ($r = 4$) proved unstable despite satisfying linear stability criteria. The balanced forcing with restricted $|k_z|$ enables long-term stable evolution where earlier attempts with isotropic Gaussian forcing exhibited energy accumulation and spectral pile-up.
+We integrate on a cubic periodic domain $L = 2\pi$ for $t \in [0, 200]\tauA$ where $\tauA = L/\vA = 2\pi$ is the Alfv\'en crossing time. Dissipation uses hyper-resistivity $\eta(-\nabla^2)^r$ with $\eta = 6.0$ and $r = 2$ (Laplacian operator applied $r$ times), giving $\eta k_\perp^4$ damping rate in Fourier space. The hyper-resistivity coefficient is chosen to place the dissipation scale well above the inertial range at $64^3$ resolution while maintaining numerical stability. Higher-order dissipation ($r = 4$) proved unstable despite satisfying linear stability criteria. The balanced forcing with restricted $|k_z|$ enables long-term stable evolution where earlier attempts with isotropic Gaussian forcing exhibited energy accumulation and spectral pile-up.
 
 \subsubsection{Spectral Validation}
 
@@ -206,9 +206,9 @@ The perpendicular energy spectrum is computed by binning Fourier mode energies i
 E(k_\perp) = \sum_{k_z} \sum_{k_\perp - \Delta k/2 < |\mathbf{k}_\perp| < k_\perp + \Delta k/2} \left( |\elsphat(\mathbf{k})|^2 + |\elsmhat(\mathbf{k})|^2 \right),
 \label{eq:spectrum}
 \end{equation}
-where $\elsphat$ and $\elsmhat$ are the Elsasser field Fourier coefficients (tilde denotes Fourier transform), and the double sum accumulates energy from all modes with perpendicular wavenumber magnitude in the shell $k_\perp \pm \Delta k/2$. This unnormalized shell sum gives $E(k_\perp)$ as total energy per wavenumber bin, appropriate for power-law scaling analysis. Time averaging over the quasi-steady-state window ($t \in [180, 200]\tau_A$) after initial transients decay provides robust statistics.
+where $\elsphat$ and $\elsmhat$ are the Elsasser field Fourier coefficients (tilde denotes Fourier transform), and the double sum accumulates energy from all modes with perpendicular wavenumber magnitude in the shell $k_\perp \pm \Delta k/2$. This unnormalized shell sum gives $E(k_\perp)$ as total energy per wavenumber bin, appropriate for power-law scaling analysis. Time averaging over the quasi-steady-state window ($t \in [180, 200]\tauA$) after initial transients decay provides robust statistics.
 
-\Cref{fig:turbulent_spectrum} shows the time-averaged spectrum at $t = 200\tau_A$. Both kinetic and magnetic energy components exhibit clean $k_\perp^{-5/3}$ scaling across the inertial range $k_\perp \in [2, 12]$, spanning approximately one decade. The lower bound excludes forcing scales ($k_\perp = 1\text{--}2$), while the upper bound is set by spectral flattening from dissipation onset. The measured spectral slopes closely match the Kolmogorov prediction, with total energy $E_{\text{total}} \approx 1.73 \times 10^4$ and magnetic fraction $E_{\text{mag}}/E_{\text{total}} \approx 0.46$ approaching equipartition as expected for Alfv\'enic turbulence.
+\Cref{fig:turbulent_spectrum} shows the time-averaged spectrum at $t = 200\tauA$. Both kinetic and magnetic energy components exhibit clean $k_\perp^{-5/3}$ scaling across the inertial range $k_\perp \in [2, 12]$, spanning approximately one decade. The lower bound excludes forcing scales ($k_\perp = 1\text{--}2$), while the upper bound is set by spectral flattening from dissipation onset. The measured spectral slopes closely match the Kolmogorov prediction, with total energy $E_{\text{total}} \approx 1.73 \times 10^4$ and magnetic fraction $E_{\text{mag}}/E_{\text{total}} \approx 0.46$ approaching equipartition as expected for Alfv\'enic turbulence.
 
 The simulation achieves quasi-steady state with relative energy fluctuations $\Delta E/\langle E \rangle \lesssim 7\%$ over the averaging window, indicating reasonably balanced forcing and dissipation rates without secular drift. The clean scale separation between forcing scales ($k_\perp = 1\text{--}2$), inertial range ($k_\perp \approx 2\text{--}12$), and dissipation range ($k_\perp > 12$) confirms GANDALF's ability to capture turbulent cascade physics with spectral accuracy.
 
@@ -221,14 +221,14 @@ The turbulent cascade benchmark validates GANDALF's capability for long-duration
 
 \item \textbf{Balanced forcing efficacy}: Restricting forcing to low $|k_z|$ modes ($|n_z| \leq 1$) proved essential for numerical stability at $64^3$ resolution, respecting RMHD ordering and avoiding energy accumulation at high-$k_z$ modes that violated the $k_\parallel \ll k_\perp$ assumption.
 
-\item \textbf{Long-time integration}: Stable evolution to $200\tau_A$ (32 times longer than Orszag-Tang benchmark duration) demonstrates robustness for production turbulence studies requiring long-time statistics.
+\item \textbf{Long-time integration}: Stable evolution to $200\tauA$ (32 times longer than Orszag-Tang benchmark duration) demonstrates robustness for production turbulence studies requiring long-time statistics.
 \end{itemize}
 
-This benchmark complements the linear Alfv\'en wave test (spectral accuracy for linear physics) and Orszag-Tang vortex (energy conservation in nonlinear dynamics) by validating GANDALF's handling of sustained turbulent cascades with external forcing and dissipation. Higher resolution studies ($N = 128^3$) are ongoing to demonstrate convergence of inertial range scaling and broaden the scale separation for more stringent validation of cascade physics. Benchmark data and analysis scripts are available in the paper repository, with the $N = 64^3$ checkpoint ($t = 200\tau_A$, 759~KB HDF5 format) enabling independent verification of the spectral results presented in \Cref{fig:turbulent_spectrum}.
+This benchmark complements the linear Alfv\'en wave test (spectral accuracy for linear physics) and Orszag-Tang vortex (energy conservation in nonlinear dynamics) by validating GANDALF's handling of sustained turbulent cascades with external forcing and dissipation. Higher resolution studies ($N = 128^3$) are ongoing to demonstrate convergence of inertial range scaling and broaden the scale separation for more stringent validation of cascade physics. Benchmark data and analysis scripts are available in the paper repository, with the $N = 64^3$ checkpoint ($t = 200\tauA$, 759~KB HDF5 format) enabling independent verification of the spectral results presented in \Cref{fig:turbulent_spectrum}.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/turbulent_cascade_spectrum_N64.pdf}
-\caption{Time-averaged turbulent energy spectrum $E(k_\perp)$ from production GANDALF simulation at $N = 64^3$ resolution. Left: Kinetic energy spectrum. Right: Magnetic energy spectrum. Both components exhibit clean $k_\perp^{-5/3}$ Kolmogorov scaling (dashed reference line) across the inertial range $k_\perp \in [2, 12]$. Balanced Elsasser forcing at $k_\perp \in [1, 2]$ with $|k_z| \leq 1$ restriction provides stable energy injection respecting RMHD ordering. Time-averaged over $t \in [180, 200]\tau_A$ after initial transients decay. Total energy: $1.73 \times 10^4$ (normalized units); magnetic fraction: 0.46 (approaching equipartition). Data from checkpoint at $t = 200\tau_A$.}
+\caption{Time-averaged turbulent energy spectrum $E(k_\perp)$ from production GANDALF simulation at $N = 64^3$ resolution. Left: Kinetic energy spectrum. Right: Magnetic energy spectrum. Both components exhibit clean $k_\perp^{-5/3}$ Kolmogorov scaling (dashed reference line) across the inertial range $k_\perp \in [2, 12]$. Balanced Elsasser forcing at $k_\perp \in [1, 2]$ with $|k_z| \leq 1$ restriction provides stable energy injection respecting RMHD ordering. Time-averaged over $t \in [180, 200]\tauA$ after initial transients decay. Total energy: $1.73 \times 10^4$ (normalized units); magnetic fraction: 0.46 (approaching equipartition). Data from checkpoint at $t = 200\tauA$.}
 \label{fig:turbulent_spectrum}
 \end{figure}
