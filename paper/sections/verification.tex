@@ -197,7 +197,7 @@ F_\pm(\mathbf{k}, t) = A \cdot \xi_\pm(\mathbf{k}, t) \cdot \Theta(n_{\min} \leq
 \end{equation}
 where $\xi_\pm$ represents independent Gaussian white noise realizations for each Elsasser field, $A = 0.048$ is the forcing amplitude, $\Theta$ is the Heaviside function, and mode numbers $n = kL/(2\pi)$ specify forcing band $n_\perp \in [1, 2]$ with $|n_z| \leq 1$. The low-$|k_z|$ restriction respects RMHD ordering $k_\parallel \ll k_\perp$ and prevents spurious magnetic reconnection from unbalanced high-$k_z$ forcing that plagued earlier attempts.
 
-We integrate on a cubic periodic domain $L = 2\pi$ for $t \in [0, 200]\tau_A$ where $\tau_A = L/\vA = 2\pi$ is the Alfv\'en crossing time. Dissipation uses hyper-resistivity $\eta(-\nabla^2)^r$ with $\eta = 6.0$ and $r = 2$ (Laplacian operator applied $r$ times, giving $\eta k_\perp^4$ damping in Fourier space, chosen for $64^3$ stability; note that $r = 4$ eighth-order dissipation proved unstable). The balanced forcing with restricted $|k_z|$ enables long-term stable evolution where earlier attempts with isotropic Gaussian forcing exhibited energy accumulation and spectral pile-up.
+We integrate on a cubic periodic domain $L = 2\pi$ for $t \in [0, 200]\tau_A$ where $\tau_A = L/\vA = 2\pi$ is the Alfv\'en crossing time. Dissipation uses hyper-resistivity $\eta(-\nabla^2)^r$ with $\eta = 6.0$ and $r = 2$ (Laplacian operator applied $r$ times), giving $\eta k_\perp^4$ damping rate in Fourier space. In normalized units where $k_\perp$ is measured in $\rhoi^{-1}$ and time in $\tau_A^{-1}$, this sets a dissipation wavenumber $k_d \sim (\varepsilon/\eta)^{1/4}$ where $\varepsilon$ is the energy injection rate, chosen to place $k_d$ well above the inertial range at $64^3$ resolution. Higher-order dissipation ($r = 4$) proved unstable despite satisfying linear stability criteria. The balanced forcing with restricted $|k_z|$ enables long-term stable evolution where earlier attempts with isotropic Gaussian forcing exhibited energy accumulation and spectral pile-up.
 
 \subsubsection{Spectral Validation}
 
@@ -206,7 +206,7 @@ The perpendicular energy spectrum is computed by binning Fourier mode energies i
 E(k_\perp) = \sum_{k_z} \sum_{k_\perp - \Delta k/2 < |\mathbf{k}_\perp| < k_\perp + \Delta k/2} \left( |\elsphat(\mathbf{k})|^2 + |\elsmhat(\mathbf{k})|^2 \right),
 \label{eq:spectrum}
 \end{equation}
-where $\elsphat$ and $\elsmhat$ are the Elsasser field Fourier coefficients (tilde denotes Fourier transform) and the sum accumulates all modes with perpendicular wavenumber magnitude in the bin centered at $k_\perp$. Time averaging over the quasi-steady-state window ($t \in [180, 200]\tau_A$) after initial transients decay provides robust statistics.
+where $\elsphat$ and $\elsmhat$ are the Elsasser field Fourier coefficients (tilde denotes Fourier transform), and the double sum accumulates energy from all modes with perpendicular wavenumber magnitude in the shell $k_\perp \pm \Delta k/2$. This unnormalized shell sum gives $E(k_\perp)$ as total energy per wavenumber bin, appropriate for power-law scaling analysis. Time averaging over the quasi-steady-state window ($t \in [180, 200]\tau_A$) after initial transients decay provides robust statistics.
 
 \Cref{fig:turbulent_spectrum} shows the time-averaged spectrum at $t = 200\tau_A$. Both kinetic and magnetic energy components exhibit clean $k_\perp^{-5/3}$ scaling across the inertial range $k_\perp \in [2, 12]$, spanning approximately one decade. The lower bound excludes forcing scales ($k_\perp = 1\text{--}2$), while the upper bound is set by spectral flattening from dissipation onset. The measured spectral slopes closely match the Kolmogorov prediction, with total energy $E_{\text{total}} \approx 1.73 \times 10^4$ and magnetic fraction $E_{\text{mag}}/E_{\text{total}} \approx 0.46$ approaching equipartition as expected for Alfv\'enic turbulence.
 
@@ -224,7 +224,7 @@ The turbulent cascade benchmark validates GANDALF's capability for long-duration
 \item \textbf{Stable quasi-steady state}: Integration to $200\tau_A$ (32 times longer than Orszag-Tang benchmark duration) demonstrates robustness for production turbulence studies requiring long-time statistics.
 \end{itemize}
 
-This benchmark complements the linear Alfv\'en wave test (spectral accuracy for linear physics) and Orszag-Tang vortex (energy conservation in nonlinear dynamics) by validating GANDALF's handling of sustained turbulent cascades with external forcing and dissipation. Future work will extend to higher resolution ($N = 128^3$) to demonstrate convergence of inertial range scaling and broaden the scale separation for more stringent validation of cascade physics.
+This benchmark complements the linear Alfv\'en wave test (spectral accuracy for linear physics) and Orszag-Tang vortex (energy conservation in nonlinear dynamics) by validating GANDALF's handling of sustained turbulent cascades with external forcing and dissipation. Higher resolution studies ($N = 128^3$) are ongoing to demonstrate convergence of inertial range scaling and broaden the scale separation for more stringent validation of cascade physics.
 
 \begin{figure}[t]
 \centering
