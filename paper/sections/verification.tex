@@ -190,27 +190,27 @@ Fully developed turbulence represents the most stringent test of a plasma turbul
 
 \subsubsection{Physical Setup}
 
-Achieving stable turbulent cascades at moderate resolution ($N = 64^3$) required careful forcing design. We employ \textbf{balanced Elsasser forcing} \citep{Meyrand2019}, which injects energy independently into $\elsp$ and $\elsm$ fields with equal RMS amplitude:
+Achieving stable turbulent cascades at moderate resolution ($N = 64^3$) required careful forcing design. We employ \textbf{balanced Elsasser forcing}, which injects energy independently into $\elsp$ and $\elsm$ fields with equal RMS amplitude:
 \begin{equation}
 F_\pm(\mathbf{k}, t) = A \cdot \xi_\pm(\mathbf{k}, t) \cdot \Theta(n_{\min} \leq n_\perp \leq n_{\max}) \cdot \Theta(|n_z| \leq n_{z,\max}),
 \label{eq:balanced_forcing}
 \end{equation}
 where $\xi_\pm$ represents independent Gaussian white noise realizations for each Elsasser field, $A = 0.048$ is the forcing amplitude, $\Theta$ is the Heaviside function, and mode numbers $n = kL/(2\pi)$ specify forcing band $n_\perp \in [1, 2]$ with $|n_z| \leq 1$. The low-$|k_z|$ restriction respects RMHD ordering $k_\parallel \ll k_\perp$ and prevents spurious magnetic reconnection from unbalanced high-$k_z$ forcing that plagued earlier attempts.
 
-We integrate on a periodic domain of size $L_x = L_y = L_z = 2\pi$ for $t \in [0, 200]\tau_A$ where $\tau_A = L_z/\vA = 2\pi$ is the Alfv\'en crossing time. Dissipation uses hyper-resistivity $\eta(-\nabla^2)^r$ with $\eta = 6.0$ and $r = 2$ ($k^4$ damping, chosen for $64^3$ stability; note that $r = 4$ eighth-order dissipation proved unstable). The balanced forcing with restricted $|k_z|$ enables long-term stable evolution where earlier attempts with isotropic Gaussian forcing exhibited energy accumulation and spectral pile-up.
+We integrate on a cubic periodic domain $L = 2\pi$ for $t \in [0, 200]\tau_A$ where $\tau_A = L/\vA = 2\pi$ is the Alfv\'en crossing time. Dissipation uses hyper-resistivity $\eta\nabla^{2r}$ with $\eta = 6.0$ and $r = 2$ (fourth-order spatial derivative, $k^4$ damping in Fourier space, chosen for $64^3$ stability; note that $r = 4$ eighth-order dissipation proved unstable). The balanced forcing with restricted $|k_z|$ enables long-term stable evolution where earlier attempts with isotropic Gaussian forcing exhibited energy accumulation and spectral pile-up.
 
 \subsubsection{Spectral Validation}
 
 The perpendicular energy spectrum is computed by binning Fourier mode energies in perpendicular wavenumber shells:
 \begin{equation}
-E(k_\perp) = \sum_{k_z} \sum_{k_\perp - \Delta k/2 < |\mathbf{k}_\perp| < k_\perp + \Delta k/2} \left( |Z^+(\mathbf{k})|^2 + |Z^-(\mathbf{k})|^2 \right),
+E(k_\perp) = \sum_{k_z} \sum_{k_\perp - \Delta k/2 < |\mathbf{k}_\perp| < k_\perp + \Delta k/2} \left( |\hat{\xi}^+(\mathbf{k})|^2 + |\hat{\xi}^-(\mathbf{k})|^2 \right),
 \label{eq:spectrum}
 \end{equation}
-where $Z^\pm$ are the Elsasser field Fourier coefficients and the sum accumulates all modes with perpendicular wavenumber magnitude in the bin centered at $k_\perp$. Time averaging over the quasi-steady-state window ($t \in [180, 200]\tau_A$) after initial transients decay provides robust statistics.
+where $\hat{\xi}^\pm$ are the Elsasser field Fourier coefficients and the sum accumulates all modes with perpendicular wavenumber magnitude in the bin centered at $k_\perp$. Time averaging over the quasi-steady-state window ($t \in [180, 200]\tau_A$) after initial transients decay provides robust statistics.
 
-\Cref{fig:turbulent_spectrum} shows the time-averaged spectrum at $t = 200\tau_A$. Both kinetic (from $\elsp$) and magnetic (from $\elsm$) components exhibit clean $k_\perp^{-5/3}$ scaling across the inertial range $k_\perp \in [2, 12]$ (approximately mode numbers $n_\perp \in [2, 12]$ for $L = 2\pi$). The lower bound excludes forcing scales ($n_\perp = 1\text{--}2$), while the upper bound is set by spectral flattening from dissipation onset. The measured spectral slopes closely match the Kolmogorov prediction, with total energy $E_{\text{total}} \approx 1.73 \times 10^4$ and magnetic fraction $E_{\text{mag}}/E_{\text{total}} \approx 0.46$ approaching equipartition as expected for Alfv\'enic turbulence.
+\Cref{fig:turbulent_spectrum} shows the time-averaged spectrum at $t = 200\tau_A$. Both kinetic and magnetic energy components exhibit clean $k_\perp^{-5/3}$ scaling across the inertial range $k_\perp \in [2, 12]$ (mode numbers $n_\perp = k_\perp L/(2\pi) \in [2, 12]$ for $L = 2\pi$), spanning approximately one decade. The lower bound excludes forcing scales ($n_\perp = 1\text{--}2$), while the upper bound is set by spectral flattening from dissipation onset. The measured spectral slopes closely match the Kolmogorov prediction, with total energy $E_{\text{total}} \approx 1.73 \times 10^4$ and magnetic fraction $E_{\text{mag}}/E_{\text{total}} \approx 0.46$ approaching equipartition as expected for Alfv\'enic turbulence.
 
-The simulation achieves quasi-steady state with energy fluctuations $\Delta E/\langle E \rangle \sim 7\%$ over the averaging window, validating that forcing and dissipation rates balance without secular drift. The clean scale separation between forcing scales ($n_\perp = 1\text{--}2$), inertial range ($n_\perp \approx 2\text{--}12$), and dissipation range ($n_\perp > 12$) confirms GANDALF's ability to capture turbulent cascade physics with spectral accuracy.
+The simulation achieves quasi-steady state with relative energy fluctuations $\Delta E/\langle E \rangle \lesssim 7\%$ over the averaging window, validating that forcing and dissipation rates balance without secular drift. The clean scale separation between forcing scales ($n_\perp = 1\text{--}2$), inertial range ($n_\perp \approx 2\text{--}12$), and dissipation range ($n_\perp > 12$) confirms GANDALF's ability to capture turbulent cascade physics with spectral accuracy.
 
 \subsubsection{Discussion}
 
