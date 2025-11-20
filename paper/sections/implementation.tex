@@ -41,7 +41,7 @@ GANDALF employs YAML configuration files for all simulation parameters, ensuring
 
 \begin{itemize}
 \item \textbf{Grid parameters}: $(N_x, N_y, N_z)$ resolution and $(L_x, L_y, L_z)$ box sizes in units of $\rhoi$
-\item \textbf{Physics parameters}: Ion gyroradius $\rhoi$, plasma beta $\betai$, \Alfven\ velocity $\vA$, temperature ratio $\taue = T_e/T_i$, moment truncation $\Mmax$
+\item \textbf{Physics parameters}: Plasma beta $\betai$, \Alfven\ velocity $\vA$, temperature ratio $\taue = T_e/T_i$, moment truncation $\Mmax$
 \item \textbf{Dissipation}: Hyper-resistivity coefficient $\eta$ and order $r$, hyper-collision frequency $\coll$ and exponent $p$
 \item \textbf{Forcing}: Injection wavenumber range, correlation time, energy injection rate (for driven turbulence)
 \item \textbf{Diagnostics}: Output frequency for checkpoints, spectra, field snapshots, and time series
@@ -53,15 +53,15 @@ The configuration system validates parameter choices against KRMHD validity cons
 
 Computational cost in GANDALF scales as $O(N_x N_y N_z \log(N_x N_y N_z) \cdot M)$ per time step, dominated by the FFT operations required for pseudospectral Poisson bracket evaluation. The integrating factor method evaluates nonlinear terms twice per step (at $t_n$ and $t_{n+1/2}$), each requiring two forward transforms (for derivative computation), real-space products, and one inverse transform---approximately $6M$ three-dimensional FFTs per time step for $M$ Hermite moments plus Elsasser field updates.
 
-As reported in \S\ref{sec:numerics}, benchmarks on NVIDIA A100 GPUs achieve approximately $0.5$ seconds per time step for $256^3$ grids with $M=16$ moments. Memory usage scales as $N^3 M$ (approximately 4.4 GB for $256^3$ with $M=16$: 34 fields at $\sim$130 MB per field in \texttt{rfft} format) while computation scales as $N^3 \log N$, yielding super-linear cost increases with resolution. A $256^3$ turbulence simulation spanning 100 nonlinear eddy turnover times (with typical time steps $\Delta t \sim 0.01 t_{\mathrm{eddy}}$, where $t_{\mathrm{eddy}} = L_\perp/v_\perp$ characterizes perpendicular advection) requires $\sim$10,000 steps ($\sim$1.4 hours on A100), feasible for systematic parameter studies. JAX implementations can achieve performance competitive with specialized GPU codes for similar-scale problems \citep{Bauer2021,Citrin2024}, which we observe for GANDALF, while remaining portable across hardware platforms without modification.
+Memory usage scales as $N^3 M$ (approximately 4.4 GB for $256^3$ with $M=16$: 34 fields at $\sim$130 MB per field in \texttt{rfft} format) while computation scales as $N^3 \log N$, yielding super-linear cost increases with resolution. JAX implementations can achieve performance competitive with specialized codes for similar-scale problems \citep{Bauer2021,Citrin2024}, which we observe for GANDALF, while remaining portable across hardware platforms without modification.
 
-On Apple Silicon (M1 Pro, M2 Max) using the Metal backend, empirical benchmarks show GANDALF delivers performance within a factor of 2--3 of A100 GPU results for grids up to $128^3$ (based on direct timing comparisons on both platforms), sufficient for code development, small parameter scans, and educational applications. This portability democratizes access to kinetic plasma turbulence simulations: researchers without GPU cluster access can perform meaningful science on laptop hardware, previously impossible with traditional HPC-focused codes.
+On Apple Silicon (M1 Pro, M2 Max) using the Metal backend, GANDALF achieves practical performance for turbulence research on commodity hardware. Empirical benchmarks on M1 silicon show that grids up to $128^3$ are feasible for code development, moderate parameter scans, and educational applications. This portability democratizes access to kinetic plasma turbulence simulations: researchers without GPU cluster access can perform meaningful science on laptop hardware, previously impossible with traditional HPC-focused codes.
 
 \subsection{Diagnostics and Workflow}
 
 GANDALF includes diagnostic tools for real-time monitoring and post-processing analysis:
 
-\paragraph{Energy Diagnostics.} The code computes total energy (sum over Elsasser and Hermite contributions), cross-helicity, and residual energy at each time step, writing time series to HDF5 files. For inviscid, unforced runs, energy conservation provides a stringent numerical accuracy check: deviations exceeding $0.1\%$ over hundreds of nonlinear times indicate insufficient resolution, excessive time steps, or dealiasing failures.
+\paragraph{Energy Diagnostics.} The code computes energies for Alfvén waves and slow modes at each time step, writing time series to HDF5 files. These components are decoupled in KRMHD and separately conserved. The code also tracks cross-helicity and residual energy. For inviscid, unforced runs, energy conservation provides a stringent numerical accuracy check: deviations exceeding $0.1\%$ over hundreds of nonlinear times indicate insufficient resolution, excessive time steps, or dealiasing failures. Additional post-processing scripts in the repository enable further analysis beyond these integrated diagnostics.
 
 \paragraph{Spectral Analysis.} Perpendicular energy spectra $E(\kperp)$ and parallel spectra $E(\kpar)$ quantify cascade dynamics and verify expected scaling laws ($E(\kperp) \propto \kperp^{-5/3}$ for MHD-range turbulence). GANDALF computes shell-averaged spectra by binning Fourier modes into logarithmically-spaced wavenumber shells, a standard diagnostic for turbulence simulations. Spectral diagnostics execute in Fourier space with minimal computational overhead.
 
@@ -80,12 +80,9 @@ GANDALF is freely available under the MIT License at \url{https://github.com/anj
 \item Installation instructions for Linux, macOS (including Apple Silicon), and cloud platforms
 \item Example configuration files and initialization scripts
 \item Validation test suite with analytical benchmarks
-\item Jupyter notebooks demonstrating basic workflows
 \end{itemize}
 
 Installation requires Python $\geq 3.10$, JAX $\geq 0.4.13$, and standard scientific Python packages (NumPy, SciPy, h5py, matplotlib). The code recommends the \texttt{uv} package manager for reproducible dependency resolution across platforms. Hardware-specific JAX installations (CUDA for NVIDIA GPUs, ROCm for AMD GPUs, Metal for Apple Silicon) follow standard JAX installation procedures documented at \url{https://github.com/jax-ml/jax}.
-
-The repository employs semantic versioning. Current development focuses on extending the physics model (finite Larmor radius corrections, electromagnetic temperature variations) and improving performance (better FFT libraries, multi-GPU parallelization via \texttt{jax.pmap} for data-parallel parameter scans across GPUs). Community contributions addressing bugs, documentation improvements, or new features follow standard GitHub pull-request workflows.
 
 \subsection{Comparison with Existing Codes}
 
@@ -95,7 +92,7 @@ GANDALF occupies a complementary niche in the landscape of kinetic plasma simula
 
 \paragraph{Viriato.} Viriato \citep{Loureiro2016} implements KRMHD (among other reduced models) using Fourier-Hermite spectral methods similar to GANDALF's approach. Viriato provides extensive configuration options, multiple physics modules, and sophisticated diagnostic capabilities developed over years of production use. GANDALF offers narrower scope but lower entry barriers: pure-Python implementation with minimal dependencies versus Viriato's Fortran codebase requiring HPC compilation toolchains. Researchers comfortable with Fortran HPC workflows benefit from Viriato's maturity; those seeking rapid prototyping or teaching applications favor GANDALF's accessibility.
 
-\paragraph{GX and GPU Codes.} GX \citep{Mandell2024} represents modern GPU-native gyrokinetic codes achieving exceptional performance through hand-optimized CUDA kernels. GX targets stellarator and tokamak applications where geometric complexity demands specialized optimization. GANDALF's JAX implementation sacrifices peak performance ($\sim$2--3$\times$ slower than optimized CUDA) for hardware portability and development velocity. The performance gap narrows for moderate-scale turbulence problems ($128^3$ grids) where GANDALF's pure-JAX approach proves competitive, while extreme-scale runs ($512^3$ and larger) favor specialized codes like GX.
+\paragraph{GX and GPU Codes.} GX \citep{Mandell2024} represents modern GPU-native gyrokinetic codes achieving exceptional performance through hand-optimized CUDA kernels. GX targets stellarator and tokamak applications where geometric complexity demands specialized optimization. GANDALF's JAX implementation prioritizes hardware portability and development velocity over peak performance optimization. For moderate-scale turbulence problems ($128^3$ grids), GANDALF's pure-JAX approach provides practical performance on commodity hardware, while extreme-scale runs ($512^3$ and larger) favor specialized codes like GX.
 
 \paragraph{GS2 and Production Gyrokinetics.} Codes such as GS2 \citep{Kotschenreuther1995,Jenko2000} provide comprehensive electromagnetic gyrokinetics for fusion applications, with decades of validation and extensive user communities. These codes prioritize physics fidelity and simulation reliability for parameter regimes relevant to tokamak experiments. GANDALF does not compete in this space---it addresses turbulence researchers studying fundamental cascade physics, phase mixing, and kinetic-range dynamics where the KRMHD reduced model suffices and simplified workflows accelerate scientific exploration.
 
