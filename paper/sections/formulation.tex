@@ -14,26 +14,26 @@ We employ Gaussian centimeter-gram-second (CGS) units for the dimensional equati
 \pardt \nabla^2_\perp \xi^\pm \mp \vA \pardz \nabla^2_\perp \xi^\pm = -\frac{1}{2}\left[\pb{\elsp}{\nabla^2_\perp \elsm} + \pb{\elsm}{\nabla^2_\perp \elsp} \mp \nabla^2_\perp \pb{\elsp}{\elsm}\right],
 \label{eq:elsasser}
 \end{equation}
-where $\xi^\pm = \Phifield \pm \Psifield$ combine the stream function $\Phifield = c\phi/\Bzero$ (from the electrostatic potential $\phi$) and flux function $\Psifield = -A_\parallel/\sqrt{4\pi m_i n_{0i}}$ (from the parallel component of the magnetic vector potential $A_\parallel$). Here $c$ is the speed of light, $m_i$ the ion mass, and $n_{0i}$ the background ion density. The \Alfven\ velocity $\vA = \Bzero/\sqrt{4\pi m_i n_{0i}}$ sets the linear wave propagation speed. The perpendicular Laplacian $\nabla^2_\perp = \partial^2/\partial x^2 + \partial^2/\partial y^2$ and Poisson bracket $\pb{P}{Q} = \partial P/\partial x \, \partial Q/\partial y - \partial P/\partial y \, \partial Q/\partial x$ generate the nonlinear interactions responsible for perpendicular cascade.
+where $\xi^\pm = \Phifield \pm \Psifield$ combine the stream function $\Phifield = c\phi/\Bzero$ (from the electrostatic potential $\phi$) and flux function $\Psifield = -A_\parallel/\sqrt{4\pi m_i n_{0i}}$ (from the parallel component of the magnetic vector potential $A_\parallel$). Here $c$ is the speed of light, $m_i$ the ion mass, and $n_{0i}$ the background ion density. The \Alfven\ velocity $\vA = \Bzero/\sqrt{4\pi m_i n_{0i}}$ sets the linear wave propagation speed. The perpendicular Laplacian $\nabla^2_\perp = \partial^2/\partial x^2 + \partial^2/\partial y^2$ measures vorticity, while the Poisson bracket $\pb{P}{Q} = \partial P/\partial x \, \partial Q/\partial y - \partial P/\partial y \, \partial Q/\partial x$ introduces the nonlinear interactions that drive perpendicular energy cascade in KRMHD turbulence.
 
 The compressive fluctuations evolve according to the kinetic equation
 \begin{equation}
 \ddt g^\pm + \vpar \gradpar g^\pm = \frac{\vpar F_0(\vpar)}{\Lambda^\pm} \bhat \cdot \nabla \int_{-\infty}^{\infty} d\vpar \, g^\pm,
 \label{eq:kinetic}
 \end{equation}
-where $g^\pm$ represent the perturbations to the ion distribution function in Elsasser-like variables (combining density, temperature, and parallel flow perturbations analogous to the Elsasser fields), $F_0(\vpar) = \exp(-v^2_\parallel/\vth^2)/\sqrt{\pi}\vth$ denotes the one-dimensional Maxwellian background, and the integral is over all parallel velocities $\vpar \in (-\infty, \infty)$. The convective derivative $d/dt = \partial/\partial t + \pb{\Phifield}{\cdot}$ incorporates perpendicular advection by the $\mathbf{E} \times \mathbf{B}$ flow. The parallel gradient operator $\gradpar = \partial/\partial z + (1/\vA)\pb{\Psifield}{\cdot}$ acts along perturbed magnetic field lines, with the Poisson bracket term accounting for field line bending due to $\Psi$ perturbations. The coupling parameters
+where $g^+$ and $g^-$ are the slow mode distribution function perturbations: $g^+ = \delta f + (\vpar/\vth) h^\parallel$ and $g^- = \delta f - (\vpar/\vth) h^\parallel$, with $\delta f$ representing density and temperature fluctuations and $h^\parallel$ representing parallel velocity perturbations. Here $F_0(\vpar) = \exp(-v^2_\parallel/\vth^2)/\sqrt{\pi}\vth$ denotes the one-dimensional Maxwellian background, and the integral is over all parallel velocities $\vpar \in (-\infty, \infty)$. The convective derivative $d/dt = \partial/\partial t + \pb{\Phifield}{\cdot}$ incorporates perpendicular advection by the $\mathbf{E} \times \mathbf{B}$ flow. The parallel gradient operator $\gradpar = \partial/\partial z + (1/\vA)\pb{\Psifield}{\cdot}$ acts along perturbed magnetic field lines, with the Poisson bracket term accounting for field line bending due to $\Psi$ perturbations. The coupling parameters
 \begin{equation}
 \Lambda^\pm = -\frac{\taue}{\Zion} + \frac{1}{\betai} \pm \sqrt{\left(1+\frac{\taue}{\Zion}\right)^2 + \frac{1}{\betai^2}}
 \label{eq:lambda_parameters}
 \end{equation}
 depend on the ion plasma beta $\betai = 8\pi n_{0i} T_i/\Bzero^2$, the temperature ratio $\taue = T_e/T_i$, and the ion charge state $\Zion$ \citep{Schekochihin2009}.
 
-Equation~\eqref{eq:elsasser} describes counter-propagating \Alfven\ wave packets that interact nonlinearly through the Poisson bracket terms, driving turbulent energy transfer to small perpendicular scales. Equation~\eqref{eq:kinetic} governs the passive advection of compressive fluctuations, which undergo phase mixing through the $\vpar \gradpar$ streaming term while being swept along by the turbulent \Alfvenic\ flow. The right-hand side of Eq.~\eqref{eq:kinetic} represents the linear drive of compressive fluctuations by the Elsasser fields through perpendicular gradients. The computational implementation employs a Hermite moment expansion of $g^\pm$, detailed in \S\ref{sec:hermite}.
+Equation~\eqref{eq:elsasser} describes counter-propagating \Alfven\ wave packets that interact nonlinearly through the Poisson bracket terms, driving turbulent energy transfer to small perpendicular scales. Equation~\eqref{eq:kinetic} governs the slow mode fluctuations, which undergo phase mixing through the $\vpar \gradpar$ streaming term while being advected by the $\mathbf{E} \times \mathbf{B}$ flow. The right-hand side of Eq.~\eqref{eq:kinetic} represents the coupling between $g^+$ and $g^-$ through the velocity-integrated density perturbation. At leading order in the KRMHD expansion, the \Alfven\ waves (Elsasser fields $\xi^\pm$) and slow modes ($g^\pm$) are decoupled---the slow modes evolve passively in the \Alfvenic\ turbulence without back-reacting on the wave dynamics. The computational implementation employs a Hermite moment expansion of $g^\pm$, detailed in \S\ref{sec:hermite}.
 
 \subsection{Hermite Moment Expansion}
 \label{sec:hermite}
 
-GANDALF discretizes the perturbed distribution $g^\pm$ in velocity space using a Hermite polynomial expansion \citep{Grad1949,Howes2006}, providing spectral accuracy in $\vpar$ with controllable convergence through moment truncation.
+GANDALF discretizes the perturbed distribution $g^\pm$ in velocity space using a Hermite polynomial expansion \citep{Grad1949,Hammett1990,Howes2006,Loureiro2016}, providing spectral accuracy in $\vpar$ with controllable convergence through moment truncation.
 
 \subsubsection{Expansion in Hermite Basis}
 
@@ -42,7 +42,7 @@ We expand the perturbed distribution as
 g^\pm(x,y,z,\vpar,t) = F_0(\vpar) \sum_{m=0}^{\infty} \gm{m}^{\pm}(x,y,z,t) \Hm{m}\left(\frac{\vpar}{\vth}\right),
 \label{eq:hermite_expansion}
 \end{equation}
-where $\Hm{m}$ are the Hermite polynomials (physicist's convention, $\Hm{0} = 1$, $\Hm{1} = 2x$, $\Hm{2} = 4x^2 - 2$) forming a complete orthogonal basis weighted by the Maxwellian $F_0$, and $\gm{m}^{\pm}$ are the Hermite moment coefficients encoding the velocity-space structure of the Elsasser perturbations.
+where $\Hm{m}$ are the Hermite polynomials (physicist's convention, $\Hm{0} = 1$, $\Hm{1} = 2x$, $\Hm{2} = 4x^2 - 2$) forming a complete orthogonal basis weighted by the Maxwellian $F_0$, and $\gm{m}^{\pm}$ are the Hermite moment coefficients encoding the velocity-space structure of the slow modes.
 
 \subsubsection{Normalized Moment Hierarchy}
 
@@ -75,8 +75,6 @@ Collisional damping enters through the Lenard-Bernstein operator \citep{LenardBe
 \label{eq:collision_operator}
 \end{equation}
 providing irreversible dissipation at small velocity scales with damping rate $m\coll$ that increases linearly with moment order. Practical simulations truncate the hierarchy at finite maximum moment order $\Mmax$ with closure condition $\gm{\Mmax+1}^{\pm} = 0$ (absorbing boundary) or $\gm{\Mmax+1}^{\pm} = \gm{\Mmax-1}^{\pm}$ (reflecting closure), balancing computational cost against accuracy requirements set by the physical problem.
-
-The ion beta $\betai$ enters these normalized equations through the coupling between $\Phifield$ and $\Psifield$ in the nonlinear terms, with the amplitude of magnetic perturbations ($\Psi$) relative to electric perturbations ($\Phi$) scaling as $\sqrt{\betai}$ in the low-$\beta$ regime.
 
 \subsection{System Properties}
 
