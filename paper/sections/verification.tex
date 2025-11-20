@@ -60,7 +60,7 @@ The Alfvén wave benchmark demonstrates three key properties of GANDALF:
 \item \textbf{Linear wave fidelity}: Accurate reproduction of $\omega = \kpar\vA$ validates the parallel derivative operator, Elsasser field coupling, and time integration of wave propagation. This provides confidence for simulations of Alfvénic turbulence where linear wave physics competes with nonlinear interactions.
 \end{enumerate}
 
-Future benchmarks will extend validation to nonlinear regimes (Orszag-Tang vortex), compressive physics (slow mode damping), and kinetic effects (Landau damping with finite $\kperp\rhoi$). For applications to weakly collisional plasmas like the solar wind, the linear wave benchmark establishes baseline accuracy before introducing the complexities of phase mixing, resonant dissipation, and intermittent structures \citep{Schekochihin2009,Meyrand2019}.
+The following sections extend validation to nonlinear regimes (Orszag-Tang vortex) and fully developed turbulent cascades. For applications to weakly collisional plasmas like the solar wind, the linear wave benchmark establishes baseline accuracy before introducing the complexities of phase mixing, resonant dissipation, and intermittent structures \citep{Schekochihin2009,Meyrand2019}.
 
 \begin{figure}[t]
 \centering
@@ -121,17 +121,11 @@ The energy components exhibit \textbf{selective decay}, a hallmark of 2D MHD: ma
 
 The stream function $\phi$ (panel c) and vector potential $\Psi$ (panel d) retain smoother large-scale structure, consistent with energy concentration at low wavenumbers in the inverse cascade. The complexity visible at high resolution ($N = 128^2$) emphasizes the importance of spectral accuracy for capturing the full range of cascade dynamics.
 
-\subsubsection{Spectral Cascade}
-
-\Cref{fig:orszag_spectra} shows energy spectra $E(k_\perp)$ at multiple times from initialization through $t = 2\tau_A$. The initial condition (peaked at fundamental modes) evolves into a broadband cascade extending to the Nyquist wavenumber $k_{\max} \sim \pi N / L \approx 400$. Energy flux to small scales demonstrates active nonlinear coupling, with spectral slopes between the 2D MHD prediction $k^{-3}$ \citep{Biskamp2003} and forward cascade scaling $k^{-5/3}$. The steeper-than-Kolmogorov slope reflects stronger correlation in 2D compared to 3D turbulence.
-
-Importantly, no artificial accumulation appears at $k_{\max}$, confirming that dealiasing prevents aliasing errors from contaminating the resolved scales. The smooth decay toward high wavenumbers validates spectral methods' ability to handle nonlinear energy transfer without spurious oscillations inherent to local finite-difference schemes.
-
 \subsubsection{Convergence}
 
 \Cref{fig:orszag_convergence}(a) shows spatial convergence of energy conservation error with resolution. The exponential fit yields $\alpha = 0.076$, indicating exponential convergence typical of spectral methods for nonlinear problems. Even at modest resolutions, energy conservation reaches $10^{-4}$ levels, demonstrating robustness of the energy-conserving scheme.
 
-We found temporal convergence (\Cref{fig:orszag_convergence}b) more challenging: only the smallest tested timestep ($\Delta t = 0.0125$) maintained stability, with larger timesteps exhibiting numerical instabilities (NaN values) despite passing the linear CFL criterion. This highlights that nonlinear stiffness differs fundamentally from linear wave stiffness. The integrating factor removes linear Alfvén propagation, but cannot anticipate nonlinear coupling rates that depend on the evolving flow structure and cascade development. Adaptive timestepping based on monitoring nonlinear term magnitudes—a standard approach in nonlinear PDE solvers—will improve efficiency for strongly nonlinear states.
+We found temporal convergence (\Cref{fig:orszag_convergence}b) more challenging: only the smallest tested timestep ($\Delta t = 0.0125$) maintained stability, with larger timesteps exhibiting numerical instabilities (NaN values) despite passing the linear CFL criterion. This temporal instability arises because the inviscid simulation ($\eta = \nu = 0$) allows the nonlinear cascade to generate increasingly small structures without dissipation; larger timesteps fail to accurately resolve the rapid time evolution of these under-resolved features, leading to divergence. The integrating factor removes linear Alfvén propagation, but cannot anticipate nonlinear coupling rates that depend on the evolving flow structure and cascade development. Adaptive timestepping based on monitoring nonlinear term magnitudes—a standard approach in nonlinear PDE solvers—will improve efficiency for strongly nonlinear states.
 
 \subsubsection{Resolution Limits in Inviscid Simulations}
 
@@ -148,12 +142,12 @@ The Orszag-Tang vortex validates three critical capabilities beyond the linear A
 \begin{enumerate}
 \item \textbf{Nonlinear coupling}: Excellent energy conservation ($\sim 10^{-6}$ level) confirms correct implementation of the Poisson bracket $\{\phi, \Psi\}$ and dealiasing operations. This nonlinear term drives the turbulent cascade and distinguishes RMHD from linear wave theory.
 
-\item \textbf{Multiscale dynamics}: Spectral cascade development from large-scale forcing to small-scale dissipation demonstrates GANDALF's ability to handle energy transfer across many decades in wavenumber - essential for turbulence simulations where inertial range physics determines transport properties.
+\item \textbf{Multiscale dynamics}: Development of broadband nonlinear structures from large-scale initial conditions demonstrates GANDALF's ability to handle energy transfer across multiple scales - essential for turbulence simulations where cascade physics determines transport properties.
 
 \item \textbf{Structure formation}: Resolution of current sheets with steep gradients validates spectral methods' handling of intermittent structures arising spontaneously from nonlinear interactions. These coherent structures play crucial roles in magnetic reconnection, particle acceleration, and anomalous dissipation in weakly collisional plasmas.
 \end{enumerate}
 
-Combined with the Alfvén wave benchmark's validation of linear wave physics, the Orszag-Tang test confirms that GANDALF correctly implements both linear propagation and nonlinear coupling in the KRMHD equations. Future extensions to kinetic physics (finite $\kperp\rhoi$ effects) and 3D turbulence will build on this foundation, with confidence that the core spectral MHD solver performs as designed.
+Combined with the Alfvén wave benchmark's validation of linear wave physics, the Orszag-Tang test confirms that GANDALF correctly implements both linear propagation and nonlinear coupling in the KRMHD equations. The following section extends these tests to fully developed turbulent cascades in 3D, building on this foundation with confidence that the core spectral MHD solver performs as designed.
 
 \begin{figure}[t]
 \centering
@@ -167,13 +161,6 @@ Combined with the Alfvén wave benchmark's validation of linear wave physics, th
 \includegraphics[width=\textwidth]{figures/orszag_tang_structures.pdf}
 \caption{Orszag-Tang vortex 2D field structures at $t = 2\tauA$ showing (a) vorticity $\omega = \nabla^2\phi$, (b) current density $J_\parallel = \nabla^2\Psi$, (c) stream function $\phi$, and (d) vector potential $\Psi$. Current sheets (intense localized $J_\parallel$) form at flow stagnation points, demonstrating nonlinear cascade to small scales. Spectral methods resolve steep gradients without oscillations. Resolution: $N = 128^2 \times 2$.}
 \label{fig:orszag_structures}
-\end{figure}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.8\textwidth]{figures/orszag_tang_spectra.pdf}
-\caption{Orszag-Tang vortex energy spectra $E(k_\perp)$ at four times showing cascade development from initial peaked distribution to broadband turbulent spectrum. Energy flux reaches Nyquist wavenumber $k_{\max} \approx 400$ by $t = 2\tauA$ with slopes between $k^{-3}$ (2D MHD prediction) and $k^{-5/3}$ (forward cascade). No artificial accumulation at $k_{\max}$ confirms effective dealiasing. Resolution: $N = 128^2 \times 2$.}
-\label{fig:orszag_spectra}
 \end{figure}
 
 \begin{figure}[t]
@@ -219,7 +206,7 @@ The turbulent cascade benchmark validates GANDALF's capability for long-duration
 \begin{itemize}
 \item \textbf{Kolmogorov scaling}: Both kinetic and magnetic spectra exhibit $k_\perp^{-5/3}$ scaling across approximately one decade in wavenumber, consistent with critical balance theory for strong Alfv\'enic turbulence.
 
-\item \textbf{Balanced forcing efficacy}: Restricting forcing to low $|k_z|$ modes ($|n_z| \leq 1$) proved essential for numerical stability at $64^3$ resolution, respecting RMHD ordering and avoiding energy accumulation at high-$k_z$ modes that violated the $k_\parallel \ll k_\perp$ assumption.
+\item \textbf{Balanced forcing efficacy}: Restricting forcing to low $|k_z|$ modes ($|n_z| \leq 1$) respects the fundamental $k_\parallel \ll k_\perp$ constraint inherent to RMHD/gyrokinetic ordering. High-$k_z$ forcing violates this ordering assumption and generates unphysical dynamics (spurious magnetic reconnection, energy accumulation), rather than representing a mere numerical stability issue.
 
 \item \textbf{Long-time integration}: Stable evolution to $200\tauA$ (32 times longer than Orszag-Tang benchmark duration) demonstrates robustness for production turbulence studies requiring long-time statistics.
 \end{itemize}
