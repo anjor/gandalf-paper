@@ -5,6 +5,7 @@
 *.log
 *.out
 *.pdf
+!GANDALF_paper.pdf
 *.synctex.gz
 *.fls
 *.fdb_latexmk

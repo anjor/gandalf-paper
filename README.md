@@ -6,6 +6,8 @@ This repository contains a complete scientific paper and verification study demo
 
 📖 **Read the full story**: [Testing the Intelligence Explosion: Can AI Turn One Physicist Into a Research Team?](https://anjor.xyz/writing/2025/11/05/testing-the-intelligence-explosion-can-ai-turn-one-physicist-into-a-research-team/)
 
+📄 **Read the paper**: [GANDALF_paper.pdf](GANDALF_paper.pdf) (pre-compiled, ready to view)
+
 ---
 
 ## The Experiment
@@ -100,6 +102,10 @@ gandalf-paper/
 ---
 
 ## Building the Paper
+
+**Quick start**: A pre-compiled PDF is available at the root: [GANDALF_paper.pdf](GANDALF_paper.pdf)
+
+To rebuild from source:
 
 ### Prerequisites
 
