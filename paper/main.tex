@@ -10,7 +10,7 @@
 % Notation definitions
 \input{notation}
 
-\title{GANDALF: A GPU-free spectral solver for kinetic reduced MHD turbulence}
+\title{GANDALF: A hardware-agnostic spectral solver for kinetic reduced MHD turbulence}
 \author{Anjor Kanekar\\
 \small Independent Researcher\\
 \small \texttt{anjor@umd.edu}}
@@ -19,7 +19,7 @@
 \maketitle
 
 \begin{abstract}
-We present GANDALF, a JAX-based spectral solver for Kinetic Reduced MHD (KRMHD) turbulence designed to democratize access to plasma turbulence research. Existing production codes require specialized HPC infrastructure and compilation expertise, limiting participation to well-resourced institutions. GANDALF addresses this barrier by leveraging JAX's hardware abstraction to run transparently on laptops, desktop GPUs, and Apple Silicon without modification, enabling single-command installation via pip. We employ Fourier spectral methods for spatial discretization and Hermite spectral basis for velocity space, combined with an exponential integrating factor method that exactly propagates linear Alfvén waves, eliminating associated numerical stiffness. Verification demonstrates research-grade accuracy: linear Alfvén waves achieve machine precision ($\sim 10^{-15}$ relative error), the Orszag-Tang vortex conserves energy to 10$^{-6}$ over two Alfvén times, and driven turbulence reproduces the expected $k_\perp^{-5/3}$ cascade spectrum. GANDALF enables rapid prototyping, parameter surveys, and educational applications on commodity hardware. The code complements rather than replaces established solvers like AstroGK and Viriato, prioritizing accessibility for researchers without HPC resources. By removing infrastructure barriers while maintaining spectral accuracy, GANDALF broadens participation in fundamental plasma turbulence research, particularly benefiting students, small research groups, and institutions in developing regions.
+We present GANDALF, a JAX-based spectral solver for Kinetic Reduced MHD (KRMHD) turbulence designed to lower infrastructure barriers to plasma turbulence research. Existing production codes require specialized HPC infrastructure and compilation expertise, limiting participation to well-resourced institutions. GANDALF addresses this barrier by leveraging JAX's hardware abstraction to run transparently on laptops, desktop GPUs, and Apple Silicon without modification, enabling single-command installation via pip. We employ Fourier spectral methods for spatial discretization and Hermite spectral basis for velocity space, combined with an exponential integrating factor method that exactly propagates linear Alfvén waves, eliminating associated numerical stiffness. Verification demonstrates research-grade accuracy: linear Alfvén waves achieve machine precision ($\sim 10^{-15}$ relative error), the Orszag-Tang vortex conserves energy to 10$^{-6}$ over two Alfvén times, and driven turbulence reproduces the expected $k_\perp^{-5/3}$ cascade spectrum. GANDALF enables rapid prototyping, parameter surveys, and educational applications on commodity hardware. The code complements rather than replaces established solvers like AstroGK and Viriato, prioritizing accessibility for researchers without HPC resources. By removing infrastructure barriers while maintaining spectral accuracy, GANDALF broadens participation in fundamental plasma turbulence research, particularly benefiting students, small research groups, and institutions in developing regions.
 \end{abstract}
 
 \noindent\textbf{Keywords:} plasma turbulence, kinetic reduced MHD, spectral methods, JAX, accessible computing, Alfvénic turbulence
@@ -35,7 +35,7 @@ We present GANDALF, a JAX-based spectral solver for Kinetic Reduced MHD (KRMHD) 
 \section*{Acknowledgments}
 The author is deeply grateful to the late Bill Dorland, whose mentorship as advisor instilled an enduring commitment to pushing the frontiers of computational plasma physics. Bill's vision for accessible, modern numerical methods combined with state of the art technology directly inspired GANDALF's development.
 Alexander Schekochihin provided invaluable guidance during author's PhD research on KRMHD physics and turbulence theory. The author thanks Nuno Loureiro for discussions that helped crystallize the concept of AI-assisted physics research demonstrated in this work.
-This paper was developed with substantial assistance from Claude (Anthropic), an AI assistant that helped with LaTeX formatting, figure generation, literature curation, and manuscript organization. The author takes full responsibility for all scientific content, methodology choices, and physics interpretations.
+This paper was developed with substantial assistance from Claude (Anthropic), an AI assistant that helped with LaTeX formatting, figure generation, literature curation, and manuscript organization. The final manuscript also benefited from a detailed peer review conducted by Gemini 3.0 Pro (Google AI Studio), which provided valuable technical feedback on numerical methods, physics scope, and presentation clarity. The author takes full responsibility for all scientific content, methodology choices, and physics interpretations.
 
 \section*{Funding}
 This research received no specific grant funding.
