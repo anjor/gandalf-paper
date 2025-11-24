@@ -170,7 +170,7 @@ Traditional codes optimize physics comprehensiveness and peak performance at the
 
 \paragraph{Comparison matrix.} Table~\ref{tab:code_comparison} summarizes GANDALF's position relative to established codes across key dimensions. GANDALF achieves the highest accessibility score (Python installation, no compilation, hardware-agnostic) while accepting middle-tier performance ($2$--$3\times$ slower than optimized codes) and restricted physics (KRMHD only). Researchers prioritizing accessibility for exploration and prototyping favor GANDALF; those prioritizing comprehensive physics or extreme performance favor specialized codes.
 
-While Python-based spectral solvers exist in fluid dynamics (Dedalus for hydrodynamics and fluid MHD \citep{Burns2020}, SpectralDNS for turbulence), GANDALF represents one of the first Python-based kinetic plasma codes employing velocity-space spectral methods alongside spatial Fourier decomposition. The kinetic dimension (Hermite moments) distinguishes plasma turbulence from fluid turbulence and necessitates careful treatment of phase mixing dynamics, collision operators, and velocity-space cascades validated in \S\ref{sec:verification}.
+While Python-based spectral solvers exist in fluid dynamics (Dedalus for hydrodynamics and fluid MHD \citep{Burns2020}, SpectralDNS for turbulence), GANDALF represents a novel Python-based kinetic plasma code employing velocity-space spectral methods alongside spatial Fourier decomposition. The kinetic dimension (Hermite moments) distinguishes plasma turbulence from fluid turbulence and necessitates careful treatment of phase mixing dynamics, collision operators, and velocity-space cascades validated in \S\ref{sec:verification}.
 
 \begin{table}[t]
 \centering
