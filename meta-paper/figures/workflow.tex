@@ -1,0 +1,65 @@
+% Workflow Diagram: Human-AI-Physics Oracle Interaction
+\begin{tikzpicture}[
+    scale=0.95,
+    node distance=3.0cm,
+    box/.style={
+        rectangle,
+        rounded corners,
+        draw,
+        thick,
+        minimum width=2.8cm,
+        minimum height=1.2cm,
+        align=center,
+        font=\small
+    },
+    human/.style={box, fill=blue!20},
+    ai/.style={box, fill=green!20},
+    oracle/.style={box, fill=orange!20},
+    arrow/.style={->, thick, >=stealth},
+    label/.style={font=\footnotesize, align=center}
+]
+
+% Nodes
+\node[human] (specs) at (0, 0) {Human\\{\footnotesize Specifications}};
+\node[ai] (impl) at (4, 0) {AI\\{\footnotesize Implementation}};
+\node[box, fill=gray!20] (code) at (8, 0) {Generated\\{\footnotesize Code}};
+\node[oracle] (physics) at (8, -3) {Physics\\{\footnotesize Benchmarks}};
+\node[human] (validate) at (4, -3) {Human\\{\footnotesize Interpretation}};
+\node[human] (judge) at (0, -3) {Human\\{\footnotesize Judgment}};
+
+% Main flow arrows
+\draw[arrow] (specs) -- node[above, label] {Equations,\\architecture} (impl);
+\draw[arrow] (impl) -- node[above, label] {JAX code} (code);
+\draw[arrow] (code) -- node[right, label] {Execute} (physics);
+\draw[arrow] (physics) -- node[above, label] {Results:\\$10^{-15}$, $k^{-5/3}$} (validate);
+\draw[arrow] (validate) -- node[above, label] {Pass/Fail\\assessment} (judge);
+
+% Feedback loops
+\draw[arrow, dashed, blue!60] (judge.north) -- ++(0, 0.8) -| node[pos=0.25, above, label] {Refine specs} (specs.north);
+\draw[arrow, dashed, red!60] (validate.north) -- ++(0, 1.5) -| node[pos=0.25, above, label] {Debug hints} (impl.north);
+
+% Region boxes
+\begin{scope}[on background layer]
+    \node[draw=blue!50, dashed, thick, rounded corners, fit=(specs)(judge), inner sep=0.4cm, label={[blue!70]above:Human Domain}] {};
+    \node[draw=green!50, dashed, thick, rounded corners, fit=(impl)(code), inner sep=0.4cm, label={[green!70]above:AI Domain}] {};
+    \node[draw=orange!50, dashed, thick, rounded corners, fit=(physics), inner sep=0.4cm, label={[orange!70]right:Oracle}] {};
+\end{scope}
+
+% Legend - positioned below the diagram
+\node[anchor=north west] at (-1.5, -5.5) {
+    \begin{tabular}{cl}
+        \tikz\fill[blue!20] (0,0) rectangle (0.3,0.3); & Human judgment required \\
+        \tikz\fill[green!20] (0,0) rectangle (0.3,0.3); & AI-automated \\
+        \tikz\fill[orange!20] (0,0) rectangle (0.3,0.3); & Physics-based validation \\
+    \end{tabular}
+};
+
+% Key insight annotation - positioned further right to avoid overlap
+\node[draw, rounded corners, fill=yellow!10, font=\footnotesize, align=left, anchor=north west] at (5.5, -5.5) {
+    \textbf{Key insight:} Human never\\
+    reads AI-generated code.\\
+    Physics outputs validate\\
+    correctness directly.
+};
+
+\end{tikzpicture}

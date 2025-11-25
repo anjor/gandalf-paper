@@ -1,0 +1,90 @@
+\section{Prompt Examples}
+\label{app:prompts}
+
+This appendix provides representative examples of human-AI interactions at different points along the autonomy gradient. All prompts are taken verbatim from Claude Code session logs.
+
+\subsection{High Autonomy ($\sim$95\%): Code Implementation}
+
+High-autonomy tasks required minimal specification. The following prompt resulted in a complete, working diagnostic module:
+
+\begin{lstlisting}[caption={Human prompt for diagnostic implementation}]
+Sounds good, let's do diagnostics
+\end{lstlisting}
+
+Context: The conversation had established that energy spectrum diagnostics were needed. This four-word prompt was sufficient for Claude to implement shell-averaged perpendicular energy spectra, proper normalization, and integration with existing file I/O infrastructure. No iteration was required.
+
+Similarly, addressing code review feedback required only a URL:
+
+\begin{lstlisting}[caption={Human prompt for addressing review feedback}]
+Address review comments: https://github.com/anjor/gandalf/pull/18
+\end{lstlisting}
+
+Claude read the review comments, implemented all requested changes, and pushed updates. The human verified correctness through physics outputs rather than code inspection.
+
+\textbf{Key characteristics}: Unambiguous context, established programming patterns, objective success criteria.
+
+\subsection{Medium Autonomy ($\sim$50\%): Paper Writing}
+
+Paper writing required multiple iterations with substantial human editing.
+
+\begin{lstlisting}[caption={Human prompt for paper section}]
+Read issue #5 and find the thesis chapter in the repo. Extract and
+adapt the KRMHD formulation for a journal paper. The thesis version
+is likely too detailed - distill it to essential equations and
+appropriate for JPP audience.
+\end{lstlisting}
+
+After the first draft:
+
+\begin{lstlisting}[caption={Human feedback after reviewing draft}]
+Address the feedback on https://github.com/anjor/gandalf-paper/pull/17
+\end{lstlisting}
+
+And later:
+
+\begin{lstlisting}[caption={Human request for output verification}]
+can you generate the pdf so that i can read the content
+\end{lstlisting}
+
+Multiple iterations were required to reach acceptable quality. Claude's initial drafts were technically accurate but required human judgment on tone, emphasis, and audience-appropriate level of detail.
+
+\textbf{Key characteristics}: Subjective quality criteria, audience-dependent effectiveness, requires domain-specific judgment about emphasis.
+
+\subsection{Low Autonomy ($\sim$10\%): Parameter Exploration}
+
+Parameter tuning for turbulence simulations demonstrated the ``physics taste'' deficit most clearly. The following sequence shows iterative exploration that required human guidance throughout:
+
+\begin{lstlisting}[caption={Human identifies problem with simulation output}]
+Look at @examples/output/driven_energy_spectra.png -- shouldn't we
+see a -5/3 spectrum here for k_perp? But we are not?
+\end{lstlisting}
+
+Claude suggested modifications (reduce hyperviscosity, increase resolution). After implementation, issues persisted:
+
+\begin{lstlisting}[caption={Human probes for solution direction}]
+can we increase the forcing? Do you think that will help? Right now
+it seems like energy is not moving to larger k's quickly enough. I
+am also ok with forcing k=1 and 2
+\end{lstlisting}
+
+The conversation continued with the human maintaining direction:
+
+\begin{lstlisting}[caption={Human provides guidance based on physics intuition}]
+I think we need stronger forcing
+\end{lstlisting}
+
+And requesting information to inform decisions:
+
+\begin{lstlisting}[caption={Human gathers data for next decision}]
+What's our forcing range?
+\end{lstlisting}
+
+This pattern---human identifies problem, human suggests direction, human requests information, human decides next step---continued for multiple sessions. Claude implemented each change correctly but did not independently converge toward the correct parameter regime. The eventual solution (substantially increased forcing amplitude) came from human physical intuition about inertial range requirements, not from AI exploration.
+
+\textbf{Key characteristics}: Multiple plausible interventions, requires building intuition across attempts, success depends on recognizing subtle signatures of correct vs.\ incorrect behavior.
+
+\subsection{Summary}
+
+These examples illustrate a consistent pattern: AI effectiveness correlates strongly with specification clarity and objectivity of success criteria. Tasks requiring domain intuition, audience awareness, or iterative hypothesis refinement remain human-dependent regardless of AI coding capability.
+
+The prompt logs also reveal that effective AI collaboration often involves very short human inputs (``Sounds good, let's do diagnostics'') when context is established, but requires more detailed specification when initiating new task categories. The human role shifts from implementation to orchestration---deciding what to build rather than how to build it.
