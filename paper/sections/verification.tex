@@ -12,7 +12,7 @@ For a single Fourier mode, the KRMHD equations reduce to the linear Alfvén wave
 \begin{equation}
 \omega = \kpar \vA
 \end{equation}
-This relation is independent of the perpendicular wavenumber $\kperp$, holding for any mode with parallel component $\kpar$. It applies exactly in the KRMHD regime defined by the orderings $\kperp \rhoi \ll 1$ (low-frequency), $\kpar \ll \kperp$ (anisotropic), and $\delta B/B_0 \ll 1$ (strong guide field), where kinetic modifications from finite Larmor radius effects remain negligible. The wave propagates without distortion or damping in the collisionless limit ($\eta = \nu = \coll = 0$), providing a clean test of numerical accuracy.
+This relation is independent of the perpendicular wavenumber $\kperp$, holding for any mode with parallel component $\kpar$. It applies exactly in the KRMHD regime defined by the orderings $\kperp \rhoi \ll 1$ (scales larger than ion Larmor radius), $\kpar \ll \kperp$ (anisotropic), and $\delta B/B_0 \ll 1$ (strong guide field), where kinetic modifications from finite Larmor radius effects remain negligible. The wave propagates without distortion or damping in the collisionless limit ($\eta = \coll = 0$), providing a clean test of numerical accuracy.
 
 The Alfvén wave represents the fundamental mode of magnetized plasma dynamics. In the Elsasser formulation, parallel-propagating Alfvén waves manifest as independent propagation of $\elsp$ and $\elsm$ at velocities $\mp\vA$ along field lines. The parallel derivative terms $\mp\vA\pardz$ in \Cref{eq:elsasser} produce oscillations at frequency $\omega = |\kpar|\vA$. The perpendicular structure remains frozen, making this an ideal benchmark for time integration accuracy independent of perpendicular spectral operations.
 
@@ -20,9 +20,9 @@ The Alfvén wave represents the fundamental mode of magnetized plasma dynamics. 
 
 We initialize a single Fourier mode at $\kvec = (1, 0, 1)$ with amplitude $A = 0.01$ (linear regime) on a periodic domain of size $L_x = L_y = L_z = 2\pi$. Note that while the dispersion relation $\omega = \kpar\vA$ is independent of $\kperp$, we use $k_x = 1$ (rather than pure parallel propagation with $\kperp = 0$) to obtain non-zero RMHD energy ($E \propto \kperp^2$) for energy conservation diagnostics.
 
-The parallel wavenumber $\kpar = 2\pi/L_z = 1$ with $\vA = 1$ yields analytical frequency $\omega_{\mathrm{analytical}} = 1$. We integrate for 3 Alfvén periods ($T = 2\pi$) in spatial convergence studies and 1 period in temporal convergence studies, chosen to measure frequency accurately while minimizing accumulated numerical dissipation from Hermite moment truncation.
+The parallel wavenumber $\kpar = 2\pi/L_z = 1$ with $\vA = 1$ yields analytical frequency $\omega_{\mathrm{analytical}} = 1$. We integrate for 3 Alfvén periods ($T = 2\pi$) in spatial convergence studies and 1 period in temporal convergence studies, chosen to measure frequency accurately while minimizing accumulated numerical errors.
 
-Physical parameters are $\betai = 1$, $\vth = 1$, and $M = 20$ Hermite moments with all dissipation coefficients set to zero ($\eta = \nu = \coll = 0$). The simulation tracks the complex amplitude of the Fourier mode $\hat{\elsp}(\kpar, t)$ at each timestep, measuring frequency via phase evolution:
+Physical parameters are $\betai = 1$ with all dissipation coefficients set to zero ($\eta = \coll = 0$). While $M = 20$ Hermite moments are allocated for code consistency, the Alfvén wave benchmark tests only Elsasser field dynamics and does not involve compressive fluctuations. The simulation tracks the complex amplitude of the Fourier mode $\hat{\elsp}(\kpar, t)$ at each timestep, measuring frequency via phase evolution:
 \begin{equation}
 \label{eq:phase_extraction}
 \hat{\elsp}(\kpar, t) = A(t) e^{i\phi(t)}, \quad \omega_{\mathrm{measured}} = \frac{d\phi}{dt}
@@ -53,7 +53,7 @@ The consistency across all configurations confirms that GANDALF correctly implem
 The Alfvén wave benchmark demonstrates three key properties of GANDALF:
 
 \begin{enumerate}
-\item \textbf{Spectral spatial accuracy}: Exponential convergence with resolution confirms correct implementation of Fourier spectral derivatives and dealiasing. For smooth solutions, spectral methods achieve machine precision with modest grid sizes, making them ideal for resolving turbulent cascades extending over multiple decades in wavenumber.
+\item \textbf{Spectral spatial accuracy}: Exponential convergence with resolution confirms correct implementation of Fourier spectral derivatives. For smooth solutions, spectral methods achieve machine precision with modest grid sizes, making them ideal for resolving turbulent cascades extending over multiple decades in wavenumber.
 
 \item \textbf{Integrating factor advantage}: Removal of Alfvén CFL constraint enables larger timesteps than explicit schemes, improving computational efficiency for problems where $\vA \gg v_{\mathrm{rms}}$. The $\sim 30\times$ speedup observed here compounds with the parallelizability of spectral transforms on GPUs/TPUs.
 
@@ -65,7 +65,7 @@ The following sections extend validation to nonlinear regimes (Orszag-Tang vorte
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/alfven_frequency_convergence.pdf}
-\caption{Alfvén wave dispersion benchmark convergence studies. (a) Spatial convergence: relative frequency error versus grid resolution $N$ (for $N^3$ grids) with fixed timestep $\Delta t = 0.01$. The flat profile indicates temporal error dominates - spatial error has already converged at $N=32^3$. (b) Temporal convergence: relative error versus timestep $\Delta t$ with fixed resolution $N = 64^3$. Squares show measured non-zero errors ($\sim 10^{-7}$, likely from Hermite truncation dissipation and numerical roundoff); triangles mark three timesteps achieving machine precision (identically zero error), demonstrating that the exponential integrating factor treats linear Alfvén wave propagation analytically exactly. Gray dotted line shows $O(\Delta t^2)$ scaling expected from standard RK2 for comparison.}
+\caption{Alfvén wave dispersion benchmark convergence studies. (a) Spatial convergence: relative frequency error versus grid resolution $N$ (for $N^3$ grids) with fixed timestep $\Delta t = 0.01$. The flat profile indicates temporal error dominates - spatial error has already converged at $N=32^3$. (b) Temporal convergence: relative error versus timestep $\Delta t$ with fixed resolution $N = 64^3$. Squares show measured non-zero errors ($\sim 10^{-7}$, likely from numerical roundoff); triangles mark three timesteps achieving machine precision (identically zero error), demonstrating that the exponential integrating factor treats linear Alfvén wave propagation analytically exactly. Gray dotted line shows $O(\Delta t^2)$ scaling expected from standard RK2 for comparison.}
 \label{fig:alfven_convergence}
 \end{figure}
 
@@ -105,21 +105,21 @@ The Orszag-Tang vortex consists of intersecting velocity and magnetic field vort
 \mathbf{v} &= (-\sin y, \sin x, 0), \\
 \mathbf{B} &= \frac{1}{\sqrt{4\pi}}(-\sin y, \sin 2x, 0).
 \end{align}
-In GANDALF's incompressible RMHD formulation, we initialize via the stream function $\phi$ and vector potential $\Psi$ with Fourier coefficients computed to reproduce these fields exactly (see \texttt{initialize\_orszag\_tang} in \texttt{krmhd/physics.py}).
+In GANDALF's incompressible RMHD formulation, we initialize via the stream function $\Phifield$ and vector potential $\Psifield$ with Fourier coefficients computed to reproduce these fields exactly (see \texttt{initialize\_orszag\_tang} in \texttt{krmhd/physics.py}).
 
-We integrate on a periodic domain of unit size ($L_x = L_y = L_z = 1$) for $t \in [0, 2\tauA]$ where $\tauA = L_z/\vA = 1$ is the Alfvén crossing time. We use inviscid parameters ($\eta = \nu = 0$, $M=2$ minimum Hermite moments) to test energy conservation. Spatial convergence tests use resolutions $N \in \{32, 64, 128\}$ (for $N^2 \times 2$ grids with $N_z=2$ providing only the $k_z=0$ mode, effectively 2D dynamics) with fixed timestep $\Delta t = 0.01$.
+We integrate on a periodic domain of unit size ($L_x = L_y = L_z = 1$) for $t \in [0, 2\tauA]$ where $\tauA = L_z/\vA = 1$ is the Alfvén crossing time. We use inviscid parameters ($\eta = \coll = 0$) to test energy conservation; the Orszag-Tang vortex tests only Elsasser field dynamics (MHD), so Hermite moments are not involved. Spatial convergence tests use resolutions $N \in \{32, 64, 128\}$ (for $N^2 \times 2$ grids with $N_z=2$ providing only the $k_z=0$ mode, effectively 2D dynamics) with fixed timestep $\Delta t = 0.01$.
 
 \subsubsection{Energy Conservation and Selective Decay}
 
-\Cref{fig:orszag_energy} shows energy evolution for the highest resolution run ($N = 128^2 \times 2$). Total energy conservation achieves maximum drift $|\Delta E/E_0|_{\max} = 1.6 \times 10^{-6}$ over 2 Alfvén times - outstanding for nonlinear dynamics where spectral aliasing and dealiasing operations can introduce numerical dissipation. This validates GANDALF's energy-conserving formulation of the nonlinear Poisson bracket $\{\phi, \Psi\}$ and confirms correct implementation of the 2/3 dealiasing rule \citep{Orszag1971}.
+\Cref{fig:orszag_energy} shows energy evolution for the highest resolution run ($N = 128^2 \times 2$). Total energy conservation achieves maximum drift $|\Delta E/E_0|_{\max} = 1.6 \times 10^{-6}$ over 2 Alfvén times - outstanding for nonlinear dynamics where spectral aliasing and dealiasing operations can introduce numerical dissipation. This validates GANDALF's energy-conserving formulation of the nonlinear Poisson bracket $\{\Phifield, \Psifield\}$ and confirms correct implementation of the 2/3 dealiasing rule \citep{Orszag1971}.
 
 The energy components exhibit \textbf{selective decay}, a hallmark of 2D MHD: magnetic energy increases relative to kinetic energy as $E_{\mathrm{mag}}/E_{\mathrm{kin}}$ grows from 1.0 initially to 1.59 by $t = 2\tau_A$. This physical process arises because 2D turbulence preferentially cascades kinetic energy to small scales (where it would be dissipated in viscous simulations) while magnetic helicity conservation drives magnetic energy toward large scales through an inverse cascade \citep{Biskamp2003}, validating both forward and inverse cascade physics in GANDALF's nonlinear coupling. The observed ratio evolution is consistent with 2D MHD theory, though quantitative comparison with reference simulations is beyond the scope of this verification test.
 
 \subsubsection{Structure Formation}
 
-\Cref{fig:orszag_structures} displays 2D field structures at $t = 2\tau_A$. The vorticity $\omega = \nabla^2\phi$ (panel a) and current density $J_\parallel = \nabla^2\Psi$ (panel b) show the characteristic small-scale structures arising from the nonlinear cascade. Current sheets - thin regions of intense $J_\parallel$ analogous to shocks in compressible MHD - form at converging flow stagnation points, demonstrating GANDALF's ability to resolve steep gradients via spectral methods without oscillatory artifacts.
+\Cref{fig:orszag_structures} displays 2D field structures at $t = 2\tau_A$. The vorticity $\omega = \nabla^2\Phifield$ (panel a) and current density $J_\parallel = \nabla^2\Psifield$ (panel b) show the characteristic small-scale structures arising from the nonlinear cascade. Current sheets - thin regions of intense $J_\parallel$ analogous to shocks in compressible MHD - form at converging flow stagnation points, demonstrating GANDALF's ability to resolve steep gradients via spectral methods without oscillatory artifacts.
 
-The stream function $\phi$ (panel c) and vector potential $\Psi$ (panel d) retain smoother large-scale structure, consistent with energy concentration at low wavenumbers in the inverse cascade. The complexity visible at high resolution ($N = 128^2$) emphasizes the importance of spectral accuracy for capturing the full range of cascade dynamics.
+The stream function $\Phifield$ (panel c) and vector potential $\Psifield$ (panel d) retain smoother large-scale structure, consistent with energy concentration at low wavenumbers in the inverse cascade. The complexity visible at high resolution ($N = 128^2$) emphasizes the importance of spectral accuracy for capturing the full range of cascade dynamics.
 
 \subsubsection{Convergence}
 
@@ -159,7 +159,7 @@ Combined with the Alfvén wave benchmark's validation of linear wave physics, th
 \begin{figure}[p]
 \centering
 \includegraphics[width=\textwidth]{figures/orszag_tang_structures.pdf}
-\caption{Orszag-Tang vortex 2D field structures at $t = 2\tauA$ showing (a) vorticity $\omega = \nabla^2\phi$, (b) current density $J_\parallel = \nabla^2\Psi$, (c) stream function $\phi$, and (d) vector potential $\Psi$. Current sheets (intense localized $J_\parallel$) form at flow stagnation points, demonstrating nonlinear cascade to small scales. Spectral methods resolve steep gradients without oscillations. Resolution: $N = 128^2 \times 2$.}
+\caption{Orszag-Tang vortex 2D field structures at $t = 2\tauA$ showing (a) vorticity $\omega = \nabla^2\Phifield$, (b) current density $J_\parallel = \nabla^2\Psifield$, (c) stream function $\Phifield$, and (d) vector potential $\Psifield$. Current sheets (intense localized $J_\parallel$) form at flow stagnation points, demonstrating nonlinear cascade to small scales. Spectral methods resolve steep gradients without oscillations. Resolution: $N = 128^2 \times 2$.}
 \label{fig:orszag_structures}
 \end{figure}
 
@@ -206,7 +206,7 @@ The turbulent cascade benchmark validates GANDALF's capability for long-duration
 \begin{itemize}
 \item \textbf{Kolmogorov scaling}: Both kinetic and magnetic spectra exhibit $k_\perp^{-5/3}$ scaling across approximately one decade in wavenumber, consistent with critical balance theory for strong Alfv\'enic turbulence.
 
-\item \textbf{Balanced forcing efficacy}: Restricting forcing to low $|k_z|$ modes ($|n_z| \leq 1$) respects the fundamental $k_\parallel \ll k_\perp$ constraint inherent to RMHD/gyrokinetic ordering. High-$k_z$ forcing violates this ordering assumption and generates unphysical dynamics (spurious magnetic reconnection, energy accumulation), rather than representing a mere numerical stability issue.
+\item \textbf{Balanced forcing efficacy}: Restricting forcing to low $|k_z|$ modes ($|n_z| \leq 1$) prevents excess cross-helicity accumulation and maintains the balanced turbulence required for efficient cascade dynamics. Isotropic forcing in wavenumber space (equal power at all directions) can generate unbalanced states that suppress nonlinear energy transfer.
 
 \item \textbf{Long-time integration}: Stable evolution to $200\tauA$ (32 times longer than Orszag-Tang benchmark duration) demonstrates robustness for production turbulence studies requiring long-time statistics.
 \end{itemize}
@@ -238,13 +238,13 @@ Linear KRMHD theory predicts a forward velocity-space cascade with power-law sca
 C_m^\pm \sim m^{-1/2}
 \label{eq:velocity_spectrum}
 \end{equation}
-in the inertial range $1 \ll m \ll m_{\text{diss}}$, where $m_{\text{diss}}$ marks the onset of collisional dissipation. This scaling arises from dimensional analysis: phase mixing transfers energy between adjacent moments at rate $\sim \omega m^{1/2}$ (from the coupling coefficients), while the collision operator with hyperdissipation provides scale-dependent damping at rate $\nu m^{2p}$ (where $p$ is the hypercollision exponent). Balancing cascade and dissipation rates determines the dissipation scale, with the inertial range exhibiting the $m^{-1/2}$ spectrum characteristic of the forward Hermite cascade \citep{Schekochihin2009}.
+in the inertial range $1 \ll m \ll m_{\text{diss}}$, where $m_{\text{diss}}$ marks the onset of collisional dissipation. This scaling arises from dimensional analysis: phase mixing transfers energy between adjacent moments at rate $\sim \omega m^{1/2}$ (from the coupling coefficients), while the collision operator with hyperdissipation provides scale-dependent damping at rate $\nu m^{2p}$ (where $p$ is the hypercollision exponent). Balancing cascade and dissipation rates determines the dissipation scale, with the inertial range exhibiting the $m^{-1/2}$ spectrum characteristic of the forward Hermite cascade \citep{Schekochihin2009,Kanekar2014}.
 
 The backward-propagating component $C_m^-$ remains subdominant in this forward-flux configuration, with steeper decay $C_m^- \sim m^{-3/2}$ reflecting minimal backward energy transfer when forcing exclusively drives forward modes.
 
 \subsubsection{Numerical Parameters}
 
-We integrate on a periodic domain $L = 2\pi$ with spatial resolution $N = 32^3$ and $M = 128$ Hermite moments. The collision operator uses hyperdissipation with $\nu = 0.25$ and hypercollision exponent $p = 6$, giving dissipation rate $\nu m^{2p} = \nu m^{12}$ that provides a sharp cutoff at high $m$ while maintaining a broad inertial range. Forcing amplitude $A = 0.0035$ is calibrated to balance injection and dissipation rates, achieving steady state with energy fluctuations $\Delta E/\langle E \rangle < 10\%$.
+We integrate on a periodic domain $L = 2\pi$ with $M = 128$ Hermite moments. Spatial resolution $N = 32^3$ is used for code consistency, though this benchmark tests primarily velocity-space dynamics via a single forced Fourier mode. The collision operator uses hyperdissipation with $\nu = 0.25$ and hypercollision exponent $p = 6$, giving dissipation rate $\nu m^{2p} = \nu m^{12}$ that provides a sharp cutoff at high $m$ while maintaining a broad inertial range. Forcing amplitude $A = 0.0035$ is calibrated to balance injection and dissipation rates, achieving steady state with energy fluctuations $\Delta E/\langle E \rangle < 10\%$.
 
 The simulation evolves for $t \in [0, 50]\tauA$, reaching quasi-steady state by $t \approx 35\tauA$, with time-averaging over $t \in [40, 50]\tauA$ after initial transients decay. The timestep $\Delta t = 0.01$ satisfies stability requirements for both the integrating factor and the collision operator. The high moment resolution $M = 128$ ensures that the velocity-space cascade's dissipation range lies well above the inertial range, avoiding truncation effects that would artificially steepen the spectrum.
 
