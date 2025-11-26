@@ -140,7 +140,7 @@ This limitation motivates the use of explicit resistivity ($\eta > 0$) or hyperd
 The Orszag-Tang vortex validates three critical capabilities beyond the linear Alfvén test:
 
 \begin{enumerate}
-\item \textbf{Nonlinear coupling}: Excellent energy conservation ($\sim 10^{-6}$ level) confirms correct implementation of the Poisson bracket $\{\phi, \Psi\}$ and dealiasing operations. This nonlinear term drives the turbulent cascade and distinguishes RMHD from linear wave theory.
+\item \textbf{Nonlinear coupling}: Excellent energy conservation ($\sim 10^{-6}$ level) confirms correct implementation of the Poisson bracket $\{\Phifield, \Psifield\}$ and dealiasing operations. This nonlinear term drives the turbulent cascade and distinguishes RMHD from linear wave theory.
 
 \item \textbf{Multiscale dynamics}: Development of broadband nonlinear structures from large-scale initial conditions demonstrates GANDALF's ability to handle energy transfer across multiple scales - essential for turbulence simulations where cascade physics determines transport properties.
 
@@ -182,7 +182,7 @@ Achieving stable turbulent cascades at moderate resolution ($N = 64^3$) required
 F_\pm(\mathbf{k}, t) = A \cdot \xi_\pm(\mathbf{k}, t) \cdot \Theta(n_{\min} \leq n_\perp \leq n_{\max}) \cdot \Theta(|n_z| \leq n_{z,\max}),
 \label{eq:balanced_forcing}
 \end{equation}
-where mode numbers $n = kL/(2\pi)$ specify forcing band $n_\perp \in [1, 2]$ with $|n_z| \leq 1$. Here $\xi_\pm$ represents independent Gaussian white noise realizations for each Elsasser field, $A = 0.048$ is the forcing amplitude, and $\Theta$ is the Heaviside step function. The low-$|k_z|$ restriction respects RMHD ordering $k_\parallel \ll k_\perp$ and prevents spurious magnetic reconnection from unbalanced high-$k_z$ forcing that plagued earlier attempts.
+where mode numbers $n = kL/(2\pi)$ specify forcing band $n_\perp \in [1, 2]$ with $|n_z| \leq 1$. Here $\xi_\pm$ represents independent Gaussian white noise realizations for each Elsasser field, $A = 0.048$ is the forcing amplitude, and $\Theta$ is the Heaviside step function.
 
 We integrate on a cubic periodic domain $L = 2\pi$ for $t \in [0, 200]\tauA$ where $\tauA = L/\vA = 2\pi$ is the Alfv\'en crossing time. Dissipation uses hyper-resistivity $\eta(-\nabla^2)^r$ with $\eta = 6.0$ and $r = 2$ (Laplacian operator applied $r$ times), giving $\eta k_\perp^4$ damping rate in Fourier space. The hyper-resistivity coefficient is chosen to place the dissipation scale well above the inertial range at $64^3$ resolution while maintaining numerical stability. Higher-order dissipation ($r = 4$) proved unstable despite satisfying linear stability criteria. The balanced forcing with restricted $|k_z|$ enables long-term stable evolution where earlier attempts with isotropic Gaussian forcing exhibited energy accumulation and spectral pile-up.
 
@@ -205,8 +205,6 @@ The turbulent cascade benchmark validates GANDALF's capability for long-duration
 
 \begin{itemize}
 \item \textbf{Kolmogorov scaling}: Both kinetic and magnetic spectra exhibit $k_\perp^{-5/3}$ scaling across approximately one decade in wavenumber, consistent with critical balance theory for strong Alfv\'enic turbulence.
-
-\item \textbf{Balanced forcing efficacy}: Restricting forcing to low $|k_z|$ modes ($|n_z| \leq 1$) prevents excess cross-helicity accumulation and maintains the balanced turbulence required for efficient cascade dynamics. Isotropic forcing in wavenumber space (equal power at all directions) can generate unbalanced states that suppress nonlinear energy transfer.
 
 \item \textbf{Long-time integration}: Stable evolution to $200\tauA$ (32 times longer than Orszag-Tang benchmark duration) demonstrates robustness for production turbulence studies requiring long-time statistics.
 \end{itemize}
@@ -263,7 +261,7 @@ The velocity-space cascade benchmark completes GANDALF's verification hierarchy 
 \begin{itemize}
 \item \textbf{Hermite spectral accuracy}: The clean $m^{-1/2}$ power law across one decade confirms correct implementation of the Hermite moment coupling through coefficients $\sqrt{m/2}$ and $\sqrt{(m+1)/2}$ in the linear propagation terms. This validates the spectral velocity-space representation analogous to how the Alfv\'en wave benchmark validated Fourier spatial spectral methods.
 
-\item \textbf{Phase mixing physics}: Reproduction of the theoretical cascade scaling demonstrates that GANDALF captures the physical mechanism by which particles at different velocities decorrelate while streaming along field lines. This phase mixing process underlies collisionless damping phenomena critical to solar wind and magnetospheric plasmas, including Landau damping and transit-time damping.
+\item \textbf{Phase mixing physics}: Reproduction of the theoretical cascade scaling demonstrates that GANDALF captures the physical mechanism by which particles at different velocities decorrelate while streaming along field lines. This phase mixing process underlies collisionless damping phenomena critical to solar wind and magnetospheric plasmas.
 
 \item \textbf{Collision operator validation}: The sharp spectral cutoff at $m \approx 20$ matching the expected dissipation scale confirms correct implementation of the hypercollision operator. Accurate velocity-space dissipation is essential for numerical stability in long-duration turbulence simulations where phase mixing continuously generates fine velocity-space structure relevant to solar wind heating and Parker Solar Probe observations of kinetic-scale turbulence.
 \end{itemize}

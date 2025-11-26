@@ -3,7 +3,7 @@
 
 The verification benchmarks presented in \S\ref{sec:verification} validate GANDALF's implementation across a hierarchy of physical regimes. The Alfvén wave dispersion test confirms spectral spatial accuracy and demonstrates that the integrating factor achieves machine-precision treatment of linear wave propagation, removing the Alfvén CFL constraint and enabling timesteps $\sim 30\times$ larger than explicit schemes. The Orszag-Tang vortex extends validation to nonlinear dynamics, demonstrating energy conservation at the $10^{-6}$ level while revealing important limitations: nonlinear timestep stability requirements beyond the integrating factor's linear wave treatment, and resolution limits in inviscid simulations as cascades approach grid cutoff scales.
 
-The turbulent cascade benchmark completes the hierarchy, showing that GANDALF captures sustained turbulent energy transfer with clean $\kperp^{-5/3}$ inertial range scaling across approximately one decade in wavenumber. Collectively, these tests establish that GANDALF correctly implements the KRMHD equations with research-grade numerical accuracy, positioning the code as a viable tool for plasma turbulence research on accessible hardware.
+The turbulent cascade benchmark completes the hierarchy, showing that GANDALF captures sustained turbulent energy transfer with clean $\kperp^{-5/3}$ inertial range scaling across approximately one decade in wavenumber. The velocity-space benchmark validates phase mixing dynamics through the Hermite moment hierarchy, reproducing the theoretical $m^{-1/2}$ spectral scaling that governs kinetic dissipation in weakly collisional plasmas. Collectively, these tests establish that GANDALF correctly implements the KRMHD equations with research-grade numerical accuracy, positioning the code as a viable tool for plasma turbulence research on accessible hardware.
 
 This section interprets the verification results in broader context, discusses GANDALF's strengths and limitations, positions the code within the existing ecosystem of gyrokinetic and reduced MHD solvers, reflects on lessons learned from the JAX implementation, and considers implications for accessibility in plasma turbulence research.
 
@@ -53,7 +53,7 @@ Identified limitations---nonlinear timestep stability, resolution limits in invi
 
 GANDALF's design philosophy prioritizes accessibility over peak performance, targeting researchers and applications where ease of use enables science that would otherwise be prohibitive.
 
-\paragraph{Installation and deployment.} GANDALF's primary strength lies in dramatically reduced installation complexity compared to traditional HPC codes. Installing AstroGK, Viriato, or GS2 typically requires:
+\paragraph{Installation and deployment.} GANDALF's primary strength lies in dramatically reduced installation complexity compared to traditional HPC codes. Installing AstroGK, Viriato, GS2, or GENE typically requires:
 \begin{itemize}
 \item HPC cluster access with batch queue systems (SLURM, PBS)
 \item Fortran compiler toolchains (Intel ifort, GNU gfortran) with specific version requirements
@@ -102,7 +102,7 @@ This rapid-iteration workflow complements production codes: prototype in GANDALF
 \paragraph{Specific scientific applications.} GANDALF's operational regime spans problems where moderate resolution ($N \lesssim 128^3$) and integration times ($t \lesssim 200\tau_A$) suffice:
 \begin{itemize}
 \item \textbf{Cascade physics studies}: Inertial range scaling, intermittency, spectral transfer functions where qualitative cascade properties matter more than extreme Reynolds numbers.
-\item \textbf{Forcing mechanism exploration}: Testing alternative forcing models (balanced Elsasser, low-$k_z$ restricted, random vs coherent) to understand turbulence driving in different astrophysical contexts.
+\item \textbf{Forcing mechanism exploration}: Testing alternative forcing models (balanced Elsasser, random vs coherent) to understand turbulence driving in different astrophysical contexts.
 \item \textbf{Dissipation mechanism comparison}: Comparing resistive, viscous, and hyper-diffusive dissipation to understand cascade termination and heating.
 \item \textbf{Parameter surveys}: Exploring plasma beta, ion temperature, Hermite truncation effects across parameter space to identify regimes warranting detailed study.
 \end{itemize}
@@ -136,7 +136,7 @@ Researchers studying these phenomena should use full gyrokinetic codes rather th
 
 \item \textbf{Resolution limits in inviscid simulations}: The Orszag-Tang benchmark demonstrated that inviscid runs ($\eta = \nu = 0$) eventually develop under-resolved features as cascades reach grid cutoff, violating energy conservation and producing instabilities. Production turbulence simulations require explicit dissipation (resistivity, viscosity, or hyper-diffusion) to arrest cascades before reaching the Nyquist limit. This is standard practice in spectral codes, but GANDALF currently lacks automated dissipation scale detection---users must specify dissipation coefficients manually based on expected cascade extent.
 
-\item \textbf{Forcing design sensitivity}: The turbulent cascade benchmark required carefully designed balanced Elsasser forcing with restricted $|k_z|$ to maintain stability. Isotropic forcing (equal power at all $\mathbf{k}$ in the forcing shell) violated KRMHD ordering and destabilized simulations. While the validated forcing prescription works reliably, exploring alternative forcing mechanisms requires careful attention to KRMHD ordering constraints. This limits flexibility compared to codes with more sophisticated forcing implementations.
+\item \textbf{Forcing design sensitivity}: The turbulent cascade benchmark required carefully designed balanced Elsasser forcing with restricted $|k_z|$ to maintain stability. While the validated forcing prescription works reliably, exploring alternative forcing mechanisms requires careful attention to KRMHD ordering constraints. This limits flexibility compared to codes with more sophisticated forcing implementations.
 \end{enumerate}
 
 These limitations reflect GANDALF's current implementation state rather than fundamental insurmountable barriers. Adaptive timestepping, automated dissipation tuning, and robust forcing libraries represent straightforward development tasks that would improve usability without altering core physics or numerics.
@@ -150,7 +150,7 @@ These limitations reflect GANDALF's current implementation state rather than fun
 
 \item \textbf{Use GX when}: Extreme-scale production runs ($N \geq 512^3$) where $2$--$3\times$ performance gain justifies CUDA specialization, or when stellarator/tokamak geometric complexity demands specialized optimization.
 
-\item \textbf{Use GS2 when}: Comprehensive electromagnetic gyrokinetics for fusion applications requiring decades of validation and large user community support.
+\item \textbf{Use GS2/GENE when}: Comprehensive electromagnetic gyrokinetics for fusion applications requiring decades of validation and large user community support.
 
 \item \textbf{Use GANDALF when}: Rapid prototyping, educational applications, parameter surveys at moderate scale, accessibility prioritized over peak performance, or exploring KRMHD turbulence without HPC infrastructure.
 \end{itemize}
@@ -188,6 +188,7 @@ GANDALF & High & Medium & KRMHD & New (2024) \\
 Viriato & Medium & High & KRMHD + extensions & Mature ($>10$ yrs) \\
 AstroGK & Low & High & Full gyrokinetics & Mature ($>15$ yrs) \\
 GS2 & Low & High & Full gyrokinetics & Mature ($>25$ yrs) \\
+GENE & Low & High & Full gyrokinetics & Mature ($>20$ yrs) \\
 GX & Low & Very High & Gyrokinetics & Recent ($<5$ yrs) \\
 \hline\hline
 \end{tabular}
@@ -201,7 +202,7 @@ GX & Low & Very High & Gyrokinetics & Recent ($<5$ yrs) \\
 
 \item \textbf{Method validation}: Promising parameter regimes identified in GANDALF undergo convergence studies to establish resolution requirements and confirm physics predictions.
 
-\item \textbf{Production transition}: Validated configurations transition to specialized codes (AstroGK, GS2, GX) for high-resolution production runs exploiting HPC resources and optimized performance.
+\item \textbf{Production transition}: Validated configurations transition to specialized codes (AstroGK, GS2, GENE, GX) for high-resolution production runs exploiting HPC resources and optimized performance.
 
 \item \textbf{Cross-validation}: GANDALF results provide independent verification of specialized code outputs, catching implementation bugs and confirming physics interpretation.
 \end{enumerate}
