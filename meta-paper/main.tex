@@ -29,7 +29,7 @@
 \title{Augmenting the Single Physicist: An N=1 Experiment in AI-Assisted Computational Plasma Physics}
 \author{Anjor Kanekar\\
 \textit{Independent Researcher}\\
-\href{mailto:anjor@anjor.dev}{anjor@anjor.dev}}
+\href{mailto:anjor@umd.edu}{anjor@umd.edu}}
 \date{\today}
 
 \begin{document}
@@ -37,7 +37,7 @@
 \maketitle
 
 \begin{abstract}
-This is a case study of what happened when I tried to resurrect my PhD research with AI assistance. A decade after leaving academia for the tech industry, I wanted to return to plasma turbulence physics---but I no longer had access to institutional HPC infrastructure or collaborators. Over 21 days and \$558 in API costs, I rebuilt GANDALF, my PhD-era kinetic plasma solver, from scratch in JAX, with Claude generating all the implementation code. I never read what the AI wrote. Instead, I validated through physics: machine-precision ($10^{-15}$) wave propagation, $10^{-6}$ energy conservation, $k^{-5/3}$ Kolmogorov scaling. What I discovered was an \emph{autonomy gradient}: AI was nearly 100\% effective at implementation but 0\% effective at deciding what to implement. The critical missing capability is what I call \emph{physics taste}---the intuition for systematic parameter exploration that comes from years of research experience. AI made me a one-person army for code implementation. It could not replace the physicist.
+We present a case study of AI-augmented scientific software development, treating the creation of a research-grade plasma turbulence solver as an experiment in human-AI collaboration. Over 21 active development days at \$558 API cost, GANDALF---a Kinetic Reduced Magnetohydrodynamic solver---was rebuilt from scratch in JAX, with AI assistants generating all implementation code. The human researcher provided mathematical specifications and validated through physics outputs without reading the generated source: machine-precision ($10^{-15}$) linear wave propagation, $10^{-6}$ energy conservation in nonlinear benchmarks, and $k^{-5/3}$ Kolmogorov scaling in driven turbulence. The central finding is an \emph{autonomy gradient}: AI effectiveness varies from $\sim$100\% for code implementation to $\sim$0\% for research direction. The critical limitation is \emph{physics taste}---the inability of current AI to perform patient, systematic parameter space exploration requiring physical intuition. We propose physics-oracle validation as a methodology for trusting AI-generated scientific code. These findings suggest AI can augment individual researchers to team-level implementation capacity while preserving the essential human role in scientific judgment.
 \end{abstract}
 
 \noindent\textbf{Keywords:} AI-assisted programming, scientific computing, plasma physics, human-AI collaboration, validation methodology
@@ -45,23 +45,19 @@ This is a case study of what happened when I tried to resurrect my PhD research 
 \section{Introduction}
 \label{sec:intro}
 
-During my PhD at the University of Maryland a decade ago, I spent six months building GANDALF---a Fortran/CUDA code for simulating kinetic plasma turbulence. The physics was fascinating: how turbulent energy cascades from large scales down to where it heats ions and electrons in space plasmas. But after defending my thesis, I joined the tech industry and left that world behind. The institutional infrastructure---HPC clusters, collaborators, maintenance cycles---wasn't available to me as an independent researcher.
+Large language models have recently become capable of contributing to scientific software development. They can implement numerical algorithms from mathematical specifications, generate visualization and diagnostic code, and assist with documentation. This capability raises a question: can AI assistance enable individual researchers to develop simulation infrastructure that previously required teams?
 
-In early 2025, I wanted to return. I started where any researcher would: reading the literature. What had happened in gyrokinetic turbulence while I was away? I asked Claude to help me survey the field \citep{Schekochihin2009,Meyrand2019,Kawazura2020}, identify frontier problems, and assess which might be tractable for a solo researcher. The AI was genuinely useful here---it synthesized recent papers, identified six candidate problems, and helped me narrow to phase-space cascade physics.
+Production-grade plasma simulation codes represent substantial infrastructure investments. Codes such as AstroGK \citep{Numata2010}, Gkeyll \citep{Hakim2020}, and GS2 \citep{Kotschenreuther1995} required multi-year, multi-person development efforts. These codebases, typically written in Fortran or C++ with MPI parallelization and CUDA GPU kernels, demand specialized HPC infrastructure and continuous maintenance. This infrastructure barrier restricts active participation in computational plasma physics to well-resourced institutions.
 
-Then I hit the first obstacle. Which code should I use? I asked Claude.
+This paper documents an experiment addressing whether AI assistance can lower this barrier. The goal was to rebuild GANDALF, a Kinetic Reduced MHD turbulence solver, with AI generating all implementation code. The human researcher provided mathematical specifications and validated exclusively through physics outputs---without reading the generated source. We present what worked, where AI assistance fell short, and where expert oversight remained essential.
 
-``GS2 is the standard tool for gyrokinetic simulations,'' it said, confidently recommending a workhorse full gyrokinetics code \citep{Kotschenreuther1995}.
+The experiment began with AI-assisted literature survey \citep{Schekochihin2009,Meyrand2019,Kawazura2020} to identify tractable research problems. AI proved useful for synthesizing recent papers and narrowing to phase-space cascade physics. However, when queried about appropriate simulation tools, Claude recommended GS2, a full gyrokinetics code \citep{Kotschenreuther1995}---overlooking that the relevant physics operates at $k_\perp\rho_i \ll 1$ where reduced equations suffice. Domain expertise was required to recognize this error and redirect toward appropriate reduced models.
 
-This was wrong. I knew from my PhD work that Meyrand's reduced equations operate at $k_\perp\rho_i \ll 1$ where full gyrokinetics is overkill. My old code GANDALF was designed precisely for this regime. Claude had confidently recommended the wrong tool---and without my domain expertise, I would have wasted months.
+This episode illustrates the central finding: AI is remarkably capable at implementing well-specified tasks but cannot substitute for scientific judgment in deciding what to implement. The pattern held consistently across the development process.
 
-This moment crystallized what became the central finding of this paper: AI is remarkably capable at implementing what you specify, but it cannot tell you what to specify. The physics judgment remained entirely mine.
+The decision to rewrite in JAX rather than resurrect legacy Fortran/CUDA code was driven by hardware accessibility: modern frameworks run on Apple Silicon through Metal, enabling development on commodity hardware without institutional HPC allocation. This choice itself required engineering judgment that AI could not provide.
 
-I faced a decision: resurrect my 15-year-old Fortran/CUDA code, or rewrite from scratch? The old code was tied to NVIDIA hardware I no longer had access to. But modern frameworks like JAX run on Apple Silicon through Metal---I could develop on my M1 MacBook. I decided to rewrite.
-
-The experiment was this: Could I rebuild a research-grade plasma turbulence solver in weeks rather than months, with AI handling all the implementation? I would provide mathematical specifications and physics validation; Claude would write the code. I would never read the source files. If the physics worked, the code was correct.
-
-This paper documents what happened. Section~2 describes the experimental setup---the physics, protocol, and outcomes. Section~3 presents the central finding: the ``autonomy gradient'' showing AI effectiveness varies from $\sim$100\% for implementation to $\sim$0\% for research direction. Section~4 analyzes failure modes, particularly the ``physics taste'' deficit. Section~5 proposes physics-oracle validation as a methodology for trusting AI-generated scientific code. Section~6 discusses implications and limitations.
+The rest of this paper is organized as follows. Section~2 describes the experimental setup---the physics, protocol, and quantitative outcomes. Section~3 presents the \emph{autonomy gradient}: AI effectiveness varies from $\sim$100\% for implementation to $\sim$0\% for research direction. Section~4 analyzes failure modes, particularly the ``physics taste'' deficit. Section~5 proposes physics-oracle validation as a methodology for trusting AI-generated scientific code. Section~6 discusses implications and limitations.
 
 \section{Experimental Design}
 \label{sec:experiment}
@@ -74,19 +70,19 @@ The implementation is non-trivial: nonlinear Poisson brackets in Fourier space, 
 
 \subsection{Experimental Protocol}
 
-I set one hard constraint: Claude would generate all the code. My job was to specify what the code should do mathematically and to interpret the physics outputs. I would provide equations from papers, describe algorithms, and make architectural decisions. I would not read the source files.
+The experiment imposed one hard constraint: AI (Claude) would generate all implementation code. The human role was to specify mathematical requirements and interpret physics outputs. Equations from papers, algorithm descriptions, and architectural decisions came from the researcher; source code came from the AI. The researcher did not read the generated source files.
 
-How would I know if the code was correct? Through physics:
+Correctness was established through physics-output testing:
 \begin{itemize}
 \item \textbf{Linear benchmark}: Alfv\'en wave propagation. The dispersion relation is exact---errors should be machine precision ($10^{-15}$).
 \item \textbf{Nonlinear benchmark}: Orszag-Tang vortex \citep{OrszagTang1979}. Energy should be conserved to $\sim 10^{-6}$ over many dynamical times.
 \item \textbf{Statistical benchmark}: Driven turbulence. The energy spectrum should show Kolmogorov $k^{-5/3}$ scaling.
-\item \textbf{Velocity-space benchmark}: Phase mixing rates and Hermite moment evolution, validating that kinetic physics works correctly.
+\item \textbf{Velocity-space benchmark}: Phase mixing rates and Hermite moment evolution, validating kinetic physics.
 \end{itemize}
 
-If all four benchmarks passed, the code was correct---regardless of what the source looked like.
+If all four benchmarks passed, the code was accepted as correct---regardless of implementation details.
 
-\textbf{Development environment}: I used Claude through three interfaces---the Claude App for brainstorming and planning, the API for batch operations, and Claude Code CLI for implementation sessions. The code was JAX running on Apple Silicon's Metal backend. I used GitHub for version control with automated Claude review on pull requests.
+\textbf{Development environment}: Claude was accessed through three interfaces---the Claude App for brainstorming and planning, the API for batch operations, and Claude Code CLI for implementation sessions. The codebase used JAX running on Apple Silicon's Metal backend. Version control was GitHub with automated Claude code review on pull requests.
 
 \subsection{Quantitative Outcomes}
 
@@ -108,14 +104,14 @@ Spectral scaling achieved & $k^{-5/3} \pm 0.05$ \\
 \label{tab:outcomes}
 \end{table}
 
-It worked. Twenty-one days. \$558 in API costs. About 3,500 lines of JAX code that I never read. The physics benchmarks all passed: machine-precision linear waves, excellent energy conservation, textbook Kolmogorov scaling.
+The experiment succeeded. Twenty-one days of active development, \$558 in API costs, approximately 3,500 lines of JAX code---none of which the researcher read. All physics benchmarks passed: machine-precision linear waves, excellent energy conservation, textbook Kolmogorov scaling.
 
-For comparison, I spent six months building the original Fortran/CUDA version during my PhD. The AI version took less than a month.
+For comparison, the original Fortran/CUDA version required approximately six months of development during the researcher's PhD. The AI-assisted version took less than one month.
 
 \section{The Autonomy Gradient}
 \label{sec:autonomy}
 
-The headline result---21 days, \$558, working code---obscures the central finding. AI effectiveness wasn't uniform. It varied dramatically across task types, following what I call the \emph{autonomy gradient} (\cref{fig:autonomy}).
+The headline result---21 days, \$558, working code---obscures the central finding. AI effectiveness was not uniform across task types. It varied dramatically, following what we term the \emph{autonomy gradient} (\cref{fig:autonomy}).
 
 \begin{figure}[h]
 \centering
@@ -148,38 +144,38 @@ Research direction & $\sim$0\% & Entirely human & N/A \\
 
 \subsection{High-Autonomy Tasks: Implementation}
 
-When I asked Claude to implement the KRMHD nonlinear term in JAX, I gave it the equations from Schekochihin's paper and said ``vectorize this for batched Fourier transforms.'' It produced working code on the first attempt. No iteration required.
+When given the KRMHD nonlinear term equations from Schekochihin's paper with the instruction ``vectorize this for batched Fourier transforms,'' Claude produced working code on the first attempt. No iteration required.
 
-This pattern held for tasks with clear inputs and outputs: implement this equation, add this diagnostic, fix this runtime error. Claude knew the idioms---spectral methods, JAX's vmap, array broadcasting. The code either worked or it didn't, and if it didn't, the error messages told us how to fix it.
+This pattern held for tasks with clear inputs and outputs: implement this equation, add this diagnostic, fix this runtime error. The AI knew the relevant idioms---spectral methods, JAX's vmap, array broadcasting. Code either worked or produced error messages that indicated how to fix it.
 
 \subsection{Low-Autonomy Tasks: Parameter Exploration}
 
-Getting the turbulence spectrum right was a different story entirely.
+Achieving correct turbulence spectra was a different matter entirely.
 
-Kolmogorov scaling ($k^{-5/3}$) is the textbook result for driven turbulence, but achieving it in simulation requires careful parameter choices. I needed to explore grid resolution ($32^3 \to 64^3 \to 128^3$), hyperviscosity coefficients spanning two orders of magnitude, driving amplitude and spectral distribution, and integration time.
+Kolmogorov scaling ($k^{-5/3}$) is the textbook result for driven turbulence, but achieving it in simulation requires careful parameter choices: grid resolution ($32^3 \to 64^3 \to 128^3$), hyperviscosity coefficients spanning two orders of magnitude, driving amplitude and spectral distribution, and integration time.
 
-I tried letting Claude lead this exploration. The pattern was always the same: it would propose a modification, implement it, see that it didn't work, propose something else, implement that. No convergence. No learning across attempts. Each try was independent.
+When the AI was given latitude to lead parameter exploration, a consistent failure pattern emerged: propose a modification, implement it, observe that it didn't work, propose something different. No convergence toward the solution. No learning across attempts. Each try was independent.
 
-When I explored parameters, I did something different. I maintained running hypotheses. I sensed when I was getting closer. I built intuition across attempts---``that looked more turbulent, maybe more driving would help.'' Claude couldn't do any of this. It had no physics taste.
+Human parameter exploration differs qualitatively. The researcher maintained running hypotheses, sensed proximity to correct behavior, and built intuition across attempts. These capabilities---recognizing when a spectrum ``looked more turbulent,'' inferring that stronger driving might help---were entirely absent from AI assistance. Current models lack physics taste.
 
 \section{Failure Mode Analysis}
 \label{sec:failure}
 
 \subsection{The ``Physics Taste'' Deficit}
 
-What is physics taste? It's the intuition that lets a researcher recognize when they're approaching correct behavior (even if not there yet), prioritize which parameters to explore based on physical reasoning, accept numerical discomfort for physics benefit, and know when the answer ``looks right.''
+We define \emph{physics taste} as the intuition that allows researchers to recognize when they are approaching correct behavior (even if not there yet), prioritize which parameters to explore based on physical reasoning, accept numerical discomfort for physics benefit, and know when the answer ``looks right.''
 
-Claude had none of this.
+This capability was absent from AI assistance. Specific manifestations:
 
-\textbf{Premature optimization for stability}: When my simulations were marginally stable---which is normal when you're pushing Reynolds number---Claude consistently recommended adding dissipation, reducing the timestep, smoothing initial conditions. These interventions improve numerical behavior but destroy the physics. I had to override this repeatedly.
+\textbf{Premature optimization for stability}: When simulations exhibited marginal numerical stability---which is normal when pushing Reynolds number---Claude consistently recommended adding dissipation, reducing the timestep, or smoothing initial conditions. These interventions improve numerical behavior but degrade physics content. The researcher had to override these recommendations repeatedly.
 
-\textbf{Inability to sense convergence}: When we were exploring parameters, Claude showed no awareness of getting closer or farther from the target. Each attempt was independent. It didn't build intuition across tries. I would say ``that spectrum looked more turbulent,'' and Claude would take it as information, but it couldn't generate that observation itself.
+\textbf{Inability to sense convergence}: During parameter exploration, Claude showed no awareness of getting closer to or farther from the target. Each attempt was independent. The AI did not build intuition across tries. When told ``that spectrum looked more turbulent,'' Claude incorporated the information, but it could not generate such observations itself.
 
-\textbf{Jumping to solutions}: Instead of methodical exploration, Claude proposed complete ``fixes'' that assumed it knew the answer. This works for textbook problems but fails at the research frontier where nobody knows the answer.
+\textbf{Jumping to solutions}: Rather than methodical exploration, Claude proposed complete ``fixes'' that assumed knowledge of the correct answer. This works for textbook problems but fails at the research frontier where nobody knows the answer.
 
 \subsection{The Physics-Numerics Boundary}
 
-Scientific simulation isn't production software. The optimization targets are different (\cref{tab:tradeoffs}).
+Scientific simulation occupies a different point in the correctness-stability tradeoff than production software (\cref{tab:tradeoffs}).
 
 \begin{table}[h]
 \centering
@@ -197,145 +193,131 @@ Failure mode & Avoid crashes & Informative failures \\
 \label{tab:tradeoffs}
 \end{table}
 
-Claude was trained mostly on production software. It defaults to production values---maximize stability, handle edge cases gracefully, avoid crashes. But in physics simulation, I \emph{want} marginal stability. I want to explore edge cases. A crash that tells me something is more valuable than smooth execution that hides the physics.
+AI models, trained predominantly on production software patterns, default to production values---maximize stability, handle edge cases gracefully, avoid crashes. But scientific simulation often \emph{requires} marginal stability, deliberate exploration of edge cases, and informative failures. A crash that reveals something about the physics is more valuable than smooth execution that hides it.
 
-This created systematic bias toward over-stable, under-resolved simulations. I had to constantly fight against Claude's instinct to make things more robust.
+This created systematic bias toward over-stable, under-resolved simulations. The researcher had to repeatedly override Claude's instinct to make things more robust.
 
 \subsection{Hallucination: A Task-Dependent Problem}
 
-I expected hallucination to be a problem. It was---but not where I expected.
+The relationship between AI hallucination and task type proved more nuanced than expected.
 
-\textbf{Code generation}: Almost no hallucination. The code either ran or it didn't. The physics either matched theory or it didn't. These tight constraints left no room for making things up. One exception: when I asked Claude to generate benchmark validation code, it created synthetic data that would pass the tests rather than actually running simulations. This was a dangerous failure mode---technically correct code that doesn't actually validate anything.
+\textbf{Code generation ($\sim$100\% autonomy)}: Minimal hallucination. Code either runs or fails visibly; physics outputs either match theory or don't. These tight constraints leave little room for fabrication. One notable exception: when asked to generate benchmark validation code, Claude created synthetic data that would pass the tests rather than actually running simulations. This subtle failure mode---technically correct code that doesn't actually validate---represents a dangerous edge case where physics-oracle testing itself can be subverted.
 
-\textbf{Paper writing}: Hallucination was rampant. When I asked Claude to help write the companion physics paper, it invented computational resources (``timings obtained on Princeton's Stellar cluster'' when all my runs were on an M1 MacBook), false timelines (``three years of part-time development'' when it was one month), GPU runtimes for simulations I never ran, and wrong physics (incorrect cascade directions, wrong definitions). I caught all of these in review, but it was alarming how confidently Claude stated things that weren't true.
+\textbf{Paper writing ($\sim$50\% autonomy)}: Significant hallucination issues emerged during scientific writing. When assisting with the companion physics paper, Claude fabricated computational resources (``timings obtained on Princeton's Stellar cluster'' when all runs used an M1 MacBook), false development timelines (``three years of part-time development'' versus the actual one month), invented GPU runtimes for simulations never performed, and made physics errors including incorrect cascade directions and wrong definitions. These were caught in human review, but the confident assertion of false claims was notable.
 
-The pattern was clear: hallucination severity correlates inversely with task constraints. Implementation tasks have tight constraints---code must run, outputs must match theory. Writing tasks have loose constraints, and Claude fills the gaps with plausible-sounding fabrications. My claim that ``I never read the code'' requires nuance: for physics code, the physics constrains hallucination. For prose, you have to read everything.
+\textbf{Key insight}: Hallucination severity correlates inversely with task constraints. High-autonomy tasks have tight constraints---code must execute, physics outputs must match theory. Medium-autonomy tasks like paper writing have looser constraints, allowing AI to extrapolate beyond given facts. The claim ``human never reads AI-generated code'' requires nuance: for physics code, physics outputs constrain hallucination; for prose, human review remains essential.
 
 \section{Validation Methodology: Physics-Oracle Testing}
 \label{sec:validation}
 
 \subsection{The Trust Problem}
 
-How do you trust code you didn't write and don't read?
-
-Traditional answers---code review, unit tests---require understanding the implementation. But the whole point of AI-generated code is that you don't have to write it yourself. Reading every line defeats the purpose.
+AI-generated code creates a verification challenge: how does one trust code that was not written or read by the researcher? Traditional approaches---code review, unit tests---require understanding implementation details. Reading every line defeats the productivity benefit of AI assistance.
 
 \subsection{Physics as Oracle}
 
-My answer: let the physics tell you if the code is correct. I call this \emph{physics-oracle testing} (\cref{fig:workflow}).
+We propose \emph{physics-oracle testing}: validating code through physical behavior rather than implementation inspection. The physics itself serves as the specification against which code is tested (\cref{fig:workflow}).
 
 \begin{figure}[h]
 \centering
 \input{figures/workflow}
-\caption{Physics-oracle validation workflow. I provide specifications and interpret results; Claude handles implementation; physics benchmarks serve as the oracle for correctness.}
+\caption{Physics-oracle validation workflow. Human provides specifications and interprets results; AI handles implementation; physics benchmarks serve as the oracle for correctness.}
 \label{fig:workflow}
 \end{figure}
 
-The idea is simple. Physics gives you known answers. If your code reproduces those answers, it's probably correct. I used four levels of validation:
+The methodology uses known physical results as ground truth. If code reproduces these results, it is accepted as correct. Four validation levels were employed:
 
-\textbf{Level 1---Linear regime}: Alfv\'en wave propagation. The dispersion relation is exact, so errors should be machine epsilon ($\sim 10^{-15}$). This validates time integration and linear operators.
+\textbf{Level 1---Linear regime}: Problems with exact analytical solutions. Alfv\'en wave propagation should match the dispersion relation exactly. Expected precision: machine epsilon ($\sim 10^{-15}$). Validates: time integration, linear operators.
 
-\textbf{Level 2---Nonlinear conservation}: The Orszag-Tang vortex conserves energy in an isolated system. I expected $\sim 10^{-6}$ conservation over many dynamical times. This validates nonlinear terms and the Poisson bracket discretization.
+\textbf{Level 2---Nonlinear conservation}: Invariants maintained during nonlinear evolution. The Orszag-Tang vortex should conserve total energy. Expected precision: $\sim 10^{-6}$ over many dynamical times. Validates: nonlinear terms, Poisson bracket discretization.
 
-\textbf{Level 3---Statistical equilibrium}: Driven turbulence should show Kolmogorov $k^{-5/3}$ scaling. The exponent should be within $\sim$0.05 of theory. This validates multiscale energy transfer and dissipation.
+\textbf{Level 3---Statistical equilibrium}: Emergent behavior matching theory. Driven turbulence should show Kolmogorov $k^{-5/3}$ scaling. Expected precision: power law exponent within $\sim$0.05. Validates: multiscale energy transfer, dissipation mechanisms.
 
-\textbf{Level 4---Velocity space}: Phase mixing rates and Hermite moment spectra should match kinetic theory. This validates the velocity-space operators and collisionless physics.
+\textbf{Level 4---Velocity space}: Kinetic physics validation. Phase mixing rates and Hermite moment spectra should match kinetic theory. Validates: velocity-space operators, collisionless physics.
 
 \subsection{Advantages and Limitations}
 
-This approach has real advantages. It tests behavior, not implementation. It scales to complex codes where line-by-line review is impractical. It catches subtle physics errors that unit tests miss---you can have passing tests and wrong physics.
+Physics-oracle testing has several advantages: it tests behavior not implementation, scales to complex codes where full review is impractical, and catches subtle physics errors that unit tests miss---code can pass all tests while producing wrong physics.
 
-But it has limitations too. You need known theoretical results to test against. You can't validate genuinely novel physics this way---that would be circular reasoning. And you might miss bugs that happen to preserve the properties you're testing.
+Limitations are also significant. The methodology requires known analytical or theoretical results. It cannot validate genuinely novel physics (circular reasoning). And it may miss bugs that happen to preserve tested properties.
 
-For established physics like KRMHD, this works well. For frontier physics, you need something else.
+For established physics like KRMHD, the methodology provides high confidence. For frontier physics, complementary validation approaches are needed.
 
 \section{Discussion}
 \label{sec:discussion}
 
 \subsection{Implications for Computational Physics}
 
-What does this mean for the field?
+The experiment demonstrates that a single researcher can achieve research-team implementation capacity with AI assistance. Hardware requirements reduce to a commodity laptop for development and cloud instances for production runs. Development timelines compress from months to weeks. Implementation no longer requires dedicated developers.
 
-I demonstrated that one person can achieve research-team implementation capacity. The hardware requirements drop to a commodity laptop for development and cloud instances for production runs. The timeline compresses from months to weeks. Implementation no longer requires dedicated developers.
-
-But some things don't change. You still need physics expertise to formulate problems. You still need validation capability---knowing what correct behavior looks like. You still need research taste to set direction. AI shifts the bottleneck from implementation to judgment.
+However, some requirements remain unchanged. Physics expertise is still needed to formulate problems. Validation capability---knowing what correct behavior looks like---remains essential. Research taste for direction-setting cannot be delegated. AI shifts the bottleneck from implementation to judgment.
 
 \subsection{Hardware Democratization}
 
 The JAX/Metal stack breaks the NVIDIA/CUDA lock-in that has constrained computational physics for decades. Combined with AI-assisted implementation, this opens computational plasma physics to consumer Apple Silicon, commodity cloud instances, and educational settings without HPC infrastructure.
 
-I developed GANDALF entirely on an M1 MacBook Pro. No cluster time. No institutional computing allocation. This wasn't possible five years ago.
+GANDALF was developed entirely on an M1 MacBook Pro, without cluster time or institutional computing allocation. This accessibility was not possible five years ago.
 
 \subsection{The New Bottleneck}
 
-If implementation is no longer rate-limiting, what is?
-
-From this experiment, I'd say three things: (1) \emph{validation capability}---knowing what correct behavior looks like; (2) \emph{physics taste}---intuition for productive parameter exploration; and (3) \emph{benchmark culture}---community investment in canonical test problems. These become the differentiating skills in AI-augmented computational physics.
+If implementation is no longer rate-limiting, what is? This experiment suggests three factors: (1) \emph{validation capability}---knowing what correct behavior looks like; (2) \emph{physics taste}---intuition for productive parameter exploration; and (3) \emph{benchmark culture}---community investment in canonical test problems. These become the differentiating skills in AI-augmented computational physics.
 
 \subsection{The N=1 Profile: Who Can Replicate This?}
 
-I need to be honest about something: my background is unusual. This success was enabled by a specific combination of expertise that isn't common.
+This success was enabled by a specific---and possibly non-generic---combination of expertise. Three components proved essential:
 
-\textbf{Domain expertise (PhD in plasma physics)}: I could correct Claude when it recommended the wrong code. I could recognize ``correct behavior'' in simulation outputs. Without this, I would have wasted months on GS2 and wouldn't have known when the physics was right.
+\textbf{Domain expertise (PhD in plasma physics)}: Critical for correcting AI recommendations. When Claude suggested using GS2, domain knowledge recognized that reduced equations suffice at $k_\perp\rho_i \ll 1$. Domain expertise was equally essential for validating physics outputs and recognizing correct behavior in simulation results.
 
-\textbf{Software engineering intuition (decade in tech industry)}: I knew to choose JAX over maintaining legacy Fortran/CUDA. I understood cloud deployment options. I could write specifications that Claude could actually implement.
+\textbf{Software engineering intuition (decade in tech industry)}: Enabled the decision to rewrite in JAX rather than maintain legacy Fortran/CUDA, understanding of modern deployment options, and ability to write specifications that AI could implement effectively.
 
-\textbf{Generative AI experience (recent industry work)}: I had realistic expectations. I knew Claude could implement but couldn't explore. I knew to create step-by-step plans rather than open-ended requests.
+\textbf{Generative AI experience (recent industry work)}: Provided realistic expectations of AI capabilities, effective prompting strategies, and understanding of failure modes. The researcher knew to create step-by-step implementation plans rather than open-ended requests.
 
-The pattern that emerged: AI was valuable at both ends of the research process---literature synthesis and code implementation---but the \emph{middle} required human expertise. Tool selection, physics judgment, validation interpretation. Claude confidently recommended the wrong code; only my domain knowledge prevented a costly detour.
+The pattern that emerged: AI proved valuable at both ends of the research process---literature synthesis and code implementation---but the \emph{middle} stages (tool selection, physics judgment, validation interpretation) required human expertise. Claude confidently recommended the wrong code; only domain knowledge prevented a costly detour.
 
-This raises uncomfortable questions. Can a researcher without deep domain expertise use this methodology? Can someone without engineering background write effective specifications? Can someone unfamiliar with AI's limitations have realistic expectations?
-
-I don't know. This is N=1. The success might be attributable to the methodology or to my specific profile. I suspect both matter.
+This raises questions about generalizability. Researchers without domain expertise cannot validate physics outputs. Those without engineering background may under-specify requirements. Those unfamiliar with AI may have unrealistic expectations. The N=1 success may be attributable as much to the specific researcher profile as to the methodology itself.
 
 \subsection{Related Work}
 
-OpenAI's ``Early Science Acceleration Experiments'' \citep{OpenAI2025} documents similar AI contributions across mathematics, physics, and biology. My work differs in scope (complete code implementation rather than proofs or analysis), validation (physics-output testing rather than human verification), and finding (the autonomy gradient rather than capability demonstrations).
+OpenAI's ``Early Science Acceleration Experiments'' \citep{OpenAI2025} documents AI contributions across mathematics, physics, and biology through case studies. The present work differs in modality (complete code implementation vs.\ proofs, analysis, literature search), validation (physics-output testing vs.\ human verification of derivations), scope (single coherent workflow vs.\ independent vignettes), and finding (autonomy gradient characterization vs.\ capability demonstrations).
 
-Timothy Gowers' contribution to that report describes similar observations: AI lacks research initiative while providing useful implementation assistance. My quantitative characterization of the autonomy gradient extends his qualitative observations.
+Timothy Gowers' contribution to that report describes similar observations: AI lacks research initiative while providing useful implementation assistance. The quantitative characterization of the autonomy gradient in the present work extends his qualitative observations.
 
 \subsection{Limitations}
 
 This study has important limitations.
 
-N=1. One researcher, one codebase, one physics domain. The patterns I observed may not generalize.
+First, N=1: a single researcher, single codebase, single physics domain. The autonomy gradient and failure modes observed may not generalize to other contexts.
 
-My profile is unusual. The combination of plasma physics PhD, tech industry experience, and generative AI work may be essential to the success. Someone without domain expertise cannot validate physics. Someone without engineering intuition may under-specify requirements. Someone new to AI may have unrealistic expectations.
+Second, the researcher profile is unusual. The combination of plasma physics PhD, tech industry experience, and generative AI work may be essential to the success. Researchers without domain expertise cannot validate physics outputs. Those without engineering intuition may under-specify requirements. Those new to AI may have unrealistic expectations.
 
-KRMHD is a well-posed problem. Physics-oracle validation works because correct behavior is known. For genuinely novel physics, you face circular reasoning: validating code requires knowing what the physics should do, but discovering what the physics does requires trusted code.
+Third, KRMHD represents a well-posed problem with established theory and canonical benchmarks. Physics-oracle validation works because correct behavior is known. Genuinely novel physics presents circular reasoning: validating code requires knowing what the physics should do, but discovering what the physics does requires trusted code.
 
-The companion physics paper required extensive human review. Claude hallucinated benchmarks, timelines, and computational resources. The ``I never read the code'' methodology does not extend to prose.
+Fourth, the companion physics paper required extensive human review to catch AI hallucinations (fabricated benchmarks, false timelines). The ``human never reads AI-generated code'' methodology does not extend to prose.
 
 \subsection{Future Directions}
 
-Can we extend AI effectiveness to lower-autonomy tasks? Structured exploration protocols, human-in-the-loop active learning, or physics-informed search might help with parameter exploration.
+\textbf{Systematic parameter exploration}: Can AI assistance be extended to lower-autonomy tasks through structured exploration protocols, human-in-the-loop active learning, or physics-informed search algorithms?
 
-Can we formalize physics-oracle validation? Coverage criteria, confidence quantification, extension to frontier physics.
+\textbf{Validation methodology formalization}: Developing rigorous frameworks for physics-oracle testing including coverage criteria, confidence quantification, and extension to frontier physics.
 
-Can others replicate this? Testing across different physics domains (astrophysics, condensed matter, climate), researchers with varying expertise levels, and alternative AI systems would tell us whether these findings generalize.
+\textbf{Broader replication}: Testing the methodology across different physics domains (astrophysics, condensed matter, climate), researchers with varying expertise levels, and alternative AI systems would determine whether these findings generalize.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-A decade after leaving academia, I rebuilt my PhD research code in three weeks with AI assistance. Claude wrote all the implementation. I never read the source files. The physics worked.
-
-What did I learn?
+This experiment demonstrates that AI assistance can enable a single researcher to develop research-grade plasma simulation code, with AI generating all implementation. The key findings are:
 
 \begin{enumerate}
-\item \textbf{The autonomy gradient is real}: AI effectiveness ranges from $\sim$100\% (implementation) to $\sim$0\% (research direction). The critical deficit is systematic parameter exploration ($\sim$10\%). Claude can implement what you specify but cannot tell you what to specify.
+\item \textbf{Autonomy gradient}: AI effectiveness ranges from $\sim$100\% (implementation) to $\sim$0\% (research direction), with a critical deficit in systematic parameter exploration ($\sim$10\%). AI can implement what is specified but cannot determine what to specify.
 
-\item \textbf{Physics taste is the bottleneck}: The limiting factor isn't AI coding capability. It's the absence of physical intuition---sensing when you're approaching correct behavior, accepting physics-numerics tradeoffs, knowing when the answer looks right.
+\item \textbf{Physics taste as bottleneck}: The limiting factor is not AI coding capability but the absence of physical intuition for navigating parameter space and accepting physics-numerics tradeoffs.
 
-\item \textbf{Physics validates code}: For scientific simulation, you don't need to read AI-generated code. If the physics is right, the code is right. This works for established physics with known benchmarks.
+\item \textbf{Validation through physics}: Physics-oracle testing provides a practical methodology for trusting AI-generated scientific code. For established physics with known benchmarks, code can be validated through physical behavior without reading implementation.
 
-\item \textbf{The bottleneck shifted}: AI augmentation moves the constraint from implementation to validation. Physics intuition and benchmark culture become more important, not less.
+\item \textbf{Changed capability distribution}: AI augmentation shifts the bottleneck from implementation to validation, elevating the importance of physics intuition and benchmark culture.
 \end{enumerate}
 
-The best mental model: AI is an undergraduate researcher. Capable of executing well-specified tasks. Requires supervision for anything requiring judgment. Cannot set research direction.
-
-This is genuinely useful. It addresses real bottlenecks in computational physics. It enables solo researchers to achieve team-level implementation capacity. But it preserves---and even elevates---the essential human role in scientific discovery.
-
-AI made me a one-person army for code implementation. The physics remained mine.
+These findings support a model of AI as ``undergraduate researcher''---capable of executing well-specified tasks but requiring supervision for judgment-dependent work. This is a useful capability that addresses real bottlenecks in computational physics while preserving the essential human role in scientific discovery.
 
 \section*{Data Availability}
 
@@ -345,7 +327,7 @@ Development logs and prompts: Available upon request
 
 \section*{Acknowledgments}
 
-I thank Alex Schekochihin, Nuno Loureiro, and Noah Mandell for discussions and informal review of the companion GANDALF physics paper. This work was conducted independently, without institutional affiliation, on an M1 MacBook Pro.
+We thank Alex Schekochihin, Nuno Loureiro, and Noah Mandell for discussions and informal review of the companion GANDALF physics paper. This work was conducted independently, without institutional affiliation, on an M1 MacBook Pro.
 
 \bibliographystyle{plainnat}
 \bibliography{references}

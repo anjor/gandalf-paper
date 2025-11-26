@@ -1,7 +1,7 @@
 \section{Prompt Examples}
 \label{app:prompts}
 
-This appendix shows actual prompts from my Claude Code sessions. These are verbatim---I haven't cleaned them up. They illustrate the dramatic difference in interaction style across the autonomy gradient.
+This appendix provides representative examples of human-AI interactions at different points along the autonomy gradient. All prompts are taken verbatim from Claude Code session logs.
 
 \subsection{High Autonomy ($\sim$95\%): Code Implementation}
 
@@ -19,7 +19,7 @@ Similarly, addressing code review feedback took just a URL:
 Address review comments: https://github.com/anjor/gandalf/pull/18
 \end{lstlisting}
 
-Claude read the review comments, implemented all changes, pushed updates. I verified through physics outputs, not code inspection.
+Claude read the review comments, implemented all changes, and pushed updates. The researcher verified correctness through physics outputs, not code inspection.
 
 \textbf{Key characteristics}: Unambiguous context, established patterns, objective success criteria.
 
@@ -46,13 +46,13 @@ And later:
 can you generate the pdf so that i can read the content
 \end{lstlisting}
 
-Multiple iterations to reach acceptable quality. Claude's drafts were technically accurate but missed on tone, emphasis, audience. I had to do real editing.
+Multiple iterations were required to reach acceptable quality. Claude's drafts were technically accurate but missed on tone, emphasis, and audience. Substantial human editing was necessary.
 
 \textbf{Key characteristics}: Subjective quality, audience-dependent, requires judgment about what matters.
 
 \subsection{Low Autonomy ($\sim$10\%): Parameter Exploration}
 
-Parameter tuning for turbulence demonstrated the physics taste deficit most clearly. This sequence shows how much guidance I had to provide:
+Parameter tuning for turbulence simulations demonstrated the ``physics taste'' deficit most clearly. The following sequence shows the extent of human guidance required:
 
 \begin{lstlisting}[caption={Human identifies problem with simulation output}]
 Look at @examples/output/driven_energy_spectra.png -- shouldn't we
@@ -79,12 +79,12 @@ And requesting information to inform decisions:
 What's our forcing range?
 \end{lstlisting}
 
-This pattern---I identify problem, I suggest direction, I request information, I decide next step---continued for multiple sessions. Claude implemented each change correctly but didn't converge toward the solution. I found it (substantially increased forcing) through physical intuition about inertial range requirements.
+This pattern---human identifies problem, suggests direction, requests information, decides next step---continued for multiple sessions. Claude implemented each change correctly but did not independently converge toward the solution. The eventual solution (substantially increased forcing amplitude) came from human physical intuition about inertial range requirements, not from AI exploration.
 
 \textbf{Key characteristics}: Multiple plausible interventions, requires building intuition across attempts, success depends on recognizing subtle signatures.
 
 \subsection{Summary}
 
-The pattern is clear: AI effectiveness correlates with specification clarity and objective success criteria. Tasks requiring intuition, audience awareness, or hypothesis refinement remain human-dependent regardless of AI coding capability.
+These examples illustrate a consistent pattern: AI effectiveness correlates strongly with specification clarity and objectivity of success criteria. Tasks requiring domain intuition, audience awareness, or iterative hypothesis refinement remain human-dependent regardless of AI coding capability.
 
-Effective AI collaboration uses very short prompts (``Sounds good, let's do diagnostics'') when context is established, but requires more detail for new task categories. My role shifted from implementation to orchestration---deciding \emph{what} to build rather than \emph{how}.
+Effective AI collaboration often involves very short human inputs (``Sounds good, let's do diagnostics'') when context is established, but requires more detailed specification when initiating new task categories. The human role shifts from implementation to orchestration---deciding \emph{what} to build rather than \emph{how} to build it.
