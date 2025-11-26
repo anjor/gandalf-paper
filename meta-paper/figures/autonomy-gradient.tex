@@ -1,0 +1,50 @@
+% Autonomy Gradient Figure - Simple version
+\begin{tikzpicture}[scale=0.85]
+
+% Define colors
+\definecolor{highcolor}{RGB}{50,180,50}
+\definecolor{midcolor}{RGB}{255,200,50}
+\definecolor{lowcolor}{RGB}{220,50,50}
+
+% Helper for drawing bars
+\newcommand{\taskbar}[4]{%
+    % #1 = y position, #2 = task name, #3 = autonomy %, #4 = color
+    \node[anchor=east, font=\small] at (-0.2, #1) {#2};
+    \fill[gray!20] (0, #1-0.2) rectangle (8, #1+0.2);
+    \pgfmathsetmacro{\barw}{#3*8/100}
+    \fill[#4] (0, #1-0.2) rectangle (\barw, #1+0.2);
+    \node[anchor=west, font=\small] at (\barw+0.1, #1) {$\sim$#3\%};
+}
+
+% Draw all bars
+\taskbar{0}{Code implementation}{100}{highcolor!80}
+\taskbar{-0.8}{Diagnostic addition}{95}{highcolor!80}
+\taskbar{-1.6}{Runtime debugging}{90}{highcolor!80}
+\taskbar{-2.4}{Test generation}{85}{highcolor!80}
+\taskbar{-3.2}{Performance optimization}{70}{highcolor!80}
+\taskbar{-4.0}{Documentation}{60}{midcolor!80}
+\taskbar{-4.8}{Paper writing}{50}{midcolor!80}
+\taskbar{-5.6}{Parameter tuning}{10}{lowcolor!80}
+\taskbar{-6.4}{Research direction}{0}{lowcolor!80}
+
+% Axes
+\draw[thick, ->] (0, 0.5) -- (0, -7.0);
+\draw[thick, ->] (0, -6.7) -- (8.5, -6.7);
+
+% X-axis label and ticks
+\node[anchor=north] at (4, -7.2) {AI Autonomy};
+\foreach \x/\lab in {0/0\%, 2/25\%, 4/50\%, 6/75\%, 8/100\%} {
+    \draw (\x, -6.6) -- (\x, -6.8);
+    \node[anchor=north, font=\footnotesize] at (\x, -6.8) {\lab};
+}
+
+% Legend - positioned to the right of the chart
+\node[anchor=west, font=\small\bfseries] at (0, 1.2) {Task Category};
+\fill[highcolor!80] (9.5, -0.2) rectangle (10, 0.2);
+\node[anchor=west, font=\footnotesize] at (10.1, 0) {High ($>$60\%)};
+\fill[midcolor!80] (9.5, -0.8) rectangle (10, -0.4);
+\node[anchor=west, font=\footnotesize] at (10.1, -0.6) {Medium (30--60\%)};
+\fill[lowcolor!80] (9.5, -1.4) rectangle (10, -1.0);
+\node[anchor=west, font=\footnotesize] at (10.1, -1.2) {Low ($<$30\%)};
+
+\end{tikzpicture}
