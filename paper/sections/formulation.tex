@@ -31,7 +31,7 @@ where $\sigma = 1 + \taue/\Zion + 1/\betai + \sqrt{(1 + \taue/\Zion)^2 + 1/\beta
 \Lambda^\pm = -\frac{\taue}{\Zion} + \frac{1}{\betai} \pm \sqrt{\left(1+\frac{\taue}{\Zion}\right)^2 + \frac{1}{\betai^2}}
 \label{eq:lambda_parameters}
 \end{equation}
-depend on the ion plasma beta $\betai = 8\pi n_{0i} T_i/\Bzero^2$, the temperature ratio $\taue = T_e/T_i$, and the ion charge state $\Zion$ \citep{Schekochihin2009}.
+depend on the ion plasma beta $\betai = 8\pi n_{0i} T_i/\Bzero^2$, the temperature ratio $\taue = T_i/T_e$, and the ion charge state $\Zion$ \citep{Schekochihin2009}.
 
 Equation~\eqref{eq:elsasser} describes counter-propagating \Alfven\ wave packets that interact nonlinearly through the Poisson bracket terms, driving turbulent energy transfer to small perpendicular scales. Equation~\eqref{eq:kinetic} governs the slow mode fluctuations, which undergo phase mixing through the $\vpar \gradpar$ streaming term while being advected by the $\mathbf{E} \times \mathbf{B}$ flow. The right-hand side of Eq.~\eqref{eq:kinetic} represents the coupling between $g^+$ and $g^-$ through the velocity-integrated density perturbation. At leading order in the KRMHD expansion, the \Alfven\ waves (Elsasser fields $\xi^\pm$) and slow modes ($g^\pm$) are decoupled---the slow modes evolve passively in the \Alfvenic\ turbulence without back-reacting on the wave dynamics. The computational implementation employs a Hermite moment expansion of $g^\pm$, detailed in \S\ref{sec:hermite}.
 
