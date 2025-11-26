@@ -27,16 +27,16 @@
 \node[human] (validate) at (4, -3) {Human\\{\footnotesize Interpretation}};
 \node[human] (judge) at (0, -3) {Human\\{\footnotesize Judgment}};
 
-% Main flow arrows
-\draw[arrow] (specs) -- node[above, label] {Equations,\\architecture} (impl);
-\draw[arrow] (impl) -- node[above, label] {JAX code} (code);
-\draw[arrow] (code) -- node[right, label] {Execute} (physics);
-\draw[arrow] (physics) -- node[above, label] {Results:\\$10^{-15}$, $k^{-5/3}$} (validate);
-\draw[arrow] (validate) -- node[above, label] {Pass/Fail\\assessment} (judge);
+% Main flow arrows (labels removed for clarity)
+\draw[arrow] (specs) -- (impl);
+\draw[arrow] (impl) -- (code);
+\draw[arrow] (code) -- (physics);
+\draw[arrow] (physics) -- (validate);
+\draw[arrow] (validate) -- (judge);
 
 % Feedback loops
 \draw[arrow, dashed, blue!60] (judge.north) -- ++(0, 0.8) -| node[pos=0.25, above, label] {Refine specs} (specs.north);
-\draw[arrow, dashed, red!60] (validate.north) -- ++(0, 1.5) -| node[pos=0.25, above, label] {Debug hints} (impl.north);
+\draw[arrow, dashed, red!60] (validate.north) -- ++(0, 1.5) -| node[pos=0.5, right, label] {Debug hints} (impl.north);
 
 % Region boxes
 \begin{scope}[on background layer]

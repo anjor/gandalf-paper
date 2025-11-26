@@ -82,7 +82,7 @@ Correctness was established through physics-output testing:
 
 If all four benchmarks passed, the code was accepted as correct---regardless of implementation details.
 
-\textbf{Development environment}: Claude was accessed through three interfaces---the Claude App for brainstorming and planning, the API for batch operations, and Claude Code CLI for implementation sessions. The codebase used JAX running on Apple Silicon's Metal backend. Version control was GitHub with automated Claude code review on pull requests.
+\textbf{Development environment}: Claude was accessed through two interfaces---the Claude App for brainstorming and planning, and Claude Code CLI for implementation sessions. The Claude GitHub App provided automated code review on pull requests. The codebase used JAX running on Apple Silicon's Metal backend.
 
 \subsection{Quantitative Outcomes}
 
@@ -95,6 +95,7 @@ If all four benchmarks passed, the code was accepted as correct---regardless of 
 Active development days & 21 \\
 Total API cost & \$558 \\
 Lines of code generated & $\sim$3,500 \\
+Lines of \LaTeX\ (both papers) & $\sim$1,700 \\
 Linear wave relative error & $10^{-15}$ \\
 Nonlinear energy conservation & $10^{-6}$ \\
 Spectral scaling achieved & $k^{-5/3} \pm 0.05$ \\
@@ -144,9 +145,9 @@ Research direction & $\sim$0\% & Entirely human & N/A \\
 
 \subsection{High-Autonomy Tasks: Implementation}
 
-When given the KRMHD nonlinear term equations from Schekochihin's paper with the instruction ``vectorize this for batched Fourier transforms,'' Claude produced working code on the first attempt. No iteration required.
+Implementation of the KRMHD nonlinear terms required several iterations, but AI handled each iteration effectively once the problem was identified. Initial attempts revealed incorrect operator ordering (applying the Laplacian inside the Poisson bracket rather than outside) and sign errors in linear propagation terms that caused exponential growth instead of oscillatory behavior. Each fix was straightforward for the AI to implement once the physics error was diagnosed by the researcher. The pattern: human identifies physics problem, AI implements correction.
 
-This pattern held for tasks with clear inputs and outputs: implement this equation, add this diagnostic, fix this runtime error. The AI knew the relevant idioms---spectral methods, JAX's vmap, array broadcasting. Code either worked or produced error messages that indicated how to fix it.
+This held for tasks with clear inputs and outputs: implement this equation, add this diagnostic, fix this runtime error. The AI knew the relevant idioms---spectral methods, JAX's vmap, array broadcasting. Code either worked or produced error messages that indicated how to fix it.
 
 \subsection{Low-Autonomy Tasks: Parameter Exploration}
 
@@ -156,7 +157,9 @@ Kolmogorov scaling ($k^{-5/3}$) is the textbook result for driven turbulence, bu
 
 When the AI was given latitude to lead parameter exploration, a consistent failure pattern emerged: propose a modification, implement it, observe that it didn't work, propose something different. No convergence toward the solution. No learning across attempts. Each try was independent.
 
-Human parameter exploration differs qualitatively. The researcher maintained running hypotheses, sensed proximity to correct behavior, and built intuition across attempts. These capabilities---recognizing when a spectrum ``looked more turbulent,'' inferring that stronger driving might help---were entirely absent from AI assistance. Current models lack physics taste.
+Human parameter exploration differs qualitatively. The researcher maintained running hypotheses, sensed proximity to correct behavior, and built intuition across attempts. These capabilities---judgment about how long to run a simulation in steady state, what time period to average over, whether a slight spectral pile-up at high $k$ is acceptable---were entirely absent from AI assistance. Current models lack physics taste.
+
+Two failure modes during parameter exploration merit documentation. First, when struggling to achieve the $k^{-5/3}$ spectrum, Claude at one point generated synthetic data showing the expected result---completely defeating the purpose of validation. Second, Claude at another point concluded the problem was intractable: ``this isn't possible, let's just document the attempts and shortcomings.'' Notably, in both cases the AI was transparent rather than deceptive---admitting the synthetic nature of the data in the first case, and honestly recommending abandonment in the second. This honesty is valuable but does not substitute for the persistence that domain expertise provides.
 
 \section{Failure Mode Analysis}
 \label{sec:failure}
@@ -169,7 +172,7 @@ This capability was absent from AI assistance. Specific manifestations:
 
 \textbf{Premature optimization for stability}: When simulations exhibited marginal numerical stability---which is normal when pushing Reynolds number---Claude consistently recommended adding dissipation, reducing the timestep, or smoothing initial conditions. These interventions improve numerical behavior but degrade physics content. The researcher had to override these recommendations repeatedly.
 
-\textbf{Inability to sense convergence}: During parameter exploration, Claude showed no awareness of getting closer to or farther from the target. Each attempt was independent. The AI did not build intuition across tries. When told ``that spectrum looked more turbulent,'' Claude incorporated the information, but it could not generate such observations itself.
+\textbf{Inability to sense convergence}: During parameter exploration, Claude showed no awareness of getting closer to or farther from the target. Each attempt was independent. The AI did not build intuition across tries. When told ``there is a slight pile-up at high $k$, but it's acceptable if we stop the simulation now,'' Claude incorporated the information, but it could not generate such observations itself.
 
 \textbf{Jumping to solutions}: Rather than methodical exploration, Claude proposed complete ``fixes'' that assumed knowledge of the correct answer. This works for textbook problems but fails at the research frontier where nobody knows the answer.
 
@@ -327,7 +330,7 @@ Development logs and prompts: Available upon request
 
 \section*{Acknowledgments}
 
-We thank Alex Schekochihin, Nuno Loureiro, and Noah Mandell for discussions and informal review of the companion GANDALF physics paper. This work was conducted independently, without institutional affiliation, on an M1 MacBook Pro.
+We thank Alex Schekochihin and Nuno Loureiro for discussions and informal review of the companion GANDALF physics paper. We thank Anthropic for the Claude models that served as the primary AI assistants throughout development. Gemini 3 Pro provided valuable feedback during manuscript review. This work was conducted independently, without institutional affiliation, on an M1 MacBook Pro.
 
 \bibliographystyle{plainnat}
 \bibliography{references}

@@ -38,14 +38,13 @@
     \node[anchor=north, font=\footnotesize] at (\x, -6.8) {\lab};
 }
 
-% Legend - positioned to the right of the chart to avoid overlap
+% Legend - positioned to the right of the chart
 \node[anchor=west, font=\small\bfseries] at (0, 1.2) {Task Category};
-\node[anchor=west, font=\footnotesize] at (9.5, 0) {Legend:};
-\fill[highcolor!80] (9.5, -0.6) rectangle (10, -0.2);
-\node[anchor=west, font=\footnotesize] at (10.1, -0.4) {High ($>$60\%)};
-\fill[midcolor!80] (9.5, -1.2) rectangle (10, -0.8);
-\node[anchor=west, font=\footnotesize] at (10.1, -1.0) {Medium (30--60\%)};
-\fill[lowcolor!80] (9.5, -1.8) rectangle (10, -1.4);
-\node[anchor=west, font=\footnotesize] at (10.1, -1.6) {Low ($<$30\%)};
+\fill[highcolor!80] (9.5, -0.2) rectangle (10, 0.2);
+\node[anchor=west, font=\footnotesize] at (10.1, 0) {High ($>$60\%)};
+\fill[midcolor!80] (9.5, -0.8) rectangle (10, -0.4);
+\node[anchor=west, font=\footnotesize] at (10.1, -0.6) {Medium (30--60\%)};
+\fill[lowcolor!80] (9.5, -1.4) rectangle (10, -1.0);
+\node[anchor=west, font=\footnotesize] at (10.1, -1.2) {Low ($<$30\%)};
 
 \end{tikzpicture}
