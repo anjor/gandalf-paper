@@ -1,31 +1,31 @@
 \section{Prompt Examples}
 \label{app:prompts}
 
-This appendix provides representative examples of human-AI interactions at different points along the autonomy gradient. All prompts are taken verbatim from Claude Code session logs.
+This appendix shows actual prompts from my Claude Code sessions. These are verbatim---I haven't cleaned them up. They illustrate the dramatic difference in interaction style across the autonomy gradient.
 
 \subsection{High Autonomy ($\sim$95\%): Code Implementation}
 
-High-autonomy tasks required minimal specification. The following prompt resulted in a complete, working diagnostic module:
+High-autonomy tasks required almost no specification. This four-word prompt produced a complete, working diagnostic module:
 
 \begin{lstlisting}[caption={Human prompt for diagnostic implementation}]
 Sounds good, let's do diagnostics
 \end{lstlisting}
 
-Context: The conversation had established that energy spectrum diagnostics were needed. This four-word prompt was sufficient for Claude to implement shell-averaged perpendicular energy spectra, proper normalization, and integration with existing file I/O infrastructure. No iteration was required.
+Context: we had already discussed that energy spectrum diagnostics were needed. Four words. Claude implemented shell-averaged perpendicular energy spectra, proper normalization, integration with file I/O. No iteration required.
 
-Similarly, addressing code review feedback required only a URL:
+Similarly, addressing code review feedback took just a URL:
 
 \begin{lstlisting}[caption={Human prompt for addressing review feedback}]
 Address review comments: https://github.com/anjor/gandalf/pull/18
 \end{lstlisting}
 
-Claude read the review comments, implemented all requested changes, and pushed updates. The human verified correctness through physics outputs rather than code inspection.
+Claude read the review comments, implemented all changes, pushed updates. I verified through physics outputs, not code inspection.
 
-\textbf{Key characteristics}: Unambiguous context, established programming patterns, objective success criteria.
+\textbf{Key characteristics}: Unambiguous context, established patterns, objective success criteria.
 
 \subsection{Medium Autonomy ($\sim$50\%): Paper Writing}
 
-Paper writing required multiple iterations with substantial human editing.
+Paper writing was different. Multiple iterations, substantial editing.
 
 \begin{lstlisting}[caption={Human prompt for paper section}]
 Read issue #5 and find the thesis chapter in the repo. Extract and
@@ -46,13 +46,13 @@ And later:
 can you generate the pdf so that i can read the content
 \end{lstlisting}
 
-Multiple iterations were required to reach acceptable quality. Claude's initial drafts were technically accurate but required human judgment on tone, emphasis, and audience-appropriate level of detail.
+Multiple iterations to reach acceptable quality. Claude's drafts were technically accurate but missed on tone, emphasis, audience. I had to do real editing.
 
-\textbf{Key characteristics}: Subjective quality criteria, audience-dependent effectiveness, requires domain-specific judgment about emphasis.
+\textbf{Key characteristics}: Subjective quality, audience-dependent, requires judgment about what matters.
 
 \subsection{Low Autonomy ($\sim$10\%): Parameter Exploration}
 
-Parameter tuning for turbulence simulations demonstrated the ``physics taste'' deficit most clearly. The following sequence shows iterative exploration that required human guidance throughout:
+Parameter tuning for turbulence demonstrated the physics taste deficit most clearly. This sequence shows how much guidance I had to provide:
 
 \begin{lstlisting}[caption={Human identifies problem with simulation output}]
 Look at @examples/output/driven_energy_spectra.png -- shouldn't we
@@ -79,12 +79,12 @@ And requesting information to inform decisions:
 What's our forcing range?
 \end{lstlisting}
 
-This pattern---human identifies problem, human suggests direction, human requests information, human decides next step---continued for multiple sessions. Claude implemented each change correctly but did not independently converge toward the correct parameter regime. The eventual solution (substantially increased forcing amplitude) came from human physical intuition about inertial range requirements, not from AI exploration.
+This pattern---I identify problem, I suggest direction, I request information, I decide next step---continued for multiple sessions. Claude implemented each change correctly but didn't converge toward the solution. I found it (substantially increased forcing) through physical intuition about inertial range requirements.
 
-\textbf{Key characteristics}: Multiple plausible interventions, requires building intuition across attempts, success depends on recognizing subtle signatures of correct vs.\ incorrect behavior.
+\textbf{Key characteristics}: Multiple plausible interventions, requires building intuition across attempts, success depends on recognizing subtle signatures.
 
 \subsection{Summary}
 
-These examples illustrate a consistent pattern: AI effectiveness correlates strongly with specification clarity and objectivity of success criteria. Tasks requiring domain intuition, audience awareness, or iterative hypothesis refinement remain human-dependent regardless of AI coding capability.
+The pattern is clear: AI effectiveness correlates with specification clarity and objective success criteria. Tasks requiring intuition, audience awareness, or hypothesis refinement remain human-dependent regardless of AI coding capability.
 
-The prompt logs also reveal that effective AI collaboration often involves very short human inputs (``Sounds good, let's do diagnostics'') when context is established, but requires more detailed specification when initiating new task categories. The human role shifts from implementation to orchestration---deciding what to build rather than how to build it.
+Effective AI collaboration uses very short prompts (``Sounds good, let's do diagnostics'') when context is established, but requires more detail for new task categories. My role shifted from implementation to orchestration---deciding \emph{what} to build rather than \emph{how}.
