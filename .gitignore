@@ -6,6 +6,7 @@
 *.out
 *.pdf
 !GANDALF_paper.pdf
+!augmenting_physicist.pdf
 *.synctex.gz
 *.fls
 *.fdb_latexmk
